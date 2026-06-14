@@ -76,9 +76,28 @@ export const getAllLeads = async () => {
 
 // Add a new lead to Hostinger MySQL database via API
 export const addLead = async (leadData) => {
+  // 1. Strict Validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!leadData.email || !emailRegex.test(leadData.email.trim())) {
+    throw new Error("Invalid email format.");
+  }
+
+  const phoneRegex = /^[\+0-9\-\s\(\)]{8,20}$/;
+  if (!leadData.phone || !phoneRegex.test(leadData.phone.trim())) {
+    throw new Error("Invalid phone number format. Must be 8-20 digits long.");
+  }
+
+  if (!leadData.name || leadData.name.trim().length < 2) {
+    throw new Error("Please enter a valid full name (minimum 2 characters).");
+  }
+
   let cleanWebsite = (leadData.website || "").trim().toLowerCase();
   cleanWebsite = cleanWebsite.replace(/^(https?:\/\/)?(www\.)?/, "");
   cleanWebsite = cleanWebsite.split("/")[0];
+  
+  if (!cleanWebsite || !cleanWebsite.includes(".")) {
+    throw new Error("Invalid website URL. Must include a domain extension (e.g., .com).");
+  }
 
   const newLead = {
     id: leadData.id || "lead_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),

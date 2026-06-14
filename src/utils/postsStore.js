@@ -158,6 +158,53 @@ export const deletePost = async (id) => {
   }
 };
 
+export const updatePost = async (id, postData) => {
+  const readMin = calculateReadTime(postData.content, postData.desc);
+  
+  let generatedSlug = (postData.slug || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+    
+  if (!generatedSlug) {
+    generatedSlug = postData.title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  }
+
+  const payload = {
+    slug: generatedSlug,
+    title: postData.title.trim(),
+    desc: postData.desc.trim(),
+    content: postData.content || "",
+    category: postData.category || "Core Updates",
+    date: postData.date || new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+    readTime: `${readMin} min read`,
+    author: postData.author?.trim() || "Martin",
+    featuredImage: (postData.featuredImage || "").trim(),
+    featured: postData.featured || false,
+  };
+
+  try {
+    const res = await fetch(`/api/posts/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to update post");
+    return data;
+  } catch (e) {
+    console.error(`postsStore: Failed to update post (${id}):`, e);
+    throw e;
+  }
+};
+
+
 export const resetToDefaultPosts = async () => {
   try {
     // Clear and restore tables on the backend

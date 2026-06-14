@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { citiesDb } from "@/data/cities";
 
 export default function HomeClient() {
   const [url, setUrl] = useState("");
   const [activeMockupTab, setActiveMockupTab] = useState("overview");
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [citySearch, setCitySearch] = useState("");
   const router = useRouter();
 
   const handleAuditSubmit = (e) => {
@@ -797,6 +799,87 @@ export default function HomeClient() {
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 7.5 LOCAL SEO COVERAGE SECTION */}
+      <div className="border-t border-zinc-900 bg-zinc-950 py-24 sm:py-32 relative overflow-hidden">
+        {/* Ambient background glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-violet-600/5 blur-[100px] pointer-events-none rounded-full" />
+        
+        <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
+          <div className="mx-auto max-w-3xl text-center mb-16 space-y-4">
+            <span className="inline-block text-xs uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] animate-pulse-subtle">
+              National Footprint
+            </span>
+            <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Local SEO Service Coverage
+            </h2>
+            <p className="text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+              We deploy localized search optimization architectures for major US business clusters. Explore our rankings blueprints for key cities.
+            </p>
+            
+            {/* City Search Box */}
+            <div className="max-w-md mx-auto mt-8 relative">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-zinc-500">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search your city..."
+                value={citySearch}
+                onChange={(e) => setCitySearch(e.target.value)}
+                className="w-full bg-zinc-900/40 border border-zinc-800 rounded-full py-3 pl-11 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all backdrop-blur-md"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {(citySearch.trim() === "" 
+              ? [
+                  { name: "New York", slug: "new-york", abbr: "NY", color: "group-hover:border-blue-500/30 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.1)]" },
+                  { name: "Los Angeles", slug: "los-angeles", abbr: "LA", color: "group-hover:border-orange-500/30 group-hover:shadow-[0_0_30px_rgba(249,115,22,0.1)]" },
+                  { name: "Chicago", slug: "chicago", abbr: "CH", color: "group-hover:border-sky-500/30 group-hover:shadow-[0_0_30px_rgba(14,165,233,0.1)]" },
+                  { name: "Houston", slug: "houston", abbr: "HO", color: "group-hover:border-rose-500/30 group-hover:shadow-[0_0_30px_rgba(244,63,94,0.1)]" },
+                  { name: "Phoenix", slug: "phoenix", abbr: "PH", color: "group-hover:border-amber-500/30 group-hover:shadow-[0_0_30px_rgba(245,158,11,0.1)]" },
+                  { name: "San Diego", slug: "san-diego", abbr: "SD", color: "group-hover:border-teal-500/30 group-hover:shadow-[0_0_30px_rgba(20,184,166,0.1)]" },
+                  { name: "San Jose", slug: "san-jose", abbr: "SJ", color: "group-hover:border-violet-500/30 group-hover:shadow-[0_0_30px_rgba(139,92,246,0.1)]" },
+                  { name: "Austin", slug: "austin", abbr: "AU", color: "group-hover:border-emerald-500/30 group-hover:shadow-[0_0_30px_rgba(16,185,129,0.1)]" }
+                ]
+              : Object.entries(citiesDb)
+                  .filter(([slug, data]) => data.name.toLowerCase().includes(citySearch.toLowerCase()))
+                  .slice(0, 8)
+                  .map(([slug, data]) => ({
+                    name: data.name,
+                    slug: slug,
+                    abbr: data.name.substring(0, 2).toUpperCase(),
+                    color: "group-hover:border-violet-500/30 group-hover:shadow-[0_0_30px_rgba(139,92,246,0.1)]"
+                  }))
+            ).map((city) => (
+              <Link
+                key={city.slug}
+                href={`/seo-services/${city.slug}/`}
+                className={`group rounded-3xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-xl p-6 flex flex-col items-center justify-center text-center transition-all duration-500 relative overflow-hidden h-40 sm:h-44 hover:-translate-y-1 ${city.color}`}
+              >
+                {/* Premium Inner Glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <div className="relative z-10 flex flex-col items-center gap-5">
+                  {/* Luxury Monogram Logo */}
+                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border border-zinc-700/50 bg-zinc-900/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] flex items-center justify-center group-hover:border-zinc-500/50 transition-colors duration-500">
+                    <span className="text-sm sm:text-base font-mono font-medium tracking-widest text-zinc-400 group-hover:text-white transition-colors duration-500">
+                      {city.abbr}
+                    </span>
+                  </div>
+                  
+                  {/* Typography */}
+                  <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-zinc-300 group-hover:text-white transition-colors duration-500">
+                    {city.name}
+                  </h4>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

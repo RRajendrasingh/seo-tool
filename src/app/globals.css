@@ -92,10 +92,19 @@ body {
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────── */
-::-webkit-scrollbar          { width: 8px; }
+::-webkit-scrollbar          { width: 8px; height: 6px; }
 ::-webkit-scrollbar-track    { background: var(--background); }
 ::-webkit-scrollbar-thumb    { background: #1e293b; border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
 
 /* ─── Accordion utility ─────────────────────────────────── */
 details summary::-webkit-details-marker { display: none; }
@@ -123,19 +132,25 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .bg-zinc-900\/20  { background-color: rgba(255,255,255,0.80) !important; }
 .light .bg-zinc-900\/10  { background-color: rgba(241,245,249,0.10) !important; }
 .light .bg-zinc-900\/30  { background-color: rgba(241,245,249,0.30) !important; }
+.light .bg-zinc-900\/80  { background-color: rgba(241,245,249,0.80) !important; }
 
 /* Slate equivalents used in Navbar, sections, and buttons */
 .light .bg-slate-950  { background-color: #f8fafc !important; }
 .light .bg-slate-900  { background-color: #f1f5f9 !important; }
 .light .bg-slate-800  { background-color: #e2e8f0 !important; }
 .light .bg-slate-700  { background-color: #cbd5e1 !important; }
-.light .bg-slate-950\/80 { background-color: rgba(248,250,252,0.85) !important; }
-.light .bg-slate-950\/60 { background-color: rgba(248,250,252,0.60) !important; }
-.light .bg-slate-950\/40 { background-color: rgba(241,245,249,0.40) !important; }
-.light .bg-slate-900\/40 { background-color: rgba(241,245,249,0.70) !important; }
-.light .bg-slate-900\/30 { background-color: rgba(241,245,249,0.30) !important; }
-.light .bg-slate-900\/20 { background-color: rgba(255,255,255,0.80) !important; }
-.light .bg-slate-900\/10 { background-color: rgba(241,245,249,0.10) !important; }
+.light .bg-slate-950\/95 { background-color: rgba(248, 250, 252, 0.95) !important; }
+.light .bg-slate-950\/85 { background-color: rgba(248, 250, 252, 0.85) !important; }
+.light .bg-slate-950\/80 { background-color: rgba(248, 250, 252, 0.85) !important; }
+.light .bg-slate-950\/60 { background-color: rgba(248, 250, 252, 0.60) !important; }
+.light .bg-slate-950\/40 { background-color: rgba(241, 245, 249, 0.40) !important; }
+.light .bg-slate-900\/40 { background-color: rgba(241, 245, 249, 0.70) !important; }
+.light .bg-slate-900\/30 { background-color: rgba(241, 245, 249, 0.30) !important; }
+.light .bg-slate-900\/20 { background-color: rgba(255, 255, 255, 0.80) !important; }
+.light .bg-slate-900\/10 { background-color: rgba(241, 245, 249, 0.10) !important; }
+.light .bg-slate-800\/60 { background-color: rgba(226, 232, 240, 0.60) !important; }
+.light .bg-slate-800\/40 { background-color: rgba(226, 232, 240, 0.40) !important; }
+.light .bg-slate-800\/30 { background-color: rgba(226, 232, 240, 0.30) !important; }
 
 /* Faint background badges & glows to light pastels */
 .light .bg-cyan-950\/20    { background-color: rgba(6, 182, 212, 0.08) !important; }
@@ -228,6 +243,8 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .border-indigo-500\/10 { border-color: rgba(79, 70, 229, 0.08) !important; }
 .light .border-violet-500\/30 { border-color: rgba(124, 58, 237, 0.15) !important; }
 .light .border-violet-500\/50 { border-color: rgba(124, 58, 237, 0.25) !important; }
+.light .border-slate-200\/30 { border-color: rgba(15, 23, 42, 0.1) !important; }
+.light .border-slate-200\/20 { border-color: rgba(15, 23, 42, 0.08) !important; }
 
 /* ── Navbar glass effect ────────────────────────────────── */
 .light nav.sticky {
@@ -249,11 +266,19 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .via-zinc-100      { --tw-gradient-via: #1e293b; }
 .light .to-zinc-400       { --tw-gradient-to: #475569; }
 
+/* Custom brand gradients day mode overrides for high-contrast accessibility */
+.light .from-violet-400  { --tw-gradient-from: #7c3aed !important; }
+.light .via-fuchsia-500  { --tw-gradient-via: #c026d3 !important; }
+.light .to-cyan-400      { --tw-gradient-to: #0891b2 !important; }
+.light .from-cyan-400    { --tw-gradient-from: #0891b2 !important; }
+.light .to-indigo-500    { --tw-gradient-to: #4f46e5 !important; }
+.light .from-indigo-400  { --tw-gradient-from: #4f46e5 !important; }
+
 /* ── Specific UI input fields ───────────────────────────── */
 .light input, .light textarea {
-  background-color: #ffffff !important;
+  background-color: #ffffff;
   color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  border-color: #cbd5e1;
 }
 .light input::placeholder, .light textarea::placeholder {
   color: #94a3b8 !important;
@@ -277,3 +302,51 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
   border-color: rgba(99, 102, 241, 0.25) !important;
   box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.05) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CKEDITOR TABLE & FORMATTING STYLES
+   Ensures rich content elements render with perfect margins,
+   contrast, and borders in both themes.
+   ═══════════════════════════════════════════════════════════ */
+.prose table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 1.5rem 0 !important;
+  font-size: 0.875rem !important;
+}
+.prose th, .prose td {
+  border: 1px solid #27272a !important;
+  padding: 0.75rem 1rem !important;
+  text-align: left !important;
+}
+.prose th {
+  background-color: #0e0e11 !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  border-color: #3f3f46 !important;
+}
+.prose td {
+  color: #d4d4d8 !important;
+}
+.prose figure.table {
+  width: 100% !important;
+  margin: 1.5rem 0 !important;
+  overflow-x: auto !important;
+}
+
+/* Light mode overrides for tables */
+.light .prose th {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+.light .prose td {
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+.light .prose table,
+.light .prose th,
+.light .prose td {
+  border-color: #cbd5e1 !important;
+}
+

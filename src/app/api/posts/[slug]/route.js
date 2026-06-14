@@ -54,3 +54,64 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ error: error.message || "Failed to delete post" }, { status: 500 });
   }
 }
+
+// PUT: Update post
+export async function PUT(request, { params }) {
+  try {
+    const { slug } = await params;
+    const postData = await request.json();
+
+    if (!postData.title || !postData.desc) {
+      return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
+    }
+
+    const identifier = slug.startsWith("post_") ? "id" : "slug";
+    
+    // Check if the post exists
+    const checkPost = await query(`SELECT id, featured FROM posts WHERE ${identifier} = ?`, [slug]);
+    if (!checkPost || checkPost.length === 0) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+    
+    const dbPostId = checkPost[0].id;
+    const featured = postData.featured ? 1 : 0;
+
+    // Safe-guard unique slug constraint
+    if (postData.slug) {
+      const slugCheck = await query("SELECT id FROM posts WHERE slug = ? AND id != ?", [postData.slug, dbPostId]);
+      if (slugCheck && slugCheck.length > 0) {
+        return NextResponse.json({ error: "An article with this URL slug already exists. Please choose a different slug." }, { status: 400 });
+      }
+    }
+
+    // Reset other featured flags if this post is featured
+    if (featured === 1) {
+      await query("UPDATE posts SET featured = 0 WHERE id != ?", [dbPostId]);
+    }
+
+    const dateStr = postData.date || new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+
+    await query(
+      "UPDATE posts SET slug = ?, title = ?, `desc` = ?, content = ?, category = ?, date = ?, readTime = ?, author = ?, featuredImage = ?, featured = ? WHERE id = ?",
+      [
+        postData.slug,
+        postData.title,
+        postData.desc,
+        postData.content || "",
+        postData.category || "Core Updates",
+        dateStr,
+        postData.readTime || "1 min read",
+        postData.author || "Martin",
+        postData.featuredImage || "",
+        featured,
+        dbPostId
+      ]
+    );
+
+    return NextResponse.json({ success: true, id: dbPostId, slug: postData.slug });
+  } catch (error) {
+    console.error("Failed to update post:", error);
+    return NextResponse.json({ error: error.message || "Failed to update post in database" }, { status: 500 });
+  }
+}
+

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { query } from "@/utils/db";
 import NewsClient from "./NewsClient";
 

@@ -32,7 +32,7 @@ export default function LocationsDirectory({ citiesDb }) {
   const totalResults = filteredCities.length;
 
   return (
-    <div className="bg-zinc-950 min-h-screen relative isolate py-12">
+    <div className="bg-zinc-950 min-h-screen relative isolate py-12 overflow-x-hidden">
       {/* Decorative Grid Pattern */}
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-50" />
 
@@ -84,6 +84,7 @@ export default function LocationsDirectory({ citiesDb }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by city or niche (e.g., HVAC, SaaS)..."
+                style={{ backgroundColor: 'transparent' }}
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 transition-colors"
               />
               {searchQuery && (

@@ -20,6 +20,7 @@ export default function AuditClient() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+1");
   const [currentLeadId, setCurrentLeadId] = useState(null);
   
   // App states
@@ -28,6 +29,8 @@ export default function AuditClient() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
+  const [formError, setFormError] = useState(null);
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [activeEngine, setActiveEngine] = useState("seo-tags");
   const [showPayModal, setShowPayModal] = useState(initialPlan === "premium");
   const [filterTab, setFilterTab] = useState("all");
@@ -688,16 +691,18 @@ export default function AuditClient() {
 
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
-    if (!url || !name || !email || !phone) return;
-
-    setLeadCaptured(true);
+    setFormError(null);
+    if (!url || !name || !email || !phone) {
+      setFormError("Please fill out all required fields.");
+      return;
+    }
     
     let leadId = null;
     try {
       const newLead = await addLead({
         name,
         email,
-        phone,
+        phone: `${countryCode} ${phone}`,
         website: url,
         status: "New",
         packageRequest: initialPlan === "premium" ? "Premium Report" : "Free Audit",
@@ -708,8 +713,11 @@ export default function AuditClient() {
       setCurrentLeadId(leadId);
     } catch (err) {
       console.error("Failed to save lead:", err);
+      setFormError(err.message || "Failed to submit. Please check your inputs.");
+      return;
     }
 
+    setLeadCaptured(true);
     runAudit(url, leadId);
   };
 
@@ -723,7 +731,7 @@ export default function AuditClient() {
   const isKeyUnset = !activeKey || activeKey === "PASTE_YOUR_GOOGLE_API_KEY_HERE";
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative isolate">
+    <div className="bg-zinc-950 min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative isolate overflow-x-hidden">
       {/* Background radial glow */}
       <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
@@ -816,15 +824,88 @@ export default function AuditClient() {
                 <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
                   Contact Phone Number
                 </label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="e.g. +91 98765 43210 / +1 555-0199"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
-                />
+                <div className="flex bg-zinc-950 rounded-xl border border-zinc-850 focus-within:border-violet-500 overflow-visible relative">
+                  {/* Custom Dropdown Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                    onBlur={() => setTimeout(() => setIsCountryDropdownOpen(false), 200)}
+                    className="bg-zinc-950 border-r border-zinc-850 px-3 py-2.5 text-xs text-white focus:outline-none cursor-pointer flex items-center gap-1.5 min-w-[70px] justify-center hover:bg-zinc-900 transition-colors"
+                  >
+                    <span className="text-sm">
+                      {[
+                        { code: "+1", flag: "🇺🇸" },
+                        { code: "+44", flag: "🇬🇧" },
+                        { code: "+91", flag: "🇮🇳" },
+                        { code: "+61", flag: "🇦🇺" },
+                        { code: "+49", flag: "🇩🇪" },
+                        { code: "+33", flag: "🇫🇷" },
+                        { code: "+81", flag: "🇯🇵" },
+                      ].find(c => c.code === countryCode)?.flag || "🌐"}
+                    </span>
+                    <span className="font-medium">{countryCode}</span>
+                    <svg className={`w-3 h-3 text-zinc-500 transition-transform ${isCountryDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isCountryDropdownOpen && (
+                    <ul className="absolute top-full left-0 mt-1 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-50 max-h-48 overflow-y-auto">
+                      {[
+                        { code: "+1", flag: "🇺🇸", label: "United States" },
+                        { code: "+44", flag: "🇬🇧", label: "United Kingdom" },
+                        { code: "+91", flag: "🇮🇳", label: "India" },
+                        { code: "+61", flag: "🇦🇺", label: "Australia" },
+                        { code: "+49", flag: "🇩🇪", label: "Germany" },
+                        { code: "+33", flag: "🇫🇷", label: "France" },
+                        { code: "+81", flag: "🇯🇵", label: "Japan" },
+                      ].map((country) => (
+                        <li key={country.code}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCountryCode(country.code);
+                              setIsCountryDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-violet-600 hover:text-white transition-colors flex items-center justify-between group"
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="text-base">{country.flag}</span>
+                              <span className="truncate max-w-[100px]">{country.label}</span>
+                            </span>
+                            <span className="text-zinc-500 text-[10px] font-mono group-hover:text-violet-200">{country.code}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <input
+                    type="tel"
+                    required
+                    maxLength={
+                      countryCode === "+1" ? 10 :
+                      countryCode === "+44" ? 11 :
+                      countryCode === "+91" ? 10 :
+                      countryCode === "+61" ? 9 :
+                      countryCode === "+49" ? 11 :
+                      countryCode === "+33" ? 9 :
+                      countryCode === "+81" ? 10 :
+                      15
+                    }
+                    placeholder={countryCode === "+1" ? "555 555 5555" : countryCode === "+91" ? "98765 43210" : "Mobile Number"}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                    className="w-full bg-transparent px-3 py-2.5 text-xs text-white placeholder-zinc-650 focus:outline-none"
+                  />
+                </div>
               </div>
+
+              {formError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-start gap-2 animate-fade-in">
+                  <span className="shrink-0 mt-0.5">⚠️</span>
+                  <span>{formError}</span>
+                </div>
+              )}
 
               <button
                 type="submit"

@@ -38,7 +38,16 @@ export async function GET() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
-    // 3. Pre-seed default blog posts if table is empty
+    // 3. Create uploads table
+    await query(`
+      CREATE TABLE IF NOT EXISTS uploads (
+        id VARCHAR(50) PRIMARY KEY,
+        data LONGTEXT NOT NULL,
+        mimeType VARCHAR(50) NOT NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 4. Pre-seed default blog posts if table is empty
     const postsCount = await query("SELECT COUNT(*) as count FROM posts");
     if (postsCount && postsCount[0] && postsCount[0].count === 0) {
       const defaultPosts = [

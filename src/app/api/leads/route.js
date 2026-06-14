@@ -31,6 +31,14 @@ export async function POST(request) {
       return NextResponse.json({ error: "Email and website are required" }, { status: 400 });
     }
 
+    // Enforce database limit
+    const countResult = await query("SELECT COUNT(*) as count FROM leads");
+    const leadCount = countResult[0]?.count || 0;
+    
+    if (leadCount >= 50000) {
+      return NextResponse.json({ error: "Database limit reached. A maximum of 50000 leads can be stored." }, { status: 403 });
+    }
+
     // Clean URL
     let cleanWebsite = leadData.website.trim().toLowerCase();
     cleanWebsite = cleanWebsite.replace(/^(https?:\/\/)?(www\.)?/, "");

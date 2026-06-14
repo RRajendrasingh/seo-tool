@@ -88,54 +88,56 @@ export default function ServicesClient() {
 
   const pricingPlans = [
     {
-      name: "Basic SEO Audit",
-      price: "Free",
-      desc: "Get an instant summary of your website's meta tags, title lengths, and H1/H2 structures.",
+      name: "Starter Plan",
+      price: "$99",
+      desc: "Essential search auditing and location targeting for growing websites looking to establish ranking signals.",
       features: [
-        "Instant basic HTML tags parse",
-        "Check for missing image alt tags",
-        "Headings structure checklist",
-        "Online summary report",
+        "Instant basic HTML tags parser",
+        "100+ critical fixes checklist",
+        "Mobile loading speed check",
+        "Single city landing template",
+        "Email support response in 48h",
       ],
-      buttonText: "Run Free Audit",
+      buttonText: "Get Started Now",
       href: "/audit/",
       popular: false,
     },
     {
-      name: "Premium AI SEO Report",
-      price: "$29",
-      desc: "Our deep, AI-driven report compiling scraping data, Core Web Vitals, and an OpenAI-generated action checklist.",
+      name: "Pro Optimizer",
+      price: "$149",
+      desc: "Our gold standard. Deep automated crawling, AI summaries, core web vitals optimization, and full GEO readiness reports.",
       features: [
-        "Everything in Basic",
-        "Full Google PageSpeed Metrics",
-        "AEO & GEO Readiness Score",
-        "AI executive summary (GPT-4o)",
-        "Detailed critical fixes checklist",
-        "Downloadable PDF Report",
+        "Full PageSpeed & HTML crawl",
+        "AI executive checklists (GPT-4o)",
+        "AEO & GEO citation builder",
+        "5 location-specific page templates",
+        "Priority Slack/Email support",
+        "Downloadable PDF white-labels",
       ],
-      buttonText: "Get Premium Audit",
+      buttonText: "Try Pro Free",
       href: "/audit/?plan=premium",
       popular: true,
     },
     {
-      name: "Growth Agency Plan",
-      price: "$199",
-      desc: "Best for agencies who want to deploy high-speed Next.js location pages and custom SEO content campaigns.",
+      name: "Enterprise Growth",
+      price: "$299",
+      desc: "Complete organic dominance package. Direct developer integrations, custom entity mapping, and headless hosting solutions.",
       features: [
-        "5 Premium AI Audits / mo",
-        "1 Custom Location-Target Landing Page",
-        "AEO/GEO citation strategy setup",
-        "Monthly rankings & search reports",
-        "Email & slack direct support",
+        "Unlimited custom crawlers",
+        "Static Next.js migration setup",
+        "JSON-LD Org schema graphs",
+        "Unlimited local page targets",
+        "1-on-1 monthly consultations",
+        "Direct database integration API",
       ],
-      buttonText: "Schedule Consultation",
-      href: "/#case-studies",
+      buttonText: "Go Enterprise",
+      href: "/checkout/",
       popular: false,
     },
   ];
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-16 sm:py-24 relative isolate">
+    <div className="bg-zinc-950 min-h-screen py-16 sm:py-24 relative isolate overflow-x-hidden">
       {/* Glow effect */}
       <div className="absolute top-10 right-10 -z-10 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl" />
       <div className="absolute bottom-10 left-10 -z-10 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-3xl" />
@@ -239,52 +241,97 @@ export default function ServicesClient() {
           {pricingPlans.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-3xl bg-zinc-900/40 p-8 border backdrop-blur-md flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 ${
+              className={`rounded-2xl bg-zinc-900/40 border backdrop-blur-md flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 relative overflow-hidden ${
                 plan.popular
-                  ? "border-violet-500/50 relative shadow-xl shadow-violet-500/5"
-                  : "border-zinc-800/80"
+                  ? "border-t-4 border-t-green-500 border-x-zinc-800 border-b-zinc-800 shadow-2xl shadow-cyan-400/5"
+                  : "border-t-4 border-t-emerald-450 border-x-zinc-800 border-b-zinc-800"
               }`}
             >
-              {plan.popular && (
-                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-1 text-xxs font-bold uppercase tracking-wider text-white">
-                  Most Popular
+              {/* Diagonal Ribbon Offer */}
+              <div className="absolute top-0 right-0 h-20 w-20 overflow-hidden select-none pointer-events-none">
+                <div className={`absolute top-3 -right-7 w-24 rotate-45 py-0.5 text-center text-[7px] font-black uppercase tracking-widest text-white shadow-sm bg-gradient-to-r ${
+                  plan.popular ? "from-orange-600 to-red-500" : "from-blue-600 to-blue-500"
+                }`}>
+                  Offer
                 </div>
-              )}
-              <div className="space-y-6">
+              </div>
+
+              <div className="p-8 space-y-6 text-left flex-grow">
+                {/* Badge for Popular */}
+                {plan.popular && (
+                  <div className="inline-flex items-center gap-1 rounded-md border border-green-500/20 bg-green-500/5 px-2 py-0.5 text-[9px] font-bold text-green-500 uppercase tracking-wide">
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+                    </svg>
+                    Most Popular
+                  </div>
+                )}
+
                 <div>
-                  <h3 className="text-lg font-bold text-white">{plan.name}</h3>
-                  <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{plan.desc}</p>
+                  <h3 className="text-xl font-extrabold text-white">{plan.name}</h3>
                 </div>
-                <div className="flex items-baseline text-white">
-                  <span className="text-4xl font-extrabold tracking-tight">{plan.price}</span>
-                  {plan.price !== "Free" && <span className="ml-1 text-sm font-semibold text-zinc-500">/report</span>}
-                </div>
-                <div className="h-px bg-zinc-850" />
+
+                {/* Features List */}
                 <ul className="space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5 text-xs text-zinc-400">
-                      <svg className="h-4.5 w-4.5 text-violet-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg className="h-4.5 w-4.5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                       <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
+
+                {/* Price */}
+                <div className="flex items-baseline text-white pt-2 border-t border-zinc-800/40">
+                  <span className="text-3xl font-extrabold tracking-tight">
+                    {plan.price === "Free" ? "Free" : `US${plan.price}`}
+                  </span>
+                  {plan.price !== "Free" && <span className="ml-1 text-[10px] font-semibold text-zinc-500">/month (billed yearly)</span>}
+                </div>
+
+                {/* Description */}
+                <div>
+                  <p className="text-xs text-zinc-500 leading-relaxed font-medium">{plan.desc}</p>
+                </div>
               </div>
-              <div className="mt-8">
+
+              {/* Action Buttons */}
+              <div className="px-8 pb-8 space-y-4">
                 <Link
                   href={plan.href}
-                  className={`flex w-full items-center justify-center rounded-xl py-3 text-xs font-semibold transition-all ${
+                  className={`flex w-full items-center justify-center rounded-xl py-3.5 text-xs font-bold transition-all hover:scale-[1.01] active:scale-[0.99] shadow-md ${
                     plan.popular
-                      ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-lg hover:shadow-violet-500/10"
-                      : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                      ? "bg-gradient-to-r from-indigo-600 to-cyan-500 text-white hover:from-indigo-500 hover:to-cyan-400 shadow-indigo-600/25"
+                      : "bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-600/15"
                   }`}
                 >
                   {plan.buttonText}
                 </Link>
+                <div className="text-center">
+                  <button className="text-[10px] font-bold text-zinc-500 hover:text-cyan-400 transition-colors uppercase tracking-wider cursor-pointer">
+                    See more
+                  </button>
+                </div>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Localized SEO Target Cities Banner */}
+        <div className="mx-auto max-w-4xl mt-16 text-center border-t border-zinc-900 pt-8 px-4">
+          <p className="text-xs text-zinc-500 leading-relaxed">
+            Our SEO services and GEO algorithms are specifically customized for major local markets including{" "}
+            <Link href="/seo-services/new-york/" className="text-zinc-400 hover:text-violet-400 font-semibold transition-colors">New York</Link>,{" "}
+            <Link href="/seo-services/los-angeles/" className="text-zinc-400 hover:text-violet-400 font-semibold transition-colors">Los Angeles</Link>,{" "}
+            <Link href="/seo-services/chicago/" className="text-zinc-400 hover:text-violet-400 font-semibold transition-colors">Chicago</Link>,{" "}
+            <Link href="/seo-services/houston/" className="text-zinc-400 hover:text-violet-400 font-semibold transition-colors">Houston</Link>,{" "}
+            <Link href="/seo-services/austin/" className="text-zinc-400 hover:text-violet-400 font-semibold transition-colors">Austin</Link>, and other business clusters.{" "}
+            <Link href="/seo-services/" className="text-violet-400 hover:text-violet-300 font-bold underline transition-colors">
+              Explore All USA Locations →
+            </Link>
+          </p>
         </div>
       </div>
     </div>

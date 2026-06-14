@@ -16,6 +16,7 @@ import {
 import {
   getAllPosts,
   addPost,
+  updatePost,
   deletePost,
   resetToDefaultPosts
 } from "@/utils/postsStore";
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
 
   // Blog CMS States
   const [posts, setPosts] = useState([]);
+  const [editingPostId, setEditingPostId] = useState(null);
   const [postTitle, setPostTitle] = useState("");
   const [postSlug, setPostSlug] = useState(""); // Customizable slug state
   const [postDesc, setPostDesc] = useState("");
@@ -56,17 +58,20 @@ export default function AdminDashboard() {
   const [postFeatured, setPostFeatured] = useState(false);
   const [blogSuccess, setBlogSuccess] = useState("");
   const [blogError, setBlogError] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [blogSearch, setBlogSearch] = useState("");
   const ckeditorRef = useRef(null); // Holds the CKEditor instance
 
-  // Auto-generate slug when title changes
+  // Auto-generate slug when title changes (only when creating a new post)
   useEffect(() => {
+    if (editingPostId) return;
     const cleaned = postTitle
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPostSlug(cleaned);
-  }, [postTitle]);
+  }, [postTitle, editingPostId]);
 
   // Filter & Search States
   const [search, setSearch] = useState("");
@@ -142,6 +147,10 @@ export default function AdminDashboard() {
     const file = e.target.files[0];
     if (!file) return;
 
+    setBlogError("");
+    setBlogSuccess("");
+    setIsUploadingImage(true);
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
@@ -164,9 +173,40 @@ export default function AdminDashboard() {
 
         ctx.drawImage(img, x, y, newWidth, newHeight);
         const compressedBase64 = canvas.toDataURL("image/webp", 0.75);
-        setPostFeaturedImage(compressedBase64);
+
+        // Upload to server to get clean URL
+        fetch("/api/uploads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: compressedBase64, mimeType: "image/webp" })
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("Upload request failed");
+            return res.json();
+          })
+          .then((data) => {
+            if (data.error) throw new Error(data.error);
+            setPostFeaturedImage(data.url);
+          })
+          .catch((err) => {
+            console.error("Failed to upload image:", err);
+            setBlogError(`Image upload failed: ${err.message}. Saving as local image data instead.`);
+            // Fallback: save as raw Base64 if API fails
+            setPostFeaturedImage(compressedBase64);
+          })
+          .finally(() => {
+            setIsUploadingImage(false);
+          });
+      };
+      img.onerror = () => {
+        setBlogError("Failed to parse the selected image file.");
+        setIsUploadingImage(false);
       };
       img.src = event.target.result;
+    };
+    reader.onerror = () => {
+      setBlogError("Failed to read the selected image file.");
+      setIsUploadingImage(false);
     };
     reader.readAsDataURL(file);
   };
@@ -190,50 +230,114 @@ export default function AdminDashboard() {
       return;
     }
 
-    try {
-      addPost({
-        title: postTitle,
-        slug: postSlug,
-        desc: postDesc,
-        content: richContent,
-        featuredImage: postFeaturedImage,
-        category: finalCategory,
-        author: postAuthor,
-        featured: postFeatured,
-      }).then(() => {
-        setPostTitle("");
-        setPostSlug("");
-        setPostDesc("");
-        setPostFeaturedImage("");
-        setPostContent("");
-        setCustomCategory("");
-        setPostCategory("Core Updates");
-        if (ckeditorRef.current) {
-          ckeditorRef.current.setData("");
-        }
-        setPostFeatured(false);
-        setBlogSuccess("Article published successfully and is now live on the /news page!");
-        refreshPosts();
-      }).catch(err => {
-        setBlogError(`Publish failed: ${err.message}`);
-      });
-    } catch (err) {
-      setBlogError(`Publish failed: ${err.message}`);
+    const payload = {
+      title: postTitle,
+      slug: postSlug,
+      desc: postDesc,
+      content: richContent,
+      featuredImage: postFeaturedImage,
+      category: finalCategory,
+      author: postAuthor,
+      featured: postFeatured,
+    };
+
+    if (editingPostId) {
+      updatePost(editingPostId, payload)
+        .then(() => {
+          setEditingPostId(null);
+          setPostTitle("");
+          setPostSlug("");
+          setPostDesc("");
+          setPostFeaturedImage("");
+          setPostContent("");
+          setCustomCategory("");
+          setPostCategory("Core Updates");
+          if (ckeditorRef.current) {
+            ckeditorRef.current.setData("");
+          }
+          setPostFeatured(false);
+          setBlogSuccess("Article updated successfully and changes are live!");
+          refreshPosts();
+        })
+        .catch(err => {
+          setBlogError(`Update failed: ${err.message}`);
+        });
+    } else {
+      addPost(payload)
+        .then(() => {
+          setPostTitle("");
+          setPostSlug("");
+          setPostDesc("");
+          setPostFeaturedImage("");
+          setPostContent("");
+          setCustomCategory("");
+          setPostCategory("Core Updates");
+          if (ckeditorRef.current) {
+            ckeditorRef.current.setData("");
+          }
+          setPostFeatured(false);
+          setBlogSuccess("Article published successfully and is now live on the /news page!");
+          refreshPosts();
+        })
+        .catch(err => {
+          setBlogError(`Publish failed: ${err.message}`);
+        });
     }
+  };
+
+  const handleEditPost = (post) => {
+    setBlogSuccess("");
+    setBlogError("");
+    setEditingPostId(post.id);
+    setPostTitle(post.title);
+    setPostSlug(post.slug);
+    setPostDesc(post.desc);
+    setPostFeaturedImage(post.featuredImage || "");
+    setPostAuthor(post.author || "Martin");
+    setPostFeatured(!!post.featured);
+
+    const defaultCategories = ["Core Updates", "AI Search", "Local SEO", "Technical Guides"];
+    if (defaultCategories.includes(post.category)) {
+      setPostCategory(post.category);
+      setCustomCategory("");
+    } else {
+      setPostCategory("custom");
+      setCustomCategory(post.category);
+    }
+
+    if (ckeditorRef.current) {
+      ckeditorRef.current.setData(post.content || "");
+    } else {
+      setPostContent(post.content || "");
+    }
+
+    const formElement = document.getElementById("blog-editor-form");
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null);
+    setPostTitle("");
+    setPostSlug("");
+    setPostDesc("");
+    setPostFeaturedImage("");
+    setPostContent("");
+    setCustomCategory("");
+    setPostCategory("Core Updates");
+    if (ckeditorRef.current) {
+      ckeditorRef.current.setData("");
+    }
+    setPostFeatured(false);
+    setBlogSuccess("");
+    setBlogError("");
   };
 
   const handleDeletePost = (id) => {
     if (confirm("Are you sure you want to delete this news article?")) {
       deletePost(id).then(() => {
         refreshPosts();
-      }).catch(console.error);
-    }
-  };
-
-  const handleResetPosts = () => {
-    if (confirm("This will overwrite custom posts and reset to the 5 default news articles. Proceed?")) {
-      resetToDefaultPosts().then((reset) => {
-        setPosts(reset);
       }).catch(console.error);
     }
   };
@@ -548,7 +652,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-8 px-4 sm:px-6 lg:px-8 relative isolate">
+    <div className="bg-zinc-950 min-h-screen py-8 px-4 sm:px-6 lg:px-8 relative isolate overflow-x-hidden">
       {/* Background ambient glow */}
       <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
@@ -1248,41 +1352,7 @@ export default function AdminDashboard() {
               </form>
             </div>
 
-            {/* Quick database operations (4 columns) */}
-            <div className="lg:col-span-4 rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-6">
-              <div className="space-y-1">
-                <h3 className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider">
-                  ⚠️ Danger Zone
-                </h3>
-                <p className="text-[10px] text-zinc-500 leading-relaxed">
-                  Perform reset sweep operations or delete the local storage tables.
-                </p>
-              </div>
 
-              <div className="space-y-3 pt-4 border-t border-zinc-850/60">
-                <button
-                  onClick={handleResetMockData}
-                  className="w-full rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 py-3 text-xs font-semibold transition-all cursor-pointer"
-                >
-                  Seed / Reset Mock Data
-                </button>
-                <p className="text-[9px] text-zinc-650 leading-normal pl-1">
-                  Resets database to 12 pre-configured mock leads with staggered calendar dates for demo charts display.
-                </p>
-
-                <div className="h-[1px] bg-zinc-850 my-2" />
-
-                <button
-                  onClick={handleClearAllData}
-                  className="w-full rounded-xl bg-rose-950/10 hover:bg-rose-950/20 border border-rose-900/30 text-rose-400 py-3 text-xs font-semibold transition-all cursor-pointer"
-                >
-                  Clear All Database Records
-                </button>
-                <p className="text-[9px] text-zinc-650 leading-normal pl-1">
-                  Wipes out all local leads. Ensure you exported a CSV backup first.
-                </p>
-              </div>
-            </div>
 
           </div>
         )}
@@ -1292,11 +1362,15 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
             
             {/* Publisher Form (8 columns) */}
-            <div className="lg:col-span-8 rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
+            <div id="blog-editor-form" className="lg:col-span-8 rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
               <div className="space-y-1.5">
-                <h2 className="text-lg font-bold text-white">Create New Article</h2>
+                <h2 className="text-lg font-bold text-white">
+                  {editingPostId ? "Edit Article" : "Create New Article"}
+                </h2>
                 <p className="text-xs text-zinc-550 leading-relaxed">
-                  Compose your update, choose a category, and publish it instantly to your news page.
+                  {editingPostId
+                    ? "Modify the selected article's details and content, then click Save Changes."
+                    : "Compose your update, choose a category, and publish it instantly to your news page."}
                 </p>
               </div>
 
@@ -1412,7 +1486,7 @@ export default function AdminDashboard() {
                         Option B: Paste Image URL
                       </label>
                       <input
-                        type="url"
+                        type="text"
                         placeholder="https://images.unsplash.com/photo-..."
                         value={postFeaturedImage}
                         onChange={(e) => setPostFeaturedImage(e.target.value)}
@@ -1420,6 +1494,13 @@ export default function AdminDashboard() {
                       />
                     </div>
                   </div>
+
+                  {isUploadingImage && (
+                    <div className="mt-2 rounded-xl border border-zinc-850 p-6 bg-zinc-950/40 flex flex-col items-center justify-center gap-2.5 animate-pulse">
+                      <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-[10px] text-zinc-500 font-semibold">Uploading &amp; Optimizing cover image...</span>
+                    </div>
+                  )}
 
                   {postFeaturedImage && (
                     <div className="mt-2 rounded-xl overflow-hidden border border-zinc-800 relative h-40 bg-zinc-950 flex items-center justify-center">
@@ -1501,12 +1582,23 @@ export default function AdminDashboard() {
                       ⚠️ {blogError}
                     </p>
                   )}
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-                  >
-                    🚀 Publish News Post Live
-                  </button>
+                  <div className="flex gap-3">
+                    {editingPostId && (
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="rounded-xl border border-zinc-750 bg-zinc-900 px-5 py-3 text-xs font-semibold text-zinc-400 hover:text-white transition-all cursor-pointer"
+                      >
+                        Cancel Edit
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="flex-grow rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                    >
+                      {editingPostId ? "💾 Save Changes" : "🚀 Publish News Post Live"}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -1519,69 +1611,153 @@ export default function AdminDashboard() {
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-white">Active News Articles</h3>
                   <p className="text-xxs text-zinc-550 leading-normal">
-                    Management directory of active publications. You can delete posts instantly.
+                    Management directory of active publications. You can edit or delete posts instantly.
                   </p>
+                </div>
+
+                <div className="flex items-center gap-2 w-full bg-zinc-955 px-3 py-2 rounded-xl border border-zinc-850 focus-within:border-violet-500 transition-all mt-2">
+                  <svg
+                    className="h-3 w-3 text-zinc-650 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search articles by title..."
+                    value={blogSearch}
+                    onChange={(e) => setBlogSearch(e.target.value)}
+                    className="w-full bg-transparent border-0 p-0 text-xxs text-white placeholder-zinc-600 focus:outline-none focus:ring-0"
+                  />
+                  {blogSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setBlogSearch("")}
+                      className="text-[9px] font-bold text-zinc-500 hover:text-white flex-shrink-0"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-zinc-850/60">
-                  {posts.length > 0 ? (
-                    posts.map((post) => (
-                      <div
-                        key={post.id}
-                        className="rounded-xl border border-zinc-850/80 bg-zinc-950/40 p-3.5 flex justify-between items-center gap-4 hover:border-zinc-800 transition-all relative group"
-                      >
-                        <div className="flex items-center gap-3 flex-grow min-w-0">
-                          {post.featuredImage ? (
-                            <img
-                              src={post.featuredImage}
-                              alt=""
-                              className="w-10 h-7 object-cover rounded border border-zinc-800 flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-7 bg-zinc-900 rounded border border-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px]">
-                              🖼️
+                  {(() => {
+                    const filtered = posts.filter(
+                      (p) =>
+                        !blogSearch ||
+                        p.title.toLowerCase().includes(blogSearch.toLowerCase()) ||
+                        p.slug.toLowerCase().includes(blogSearch.toLowerCase())
+                    );
+                    if (filtered.length > 0) {
+                      return filtered.map((post) => (
+                        <div
+                          key={post.id}
+                          className="rounded-xl border border-zinc-850/80 bg-zinc-950/40 p-3.5 flex justify-between items-center gap-4 hover:border-zinc-800 transition-all relative group"
+                        >
+                          <div className="flex items-center gap-3 flex-grow min-w-0">
+                            {post.featuredImage ? (
+                              <img
+                                src={post.featuredImage}
+                                alt=""
+                                className="w-10 h-7 object-cover rounded border border-zinc-800 flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-7 bg-zinc-900 rounded border border-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px]">
+                                🖼️
+                              </div>
+                            )}
+                            <div className="min-w-0 space-y-0.5 text-left">
+                              <h4 className="text-xs font-bold text-white line-clamp-1">{post.title}</h4>
+                              <p className="text-[9px] font-mono text-zinc-500">{post.date}</p>
                             </div>
-                          )}
-                          <div className="min-w-0 space-y-0.5 text-left">
-                            <h4 className="text-xs font-bold text-white line-clamp-1">{post.title}</h4>
-                            <p className="text-[9px] font-mono text-zinc-500">{post.date}</p>
+                          </div>
+
+                          <div className="flex gap-1.5 flex-shrink-0">
+                            <button
+                              onClick={() => handleEditPost(post)}
+                              className="text-xxs text-violet-400 hover:text-violet-300 font-bold border border-violet-950/20 hover:border-violet-900/40 hover:bg-violet-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+                              title="Edit Post"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              className="text-xxs text-rose-500 hover:text-rose-400 font-bold border border-rose-950/20 hover:border-rose-900/40 hover:bg-rose-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+                              title="Delete Post"
+                            >
+                              Delete
+                            </button>
                           </div>
                         </div>
-
-                        <button
-                          onClick={() => handleDeletePost(post.id)}
-                          className="text-xxs text-rose-500 hover:text-rose-400 font-bold border border-rose-950/20 hover:border-rose-900/40 hover:bg-rose-950/10 px-2.5 py-1.5 rounded-md transition-all flex-shrink-0 cursor-pointer"
-                          title="Delete Post"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12 text-zinc-500 text-xs">
-                      No published articles in local storage.
-                    </div>
-                  )}
+                      ));
+                    } else {
+                      return (
+                        <div className="text-center py-12 text-zinc-550 text-xs">
+                          {blogSearch ? `No articles matching "${blogSearch}"` : "No published articles in database."}
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
               </div>
 
-              {/* Maintenance Tools */}
-              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4">
+              {/* Sidebar Stats & SEO Checklist (fills the RHS blank space) */}
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-6">
                 <div className="space-y-1">
-                  <h3 className="text-xs uppercase font-extrabold text-zinc-400 tracking-wider">
-                    🔄 Blog Database Maintenance
-                  </h3>
-                  <p className="text-[10px] text-zinc-550 leading-relaxed">
-                    Reset local blog configurations or clean up custom articles list.
+                  <h3 className="text-sm font-bold text-white">CMS Stats &amp; SEO Checklist</h3>
+                  <p className="text-xxs text-zinc-550 leading-normal">
+                    Quick stats and SEO guidelines for publishing.
                   </p>
                 </div>
-                <div className="pt-3 border-t border-zinc-850/60">
-                  <button
-                    onClick={handleResetPosts}
-                    className="w-full rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 py-2.5 text-xs font-semibold transition-all cursor-pointer"
-                  >
-                    Reset to Default 5 Articles
-                  </button>
+
+                {/* Mini Stats */}
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-zinc-850/60">
+                  <div className="bg-zinc-950/40 border border-zinc-850/60 p-3 rounded-xl">
+                    <span className="text-[10px] text-zinc-500 uppercase font-bold block">Total Posts</span>
+                    <span className="text-lg font-extrabold text-violet-400 block mt-0.5">{posts.length}</span>
+                  </div>
+                  <div className="bg-zinc-950/40 border border-zinc-850/60 p-3 rounded-xl">
+                    <span className="text-[10px] text-zinc-500 uppercase font-bold block">Featured Slot</span>
+                    <span className="text-xxs font-semibold text-emerald-400 block mt-1.5 line-clamp-1" title={posts.find(p => p.featured)?.title || "None"}>
+                      {posts.find(p => p.featured)?.title || "None"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* SEO Checklist */}
+                <div className="space-y-3 pt-4 border-t border-zinc-850/60">
+                  <span className="text-[10px] uppercase font-bold text-zinc-450 tracking-wider block">
+                    📋 SEO Publishing Playbook
+                  </span>
+                  <ul className="space-y-2 text-xxs text-zinc-400 pl-0.5">
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
+                      <span>URL slugs should be lowercase, using hyphens (no spaces).</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
+                      <span>Short description ideal length: 120-160 characters.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
+                      <span>Organize long-form body text with Heading H2/H3 tags.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
+                      <span>Resize or compress large images (WebP is recommended).</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
+                      <span>Add internal anchor links to drive visitor conversions.</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
 
@@ -1593,7 +1769,7 @@ export default function AdminDashboard() {
         {/* ==================== MODAL DIALOG: LEAD DETAILS ==================== */}
         {selectedLead && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs">
-            <div className="w-full max-w-2xl rounded-3xl border border-zinc-800 bg-zinc-900/95 p-6 sm:p-8 space-y-6 relative shadow-2xl animate-scale-up text-left max-h-[90vh] overflow-y-auto">
+            <div className="w-full max-w-2xl rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8 space-y-6 relative shadow-2xl animate-scale-up text-left max-h-[90vh] overflow-y-auto">
               
               <button
                 onClick={() => setSelectedLead(null)}

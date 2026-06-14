@@ -54,7 +54,7 @@ export default function PostDetailClient({ slug, initialPost }) {
   }
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-12 sm:py-20 relative isolate text-left">
+    <div className="bg-zinc-950 min-h-screen py-12 sm:py-20 relative isolate text-left overflow-x-hidden">
       {/* Decorative Glows */}
       <div className="absolute top-1/4 left-1/3 -z-10 w-96 h-96 bg-fuchsia-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-1/4 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
@@ -76,13 +76,13 @@ export default function PostDetailClient({ slug, initialPost }) {
 
         {/* Hero Cover Image */}
         {post.featuredImage ? (
-          <div className="relative h-64 sm:h-[400px] overflow-hidden rounded-3xl border border-zinc-880 mb-8">
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-880 mb-8 bg-zinc-900/10">
             <img
               src={post.featuredImage}
               alt={post.title}
-              className="w-full h-full object-cover"
+              className="w-full h-auto block rounded-3xl"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/50 via-transparent to-transparent rounded-3xl" />
             <span className="absolute top-5 left-5 rounded-full bg-violet-600/90 backdrop-blur-sm px-3 py-1 text-[10px] font-bold text-white uppercase tracking-wider">
               {post.category}
             </span>

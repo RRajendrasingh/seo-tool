@@ -87,6 +87,16 @@ async function init() {
   `);
   console.log("✅ Created 'leads' table.");
 
+  // 2.5. Create uploads table
+  await connection.execute(`
+    CREATE TABLE IF NOT EXISTS uploads (
+      id VARCHAR(50) PRIMARY KEY,
+      data LONGTEXT NOT NULL,
+      mimeType VARCHAR(50) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+  console.log("✅ Created 'uploads' table.");
+
   // 3. Pre-seed default blog posts if table is empty
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM posts");
   if (rows && rows[0] && rows[0].count === 0) {
