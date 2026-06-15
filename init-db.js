@@ -97,6 +97,106 @@ async function init() {
   `);
   console.log("✅ Created 'uploads' table.");
 
+  // 2.6. Create users table
+  await connection.execute(`
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(50) PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255),
+      full_name VARCHAR(100) NOT NULL,
+      auth_provider VARCHAR(50) DEFAULT 'local',
+      provider_id VARCHAR(255),
+      email_verified BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+  console.log("✅ Created 'users' table.");
+
+  // Alter users table to add subscription and agency columns
+  try {
+    await connection.execute(`
+      ALTER TABLE users 
+      ADD COLUMN subscription_tier VARCHAR(50) DEFAULT 'free',
+      ADD COLUMN subscription_status VARCHAR(50) DEFAULT 'inactive',
+      ADD COLUMN agency_name VARCHAR(255) DEFAULT NULL,
+      ADD COLUMN agency_logo_id VARCHAR(50) DEFAULT NULL
+    `);
+    console.log("✅ Updated 'users' table columns.");
+  } catch (err) {
+    console.log("ℹ️ 'users' table is already up to date or has new columns.");
+  }
+
+  // 2.7. Create purchased_audits table
+  await connection.execute(`
+    CREATE TABLE IF NOT EXISTS purchased_audits (
+      id VARCHAR(50) PRIMARY KEY,
+      user_id VARCHAR(50) NOT NULL,
+      domain VARCHAR(255) NOT NULL,
+      pack_type VARCHAR(50) NOT NULL,
+      cms_platform VARCHAR(100) DEFAULT NULL,
+      business_niche VARCHAR(100) DEFAULT NULL,
+      target_audience VARCHAR(100) DEFAULT NULL,
+      purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+  console.log("✅ Created 'purchased_audits' table.");
+
+  // 2.8. Create monitored_domains table
+  await connection.execute(`
+    CREATE TABLE IF NOT EXISTS monitored_domains (
+      id VARCHAR(50) PRIMARY KEY,
+      user_id VARCHAR(50) NOT NULL,
+      domain VARCHAR(255) NOT NULL,
+      cms_platform VARCHAR(100) DEFAULT NULL,
+      business_niche VARCHAR(100) DEFAULT NULL,
+      target_audience VARCHAR(100) DEFAULT NULL,
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+  console.log("✅ Created 'monitored_domains' table.");
+
+  // 2.9. Create audit_history table
+  await connection.execute(`
+    CREATE TABLE IF NOT EXISTS audit_history (
+      id VARCHAR(50) PRIMARY KEY,
+      domain VARCHAR(255) NOT NULL,
+      performance_score INT NOT NULL DEFAULT 0,
+      accessibility_score INT NOT NULL DEFAULT 0,
+      best_practices_score INT NOT NULL DEFAULT 0,
+      seo_score INT NOT NULL DEFAULT 0,
+      scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+  console.log("✅ Created 'audit_history' table.");
+
+  // Seed mock audit history if table is empty
+  const [historyRows] = await connection.execute("SELECT COUNT(*) as count FROM audit_history");
+  if (historyRows && historyRows[0] && historyRows[0].count === 0) {
+    console.log("Seeding mock audit history data for trend charts...");
+    const mockHistory = [
+      { id: "h1", domain: "http://localhost:3000", performance_score: 91, accessibility_score: 93, best_practices_score: 90, seo_score: 94, scanned_at: "2026-05-25 08:00:00" },
+      { id: "h2", domain: "http://localhost:3000", performance_score: 92, accessibility_score: 93, best_practices_score: 92, seo_score: 95, scanned_at: "2026-06-01 08:00:00" },
+      { id: "h3", domain: "http://localhost:3000", performance_score: 94, accessibility_score: 95, best_practices_score: 92, seo_score: 96, scanned_at: "2026-06-08 08:00:00" },
+      { id: "h4", domain: "http://localhost:3000", performance_score: 96, accessibility_score: 96, best_practices_score: 95, seo_score: 96, scanned_at: "2026-06-15 08:00:00" },
+      { id: "h5", domain: "https://intellent-seo.com", performance_score: 83, accessibility_score: 85, best_practices_score: 80, seo_score: 85, scanned_at: "2026-05-25 08:00:00" },
+      { id: "h6", domain: "https://intellent-seo.com", performance_score: 85, accessibility_score: 85, best_practices_score: 82, seo_score: 86, scanned_at: "2026-06-01 08:00:00" },
+      { id: "h7", domain: "https://intellent-seo.com", performance_score: 86, accessibility_score: 88, best_practices_score: 85, seo_score: 88, scanned_at: "2026-06-08 08:00:00" },
+      { id: "h8", domain: "https://intellent-seo.com", performance_score: 88, accessibility_score: 88, best_practices_score: 85, seo_score: 88, scanned_at: "2026-06-15 08:00:00" }
+    ];
+
+    for (const item of mockHistory) {
+      await connection.execute(
+        "INSERT INTO audit_history (id, domain, performance_score, accessibility_score, best_practices_score, seo_score, scanned_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [item.id, item.domain, item.performance_score, item.accessibility_score, item.best_practices_score, item.seo_score, item.scanned_at]
+      );
+    }
+    console.log("✅ Seeded mock audit history successfully!");
+  }
+
   // 3. Pre-seed default blog posts if table is empty
   const [rows] = await connection.execute("SELECT COUNT(*) as count FROM posts");
   if (rows && rows[0] && rows[0].count === 0) {

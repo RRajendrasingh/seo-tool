@@ -12,7 +12,16 @@ const getStripe = () => {
 
 export async function POST(req) {
   try {
-    const { url, name, email, phone } = await req.json();
+    const { 
+      url, 
+      name, 
+      email, 
+      phone, 
+      plan, 
+      cmsPlatform, 
+      businessNiche, 
+      targetAudience 
+    } = await req.json();
 
     if (!url) {
       return NextResponse.json({ error: "Target website URL is required" }, { status: 400 });
@@ -27,6 +36,27 @@ export async function POST(req) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+    let planName = "Premium Executive SEO Audit Report";
+    let planDescription = `Comprehensive performance and SEO analysis checklist for ${url}`;
+    let planAmount = 2900; // Default $29.00
+    let isSubscription = false;
+
+    if (plan === "multi") {
+      planName = "3-Page Multi-Page SEO Pack";
+      planDescription = `Deep audit covering up to 3 core pages on ${url}`;
+      planAmount = 5900;
+    } else if (plan === "weekly") {
+      planName = "Weekly SEO Monitoring Subscription";
+      planDescription = `Background scan every Monday with alerts for ${url}`;
+      planAmount = 4900;
+      isSubscription = true;
+    } else if (plan === "agency") {
+      planName = "White-Label Agency License";
+      planDescription = `Up to 5 monitored domains with custom PDF branding templates for ${url}`;
+      planAmount = 9900;
+      isSubscription = true;
+    }
+
     // Create a new checkout session with Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -35,23 +65,28 @@ export async function POST(req) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Premium Executive SEO Audit Report",
-              description: `Comprehensive multi-engine performance and SEO analysis checklist for ${url}`,
+              name: planName,
+              description: planDescription,
             },
-            unit_amount: 2900, // $29.00 in cents
+            unit_amount: planAmount, // in cents
+            recurring: isSubscription ? { interval: "month" } : undefined,
           },
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode: isSubscription ? "subscription" : "payment",
       success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&url=${encodeURIComponent(url)}`,
-      cancel_url: `${siteUrl}/checkout?url=${encodeURIComponent(url)}`,
+      cancel_url: `${siteUrl}/checkout?url=${encodeURIComponent(url)}&plan=${plan || "pack"}`,
       customer_email: email || undefined,
       metadata: {
         url,
         name,
         email,
         phone,
+        plan: plan || "single",
+        cmsPlatform: cmsPlatform || "",
+        businessNiche: businessNiche || "",
+        targetAudience: targetAudience || ""
       },
     });
 

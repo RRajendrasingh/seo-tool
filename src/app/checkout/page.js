@@ -11,27 +11,48 @@ function CheckoutContent() {
   const email = searchParams.get("email") || "";
   const name = searchParams.get("name") || "";
   const phone = searchParams.get("phone") || "";
+  const planParam = searchParams.get("plan") || "pack";
 
-  // Payment method tab: 'card' | 'wallet'
+  // Initial plan matching parameters
+  const initialPlan = planParam === "weekly" ? "weekly" : planParam === "agency" ? "agency" : planParam === "multi" ? "multi" : "single";
+  
+  // States
+  const [selectedPlan, setSelectedPlan] = useState(initialPlan);
+  const [cmsPlatform, setCmsPlatform] = useState("");
+  const [businessNiche, setBusinessNiche] = useState("");
+  const [targetAudience, setTargetAudience] = useState("");
+
   const [method, setMethod] = useState("card");
-
-  // Input states (prefilled from lead parameters)
   const [billingName, setBillingName] = useState(name || "");
   const [billingEmail, setBillingEmail] = useState(email || "");
 
-  // Checkout states: 'input' | 'processing' | 'success'
   const [checkoutState, setCheckoutState] = useState("input");
   const [loadingStep, setLoadingStep] = useState(0);
   const [paymentError, setPaymentError] = useState(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // UPI countdown timer
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+
+  const getPlanPrice = () => {
+    if (selectedPlan === "single") return 29;
+    if (selectedPlan === "multi") return 59;
+    if (selectedPlan === "weekly") return 49;
+    if (selectedPlan === "agency") return 99;
+    return 29;
+  };
+
+  const getPlanName = () => {
+    if (selectedPlan === "single") return "Single Page PDF Unlock";
+    if (selectedPlan === "multi") return "3-Page Multi-page Pack";
+    if (selectedPlan === "weekly") return "Weekly Monitoring Plan";
+    if (selectedPlan === "agency") return "White-Label Agency License";
+    return "Premium Report";
+  };
 
   const loadingSteps = [
     "Contacting secure servers...",
     "Securing transaction gateway...",
-    "Authorizing payment amount $29.00...",
+    `Authorizing payment amount $${getPlanPrice()}.00...`,
     "Generating premium audit credentials..."
   ];
 
@@ -58,7 +79,7 @@ function CheckoutContent() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Run payment processing simulation (Local Demo Bypass)
+  // Run payment processing simulation
   const startPaymentSimulation = () => {
     setPaymentError(null);
     setCheckoutState("processing");
@@ -70,7 +91,6 @@ function CheckoutContent() {
           return prev + 1;
         } else {
           clearInterval(stepInterval);
-          // Payment complete success
           setTimeout(() => {
             completeLocalCheckout();
           }, 800);
@@ -83,6 +103,10 @@ function CheckoutContent() {
   // Real Stripe Checkout Trigger
   const handleStripePay = async (e) => {
     e.preventDefault();
+    if (!cmsPlatform || !businessNiche || !targetAudience) {
+      setPaymentError("Please fill in the Step 1 Website Profile details first.");
+      return;
+    }
     setPaymentError(null);
     setIsRedirecting(true);
 
@@ -94,7 +118,11 @@ function CheckoutContent() {
           url, 
           name: billingName, 
           email: billingEmail, 
-          phone 
+          phone,
+          plan: selectedPlan,
+          cmsPlatform,
+          businessNiche,
+          targetAudience
         })
       });
 
@@ -105,7 +133,6 @@ function CheckoutContent() {
       }
 
       if (data.url) {
-        // Redirect browser to Stripe Checkout page
         window.location.href = data.url;
       } else {
         throw new Error("No redirection URL returned from Stripe.");
@@ -122,11 +149,15 @@ function CheckoutContent() {
   };
 
   const handleWalletPay = () => {
+    if (!cmsPlatform || !businessNiche || !targetAudience) {
+      setPaymentError("Please fill in the Step 1 Website Profile details first.");
+      return;
+    }
     startPaymentSimulation();
   };
 
   // Local bypass saving
-  const completeLocalCheckout = () => {
+  const completeLocalCheckout = async () => {
     const token = {
       paid: true,
       transactionId: "MOCK_TXN_" + Math.random().toString(36).substring(2, 11).toUpperCase(),
@@ -134,20 +165,42 @@ function CheckoutContent() {
       url: url,
       name: billingName || name,
       email: billingEmail || email,
-      phone: phone
+      phone: phone,
+      plan: selectedPlan,
+      cmsPlatform,
+      businessNiche,
+      targetAudience
     };
 
     try {
       localStorage.setItem(`premium_token_${url}`, JSON.stringify(token));
+      
+      // Write mock database updates
+      await fetch("/api/verify-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url,
+          email: billingEmail || email,
+          name: billingName || name,
+          plan: selectedPlan,
+          cmsPlatform,
+          businessNiche,
+          targetAudience
+        })
+      });
     } catch (e) {
-      console.error(e);
+      console.error("Mock DB session synchronization failed:", e);
     }
 
     setCheckoutState("success");
 
-    // Redirect to report
     setTimeout(() => {
-      router.push(`/audit/report?url=${encodeURIComponent(url)}`);
+      if (selectedPlan === "weekly" || selectedPlan === "agency") {
+        router.push("/dashboard");
+      } else {
+        router.push(`/audit/report?url=${encodeURIComponent(url)}`);
+      }
     }, 2000);
   };
 
@@ -164,13 +217,154 @@ function CheckoutContent() {
           
           {checkoutState === "input" && (
             <div className="space-y-6">
-              {/* Tabs */}
+              
+              {/* Step 1: Website Onboarding Profile */}
+              <div className="space-y-4 bg-zinc-950/40 p-5 rounded-xl border border-zinc-800 text-left">
+                <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
+                  Step 1: Tell us about your website
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-zinc-400 font-semibold block">CMS Platform</label>
+                    <select
+                      required
+                      value={cmsPlatform}
+                      onChange={(e) => setCmsPlatform(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="">Select Platform</option>
+                      <option value="wordpress">WordPress</option>
+                      <option value="shopify">Shopify</option>
+                      <option value="webflow">Webflow</option>
+                      <option value="wix">Wix / Squarespace</option>
+                      <option value="nextjs">Next.js / React</option>
+                      <option value="custom">Custom HTML/CSS</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-zinc-400 font-semibold block">Business Niche</label>
+                    <select
+                      required
+                      value={businessNiche}
+                      onChange={(e) => setBusinessNiche(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="">Select Niche</option>
+                      <option value="ecommerce">E-commerce</option>
+                      <option value="local">Local Business</option>
+                      <option value="saas">B2B / SaaS</option>
+                      <option value="agency">Agency</option>
+                      <option value="blog">Blog / Publisher</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-zinc-400 font-semibold block">Target Audience</label>
+                    <select
+                      required
+                      value={targetAudience}
+                      onChange={(e) => setTargetAudience(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="">Select Target</option>
+                      <option value="local">Local City</option>
+                      <option value="national">National Market</option>
+                      <option value="global">International</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Choose Your Plan */}
+              <div className="space-y-3 bg-zinc-950/40 p-5 rounded-xl border border-zinc-800 text-left">
+                <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
+                  Step 2: Choose Your Plan
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedPlan === "single" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                  }`}>
+                    <input
+                      type="radio"
+                      name="plan"
+                      value="single"
+                      checked={selectedPlan === "single"}
+                      onChange={() => setSelectedPlan("single")}
+                      className="mt-1"
+                    />
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-white block">Single Page PDF</span>
+                      <span className="text-[10px] text-zinc-400 block">Unlock 1 full report PDF download.</span>
+                      <span className="text-[11px] font-bold text-violet-400 block">$29 USD (one-time)</span>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedPlan === "multi" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                  }`}>
+                    <input
+                      type="radio"
+                      name="plan"
+                      value="multi"
+                      checked={selectedPlan === "multi"}
+                      onChange={() => setSelectedPlan("multi")}
+                      className="mt-1"
+                    />
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-white block">3-Page Audit Pack</span>
+                      <span className="text-[10px] text-zinc-400 block">Scan up to 3 core pages + PDF downloads.</span>
+                      <span className="text-[11px] font-bold text-violet-400 block">$59 USD (one-time)</span>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedPlan === "weekly" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                  }`}>
+                    <input
+                      type="radio"
+                      name="plan"
+                      value="weekly"
+                      checked={selectedPlan === "weekly"}
+                      onChange={() => setSelectedPlan("weekly")}
+                      className="mt-1"
+                    />
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-white block">Weekly Monitoring</span>
+                      <span className="text-[10px] text-zinc-400 block">Monday morning audits & alerts.</span>
+                      <span className="text-[11px] font-bold text-violet-400 block">$49 / month</span>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedPlan === "agency" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                  }`}>
+                    <input
+                      type="radio"
+                      name="plan"
+                      value="agency"
+                      checked={selectedPlan === "agency"}
+                      onChange={() => setSelectedPlan("agency")}
+                      className="mt-1"
+                    />
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-white block">White-Label Agency</span>
+                      <span className="text-[10px] text-zinc-400 block">Up to 5 domains + Custom branding (Name/Logo).</span>
+                      <span className="text-[11px] font-bold text-violet-400 block">$99 / month</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Step 3: Payment Method Tabs */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-4 border-b border-zinc-800 gap-4">
-                <h2 className="text-lg font-bold text-white">Payment Method</h2>
+                <h2 className="text-xs uppercase tracking-wider font-bold text-violet-400">Step 3: Payment Method</h2>
                 <div className="flex gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-850 w-full sm:w-auto justify-between sm:justify-start">
                   <button
                     onClick={() => setMethod("card")}
-                    className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${
                       method === "card"
                         ? "bg-violet-600 text-white shadow-md"
                         : "text-zinc-400 hover:text-white"
@@ -180,13 +374,13 @@ function CheckoutContent() {
                   </button>
                   <button
                     onClick={() => setMethod("wallet")}
-                    className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${
                       method === "wallet"
                         ? "bg-violet-600 text-white shadow-md"
                         : "text-zinc-400 hover:text-white"
                     }`}
                   >
-                    Google Pay / Apple Pay (Test)
+                    Wallet (Local Test)
                   </button>
                 </div>
               </div>
@@ -218,139 +412,78 @@ function CheckoutContent() {
                           {billingName || "Your Full Name"}
                         </span>
                       </div>
-                      <div className="space-y-0.5 text-right">
-                        <span className="text-[9px] uppercase tracking-wider text-zinc-400 block">Pricing</span>
-                        <span className="text-xxs font-mono font-semibold block">$29.00 USD</span>
+                      <div className="text-right">
+                        <span className="text-[9px] uppercase tracking-wider text-zinc-400 block">Expires</span>
+                        <span className="text-xxs font-semibold tracking-wide block">MM / YY</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Billing Details (Pre-fill Stripe checkout) */}
-                  <div className="space-y-3 pt-2">
-                    <div>
-                      <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
-                        Full Name
-                      </label>
+                  <div className="space-y-3.5 text-left">
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-zinc-400 font-semibold block">Billing Name</label>
                       <input
                         type="text"
                         required
-                        placeholder="e.g. John Doe"
+                        placeholder="Cardholder full name"
                         value={billingName}
                         onChange={(e) => setBillingName(e.target.value)}
-                        className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-violet-500"
                       />
                     </div>
-
-                    <div>
-                      <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
-                        Email Address
-                      </label>
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-zinc-400 font-semibold block">Email Address</label>
                       <input
                         type="email"
                         required
-                        placeholder="e.g. john@business.com"
+                        placeholder="name@company.com"
                         value={billingEmail}
                         onChange={(e) => setBillingEmail(e.target.value)}
-                        className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-violet-500"
                       />
                     </div>
                   </div>
 
-                  {/* Stripe key error notification */}
                   {paymentError && (
-                    <div className="border border-yellow-600/30 bg-yellow-600/5 rounded-xl p-4 space-y-3 text-left">
-                      <span className="text-xs font-bold text-yellow-400 block">⚠️ Stripe Gateway Offline</span>
-                      <p className="text-xxs text-zinc-400 leading-relaxed">
-                        {paymentError}
-                      </p>
-                      {paymentError.includes("keys are not configured") && (
-                        <button
-                          type="button"
-                          onClick={startPaymentSimulation}
-                          className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-zinc-950 rounded-lg text-xxs font-bold transition-all shadow-md"
-                        >
-                          Run Local Demo Simulation
-                        </button>
-                      )}
+                    <div className="p-3.5 rounded-xl border border-red-500/20 bg-red-500/5 text-xxs font-semibold text-red-400 text-left">
+                      ⚠️ {paymentError}
                     </div>
                   )}
 
                   <button
                     type="submit"
                     disabled={isRedirecting}
-                    className="w-full mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
+                    className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 py-3.5 text-xs font-bold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2"
                   >
-                    {isRedirecting ? "Connecting to Stripe checkout..." : "Proceed to Secure Stripe Checkout"}
+                    {isRedirecting ? (
+                      <>
+                        <div className="h-4.5 w-4.5 border-2 border-white/35 border-t-white rounded-full animate-spin" />
+                        <span>Redirecting to Stripe...</span>
+                      </>
+                    ) : (
+                      <span>Redirect to Secure Stripe Checkout</span>
+                    )}
                   </button>
                 </form>
               )}
 
-              {/* WALLET FLOW */}
+              {/* MOCK WALLET FLOW */}
               {method === "wallet" && (
-                <div className="space-y-6 flex flex-col items-center text-center">
-                  <div className="bg-white p-3 rounded-2xl shadow-xl flex items-center justify-center border-2 border-violet-500/20 relative">
-                    {/* Countdown indicator overlay */}
-                    {timeLeft <= 0 && (
-                      <div className="absolute inset-0 bg-white/95 rounded-2xl flex flex-col items-center justify-center p-4">
-                        <span className="text-xl">⚠️</span>
-                        <span className="text-xxs font-bold text-zinc-800 mt-1">Session Expired</span>
-                        <button
-                          onClick={() => setTimeLeft(300)}
-                          className="mt-2 px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all"
-                        >
-                          Generate New
-                        </button>
-                      </div>
-                    )}
-                    
-                    {/* Simulated QR Code SVG */}
-                    <svg width="150" height="150" viewBox="0 0 100 100" className="text-zinc-900">
-                      <rect width="100" height="100" fill="white" />
-                      
-                      {/* Corner Position Detection Anchors */}
-                      <rect x="5" y="5" width="25" height="25" fill="black" />
-                      <rect x="8" y="8" width="19" height="19" fill="white" />
-                      <rect x="12" y="12" width="11" height="11" fill="black" />
-
-                      <rect x="70" y="5" width="25" height="25" fill="black" />
-                      <rect x="73" y="8" width="19" height="19" fill="white" />
-                      <rect x="77" y="12" width="11" height="11" fill="black" />
-
-                      <rect x="5" y="70" width="25" height="25" fill="black" />
-                      <rect x="8" y="73" width="19" height="19" fill="white" />
-                      <rect x="12" y="77" width="11" height="11" fill="black" />
-
-                      {/* Small anchor */}
-                      <rect x="75" y="75" width="10" height="10" fill="black" />
-                      <rect x="77" y="77" width="6" height="6" fill="white" />
-                      <rect x="79" y="79" width="2" height="2" fill="black" />
-
-                      {/* Dummy QR Noise Pattern */}
-                      <rect x="35" y="5" width="5" height="10" fill="black" />
-                      <rect x="45" y="15" width="10" height="5" fill="black" />
-                      <rect x="60" y="10" width="5" height="15" fill="black" />
-                      <rect x="35" y="25" width="15" height="5" fill="black" />
-                      
-                      <rect x="5" y="35" width="10" height="5" fill="black" />
-                      <rect x="20" y="35" width="5" height="15" fill="black" />
-                      <rect x="40" y="35" width="20" height="5" fill="black" />
-                      <rect x="65" y="30" width="5" height="20" fill="black" />
-                      <rect x="80" y="35" width="15" height="5" fill="black" />
-
-                      <rect x="30" y="45" width="5" height="20" fill="black" />
-                      <rect x="45" y="45" width="15" height="15" fill="black" />
-                      <rect x="70" y="45" width="10" height="5" fill="black" />
-                      <rect x="85" y="45" width="5" height="15" fill="black" />
-
-                      <rect x="10" y="60" width="15" height="5" fill="black" />
-                      <rect x="35" y="65" width="20" height="5" fill="black" />
-                      <rect x="65" y="60" width="15" height="10" fill="black" />
-
-                      <rect x="35" y="75" width="10" height="5" fill="black" />
+                <div className="space-y-4 flex flex-col items-center">
+                  <div className="w-44 h-44 bg-white p-3 rounded-2xl shadow-md border border-zinc-800/20 relative flex items-center justify-center">
+                    {/* Simulated payment graphic */}
+                    <svg width="140" height="140" viewBox="0 0 100 100">
+                      <rect x="10" y="10" width="80" height="80" fill="#f8fafc" rx="8" />
+                      <rect x="20" y="20" width="60" height="60" fill="none" stroke="black" strokeWidth="2" />
+                      <rect x="30" y="30" width="15" height="15" fill="black" />
+                      <rect x="55" y="30" width="15" height="15" fill="black" />
+                      <rect x="30" y="55" width="15" height="15" fill="black" />
+                      <rect x="50" y="50" width="5" height="5" fill="black" />
+                      <rect x="50" y="60" width="10" height="10" fill="black" />
+                      <rect x="60" y="50" width="10" height="10" fill="black" />
                       <rect x="50" y="80" width="5" height="15" fill="black" />
                       <rect x="60" y="85" width="10" height="5" fill="black" />
                       <rect x="40" y="90" width="5" height="5" fill="black" />
-                      
                       <rect x="80" y="90" width="15" height="5" fill="black" />
                     </svg>
                   </div>
@@ -372,10 +505,16 @@ function CheckoutContent() {
                     </span>
                   </div>
 
+                  {paymentError && (
+                    <div className="w-full p-3.5 rounded-xl border border-red-500/20 bg-red-500/5 text-xxs font-semibold text-red-400 text-left">
+                      ⚠️ {paymentError}
+                    </div>
+                  )}
+
                   <button
                     onClick={handleWalletPay}
                     disabled={timeLeft <= 0}
-                    className="w-full mt-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
+                    className="w-full mt-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3.5 text-xs font-bold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                   >
                     Simulate Wallet Verification
                   </button>
@@ -438,10 +577,10 @@ function CheckoutContent() {
               <div className="text-center space-y-2">
                 <h3 className="text-base font-bold text-white">Payment Authorized Successfully!</h3>
                 <p className="text-xxs text-zinc-400 font-sans">
-                  Demo Transaction completed. Token generated and saved in local storage.
+                  Demo Transaction completed. Subscription data written to mysql DB.
                 </p>
                 <p className="text-xxs text-violet-400 font-mono animate-pulse pt-2">
-                  Unlocking your Premium PDF Report...
+                  Unlocking your portal settings...
                 </p>
               </div>
             </div>
@@ -465,13 +604,13 @@ function CheckoutContent() {
             </h3>
 
             <div className="space-y-4">
-              <div className="border border-zinc-800/80 bg-zinc-950/50 p-4 rounded-xl space-y-3">
+              <div className="border border-zinc-800/80 bg-zinc-950/50 p-4 rounded-xl space-y-3 text-left">
                 <div className="space-y-1">
                   <span className="text-[10px] uppercase font-bold text-violet-400 block">
                     Product Item
                   </span>
                   <h4 className="text-xs font-bold text-white">
-                    Premium Multi-Engine SEO Audit
+                    {getPlanName()}
                   </h4>
                   <p className="text-xxs text-zinc-400 font-mono truncate">
                     Domain: {url}
@@ -480,30 +619,47 @@ function CheckoutContent() {
 
                 <div className="h-[1px] bg-zinc-850" />
 
-                <div className="space-y-1 text-left text-xxs text-zinc-500 leading-relaxed list-none">
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-500">✓</span> Full Core Web Vitals Charts
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-500">✓</span> In-depth tag sequence analysis
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-500">✓</span> LLM/AEO optimization checks
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-500">✓</span> Hostinger hosting server suggestions
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="text-emerald-500">✓</span> Printable/Saveable PDF layout
-                  </li>
+                <div className="space-y-1 text-xxs text-zinc-500 leading-relaxed list-none">
+                  {selectedPlan === "single" && (
+                    <>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> 1-Page Detailed SEO Crawl</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Unlock PDF Generation</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Saves report to account dashboard</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Consulting call upsell CTA</li>
+                    </>
+                  )}
+                  {selectedPlan === "multi" && (
+                    <>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Up to 3 Core Pages audited</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Multi-page PDF Report download</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Structured entity schema checks</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Saves history under user account</li>
+                    </>
+                  )}
+                  {selectedPlan === "weekly" && (
+                    <>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Weekly background scan (Every Monday)</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Performance alerts sent to email</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Historical score progress charts</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Includes PDF report downloads</li>
+                    </>
+                  )}
+                  {selectedPlan === "agency" && (
+                    <>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Scan up to 5 custom domains</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Upload Agency Logo & Agency Name</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Branded PDFs without watermarks</li>
+                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Client-ready report delivery</li>
+                    </>
+                  )}
                 </div>
               </div>
 
               {/* Price Details */}
-              <div className="space-y-2.5 px-1">
+              <div className="space-y-2.5 px-1 text-left">
                 <div className="flex justify-between text-xxs">
                   <span className="text-zinc-500">Subtotal</span>
-                  <span className="text-zinc-300">$29.00 USD</span>
+                  <span className="text-zinc-300">${getPlanPrice()}.00 USD</span>
                 </div>
                 <div className="flex justify-between text-xxs">
                   <span className="text-zinc-500">Tax / Processing fee</span>
@@ -514,7 +670,7 @@ function CheckoutContent() {
 
                 <div className="flex justify-between items-center text-xs font-bold pt-1">
                   <span className="text-white">Total Amount</span>
-                  <span className="text-violet-400 text-sm font-extrabold">$29.00 USD</span>
+                  <span className="text-violet-400 text-sm font-extrabold">${getPlanPrice()}.00 USD</span>
                 </div>
               </div>
             </div>

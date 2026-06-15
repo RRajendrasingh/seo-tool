@@ -235,7 +235,7 @@ export default function NewsClient({ initialPosts = [] }) {
             <span className="text-4xl block mb-4">🔍</span>
             <h3 className="text-sm font-semibold text-white">No articles found</h3>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed px-6">
-              We couldn't find any articles matching "{searchQuery}" in this category. Try adjusting your query or resetting the filters.
+              We couldn&apos;t find any articles matching &quot;{searchQuery}&quot; in this category. Try adjusting your query or resetting the filters.
             </p>
             <button
               onClick={() => {

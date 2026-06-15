@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const [theme, setTheme] = useState("dark");
+  const [session, setSession] = useState(null);
 
+  // 1. Initial theme load
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "dark";
     if (savedTheme === "light") {
@@ -21,6 +24,20 @@ export default function Navbar() {
     }, 0);
   }, []);
 
+  // 2. Fetch session details when path changes
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json();
+        setSession(data.session || null);
+      } catch (err) {
+        console.error("Failed to load user session:", err);
+      }
+    }
+    fetchSession();
+  }, [pathname]);
+
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
@@ -32,12 +49,32 @@ export default function Navbar() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST"
+      });
+      if (res.ok) {
+        setSession(null);
+        router.push("/login");
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Log out failed:", err);
+    }
+  };
+
+  // Compile navigation links dynamically
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Services", href: "/services/" },
     { name: "Blog & News", href: "/news/" },
     { name: "AI Audit", href: "/audit/" },
   ];
+
+  if (session) {
+    navLinks.push({ name: "Dashboard", href: "/dashboard" });
+  }
 
   const isActive = (path) => pathname === path;
 
@@ -78,6 +115,7 @@ export default function Navbar() {
 
           {/* Desktop Theme Toggle & CTA */}
           <div className="hidden md:flex items-center gap-4">
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-400 hover:text-white hover:border-slate-600 hover:bg-slate-800/60 transition-all cursor-pointer flex items-center justify-center"
@@ -93,6 +131,24 @@ export default function Navbar() {
                 </svg>
               )}
             </button>
+
+            {/* Dynamic Sign In / Out */}
+            {session ? (
+              <button
+                onClick={handleLogout}
+                className="text-sm font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="text-sm font-semibold text-slate-400 hover:text-white transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
+
             <Link
               href="/audit/"
               className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-slate-50 shadow-lg shadow-indigo-600/20 transition-all hover:bg-indigo-500 hover:scale-[1.02] hover:shadow-cyan-500/10 active:scale-[0.98]"
@@ -177,11 +233,32 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
-          <div className="pt-4 px-3">
+          
+          <div className="pt-4 px-3 space-y-3">
+            {session ? (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  handleLogout();
+                }}
+                className="flex w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-800/40 py-2 text-base font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="flex w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-800/40 py-2 text-base font-semibold text-slate-300 hover:text-white transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
+            
             <Link
               href="/audit/"
               onClick={() => setIsOpen(false)}
-              className="flex w-full items-center justify-center rounded-xl bg-indigo-600 py-2.5 text-base font-semibold text-slate-50 shadow-lg shadow-indigo-600/20 hover:bg-indigo-500"
+              className="flex w-full items-center justify-center rounded-xl bg-indigo-600 py-2.5 text-base font-semibold text-slate-55 shadow-lg shadow-indigo-600/20 hover:bg-indigo-500"
             >
               Free SEO Audit
             </Link>

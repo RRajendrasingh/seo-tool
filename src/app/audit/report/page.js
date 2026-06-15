@@ -23,6 +23,25 @@ function ReportContent() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json();
+        if (data.session) {
+          setSession(data.session);
+          if (data.session.subscription_tier === "weekly" || data.session.subscription_tier === "agency") {
+            setIsPaid(true);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load user session on report page:", err);
+      }
+    }
+    fetchSession();
+  }, []);
 
   const loadingSteps = [
     "Verifying premium payment key...",
@@ -817,16 +836,32 @@ function ReportContent() {
         
         {/* PRINT ONLY BRAND HEADER */}
         <div className="hidden print:flex items-center justify-between border-b-2 border-slate-200 pb-4 mb-6">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-black tracking-tight text-slate-800">
-              SEO<span className="text-indigo-600">Intellect</span>
-            </span>
-            <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 uppercase">
-              AI
-            </span>
-          </div>
+          {session?.subscription_tier === "agency" ? (
+            <div className="flex items-center gap-3">
+              {session.agency_logo_id ? (
+                <img
+                  src={`/api/uploads/${session.agency_logo_id}`}
+                  alt={session.agency_name || "Agency Logo"}
+                  className="h-8 max-w-[150px] object-contain"
+                />
+              ) : (
+                <span className="text-lg font-black tracking-tight text-slate-800 uppercase">
+                  {session.agency_name || "Custom Agency Report"}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-black tracking-tight text-slate-800">
+                SEO<span className="text-indigo-600">Intellect</span>
+              </span>
+              <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 uppercase">
+                AI
+              </span>
+            </div>
+          )}
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            Premium Performance Dossier
+            {session?.subscription_tier === "agency" ? "SEO Performance Report" : "Premium Performance Dossier"}
           </span>
         </div>
 
@@ -1142,6 +1177,29 @@ function ReportContent() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* REPORT CONSULTING CTA (SCREEN ONLY) */}
+        <div className="bg-gradient-to-r from-violet-650/15 via-purple-650/15 to-cyan-650/15 border border-indigo-500/20 rounded-3xl p-6 sm:p-8 space-y-4 text-center print:hidden shadow-lg shadow-indigo-500/5">
+          <div className="max-w-xl mx-auto space-y-2">
+            <span className="rounded-full bg-violet-500/10 px-3 py-1 text-[9px] font-bold text-violet-300 border border-violet-500/20 uppercase tracking-wider">
+              Expert Execution
+            </span>
+            <h3 className="text-base sm:text-lg font-black text-white">Need help executing these fixes?</h3>
+            <p className="text-xxs sm:text-xs text-slate-400 leading-relaxed font-sans">
+              Don&apos;t let technical bottlenecks or crawler blockades hurt your rankings. Book a free 30-minute organic growth consultation call with our experts to execute these optimizations.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              const subject = encodeURIComponent("SEO Consultation Request");
+              const body = encodeURIComponent(`Hello,\n\nI ran an SEO audit for my site and would like help resolving the issues. Here are my audit details:\nTarget Domain: ${urlParam}\nCMS Platform: (WordPress/Shopify/Other)\n\nPlease contact me to schedule a call.\n\nThank you.`);
+              window.location.href = `mailto:consulting@seointellect.com?subject=${subject}&body=${body}`;
+            }}
+            className="rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-950 px-6 py-3 text-xxs font-bold tracking-wider uppercase transition-colors shadow-sm cursor-pointer"
+          >
+            Book Free Consultation Call
+          </button>
         </div>
 
         {/* REPORT FOOTER SIGNATURE */}

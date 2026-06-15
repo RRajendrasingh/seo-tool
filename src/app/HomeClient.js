@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { citiesDb } from "@/data/cities";
+import PricingCard from "@/components/PricingCard";
 
 export default function HomeClient() {
   const [url, setUrl] = useState("");
@@ -82,50 +83,67 @@ export default function HomeClient() {
 
   const pricingPlans = [
     {
-      name: "Starter Plan",
-      price: "$99",
-      desc: "Essential search auditing and location targeting for growing websites looking to establish ranking signals.",
+      name: "Free Audit Plan",
+      price: "$0",
+      period: "/once (no account)",
+      desc: "Analyze any public page immediately to parse structural HTML and core performance benchmarks.",
       features: [
-        "Instant basic HTML tags parser",
-        "100+ critical fixes checklist",
-        "Mobile loading speed check",
-        "Single city landing template",
-        "Email support response in 48h",
+        "1 standard ad-hoc SEO crawl",
+        "PageSpeed performance check",
+        "Critical tags & checklist",
+        "Interactive web-view report",
+        "Basic online audit advice",
       ],
-      buttonText: "Get Started Now",
-      href: "/audit/",
+      buttonText: "Run Free Audit",
+      href: "/audit",
       popular: false,
     },
     {
-      name: "Pro Optimizer",
-      price: "$149",
-      desc: "Our gold standard. Deep automated crawling, AI summaries, core web vitals optimization, and full GEO readiness reports.",
+      name: "PDF Report Packs",
+      price: "$29",
+      period: "/once (saves to account)",
+      desc: "Unlock downloadable client PDF reports and multi-page packages for comprehensive domain checks.",
       features: [
-        "Full PageSpeed & HTML crawl",
-        "AI executive checklists (GPT-4o)",
-        "AEO & GEO citation builder",
-        "5 location-specific page templates",
-        "Priority Slack/Email support",
-        "Downloadable PDF white-labels",
+        "Single PDF Download ($29)",
+        "3-Page Audit Package ($59)",
+        "Saves reports to account",
+        "SEO Consulting call option",
+        "No recurring fees or contracts",
       ],
-      buttonText: "Try Pro Free",
-      href: "/audit/?plan=premium",
+      buttonText: "Get Report Packs",
+      href: "/checkout?plan=pack",
+      popular: false,
+    },
+    {
+      name: "Weekly Monitoring",
+      price: "$49",
+      period: "/month (recurring)",
+      desc: "Automate your search monitoring. Let our engine run scans every Monday morning and notify you of drops.",
+      features: [
+        "Weekly background audits",
+        "Email alerts on metrics drop",
+        "Interactive score trend lines",
+        "Access report history",
+        "Requires account creation",
+      ],
+      buttonText: "Start Monitoring",
+      href: "/checkout?plan=weekly",
       popular: true,
     },
     {
-      name: "Enterprise Growth",
-      price: "$299",
-      desc: "Complete organic dominance package. Direct developer integrations, custom entity mapping, and headless hosting solutions.",
+      name: "White-Label Agency",
+      price: "$99",
+      period: "/month (recurring)",
+      desc: "Ideal for agencies pitching clients. Generate custom PDF audit files featuring your logo and agency name.",
       features: [
-        "Unlimited custom crawlers",
-        "Static Next.js migration setup",
-        "JSON-LD Org schema graphs",
-        "Unlimited local page targets",
-        "1-on-1 monthly consultations",
-        "Direct database integration API",
+        "Up to 5 monitored domains",
+        "Custom agency logo & name",
+        "Branded client PDF exports",
+        "Remove SEOIntellect logo",
+        "Headless report delivery API",
       ],
-      buttonText: "Go Enterprise",
-      href: "/services/#plans",
+      buttonText: "Go White-Label",
+      href: "/checkout?plan=agency",
       popular: false,
     },
   ];
@@ -620,83 +638,9 @@ export default function HomeClient() {
           </p>
         </div>
 
-        <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mx-auto max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {pricingPlans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`rounded-2xl bg-zinc-900/40 border backdrop-blur-md flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 relative overflow-hidden ${
-                plan.popular
-                  ? "border-t-4 border-t-green-500 border-x-zinc-800 border-b-zinc-800 shadow-2xl shadow-cyan-400/5"
-                  : "border-t-4 border-t-emerald-450 border-x-zinc-800 border-b-zinc-800"
-              }`}
-            >
-              {/* Diagonal Ribbon Offer */}
-              <div className="absolute top-0 right-0 h-20 w-20 overflow-hidden select-none pointer-events-none">
-                <div className={`absolute top-3 -right-7 w-24 rotate-45 py-0.5 text-center text-[7px] font-black uppercase tracking-widest text-white shadow-sm bg-gradient-to-r ${
-                  plan.popular ? "from-orange-600 to-red-500" : "from-blue-600 to-blue-500"
-                }`}>
-                  Offer
-                </div>
-              </div>
-
-              <div className="p-8 space-y-6 text-left flex-grow">
-                {/* Badge for Popular */}
-                {plan.popular && (
-                  <div className="inline-flex items-center gap-1 rounded-md border border-green-500/20 bg-green-500/5 px-2 py-0.5 text-[9px] font-bold text-green-500 uppercase tracking-wide">
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-                    </svg>
-                    Most Popular
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="text-xl font-extrabold text-white">{plan.name}</h3>
-                </div>
-
-                {/* Features List */}
-                <ul className="space-y-3">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-xs text-zinc-400">
-                      <svg className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Price */}
-                <div className="flex items-baseline text-white pt-2 border-t border-zinc-800/40">
-                  <span className="text-3xl font-extrabold tracking-tight">US{plan.price}</span>
-                  <span className="ml-1 text-[10px] font-semibold text-zinc-500">/month (billed yearly)</span>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <p className="text-xs text-zinc-500 leading-relaxed font-medium">{plan.desc}</p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="px-8 pb-8 space-y-4">
-                <Link
-                  href={plan.href}
-                  className={`flex w-full items-center justify-center rounded-xl py-3.5 text-xs font-bold transition-all hover:scale-[1.01] active:scale-[0.99] shadow-md ${
-                    plan.popular
-                      ? "bg-gradient-to-r from-indigo-600 to-cyan-500 text-white hover:from-indigo-500 hover:to-cyan-400 shadow-indigo-600/25"
-                      : "bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-600/15"
-                  }`}
-                >
-                  {plan.buttonText}
-                </Link>
-                <div className="text-center">
-                  <button className="text-[10px] font-bold text-zinc-555 hover:text-cyan-400 transition-colors uppercase tracking-wider cursor-pointer">
-                    See more
-                  </button>
-                </div>
-              </div>
-            </div>
+            <PricingCard key={plan.name} {...plan} />
           ))}
         </div>
 
