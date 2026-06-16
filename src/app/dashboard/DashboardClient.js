@@ -17,6 +17,11 @@ export default function DashboardClient({ user: initialUser }) {
   const [addError, setAddError] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
+  // Selected monitor for history graph
+  const [selectedMonitor, setSelectedMonitor] = useState(null);
+  const [historyData, setHistoryData] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   // Agency branding states
   const [agencyName, setAgencyName] = useState(user.agency_name || "");
   const [logoPreview, setLogoPreview] = useState(user.agency_logo_id ? `/api/uploads/${user.agency_logo_id}` : null);
@@ -25,14 +30,21 @@ export default function DashboardClient({ user: initialUser }) {
 
   // Alert simulation state
   const [alertsEnabled, setAlertsEnabled] = useState(true);
-
-  // SVG Chart data: mock audit trends for localhost:3000
-  const chartData = [88, 91, 95, 96];
-  const chartLabels = ["May 25", "Jun 01", "Jun 08", "Jun 15"];
+  const [showPortalNotice, setShowPortalNotice] = useState(false);
 
   useEffect(() => {
     fetchMonitors();
     fetchLatestSession();
+
+    // Check for simulated portal redirect
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("billing_portal") === "simulated") {
+      setTimeout(() => {
+        setShowPortalNotice(true);
+      }, 0);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchLatestSession() {
@@ -51,6 +63,25 @@ export default function DashboardClient({ user: initialUser }) {
     }
   }
 
+  async function fetchHistory(domain) {
+    if (!domain) return;
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`/api/monitors/history?domain=${encodeURIComponent(domain)}`);
+      const data = await res.json();
+      if (data.history) {
+        setHistoryData(data.history);
+      } else {
+        setHistoryData([]);
+      }
+    } catch (e) {
+      console.error("Failed to load history:", e);
+      setHistoryData([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }
+
   async function fetchMonitors() {
     setLoadingMonitors(true);
     try {
@@ -58,6 +89,18 @@ export default function DashboardClient({ user: initialUser }) {
       const data = await res.json();
       if (data.monitors) {
         setMonitors(data.monitors);
+        // Default select first monitor if not set yet
+        if (data.monitors.length > 0) {
+          setSelectedMonitor((prev) => {
+            const stillExists = data.monitors.find(m => m.id === prev?.id);
+            const selection = stillExists || data.monitors[0];
+            fetchHistory(selection.domain);
+            return selection;
+          });
+        } else {
+          setSelectedMonitor(null);
+          setHistoryData([]);
+        }
       }
     } catch (e) {
       console.error("Failed to load monitors:", e);
@@ -93,7 +136,7 @@ export default function DashboardClient({ user: initialUser }) {
       setCmsPlatform("");
       setBusinessNiche("");
       setTargetAudience("");
-      fetchMonitors();
+      await fetchMonitors();
     } catch (err) {
       setAddError(err.message);
     } finally {
@@ -110,10 +153,25 @@ export default function DashboardClient({ user: initialUser }) {
         body: JSON.stringify({ id })
       });
       if (res.ok) {
-        fetchMonitors();
+        await fetchMonitors();
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleStripePortal = async () => {
+    try {
+      const res = await fetch("/api/checkout/portal");
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Unable to redirect to Stripe Customer Portal.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error contacting billing portal endpoint.");
     }
   };
 
@@ -177,7 +235,38 @@ export default function DashboardClient({ user: initialUser }) {
     }
   };
 
-  const isPaid = user.subscription_tier === "weekly" || user.subscription_tier === "agency";
+  const getCoordinates = () => {
+    const dataPoints = historyData.length > 0 ? historyData : [
+      { performance_score: 88, scanned_at: "2026-05-25" },
+      { performance_score: 91, scanned_at: "2026-06-01" },
+      { performance_score: 95, scanned_at: "2026-06-08" },
+      { performance_score: 96, scanned_at: "2026-06-15" }
+    ];
+
+    const N = dataPoints.length;
+    return dataPoints.map((pt, i) => {
+      const score = pt.performance_score || 80;
+      const x = N > 1 ? 50 + i * (300 / (N - 1)) : 200;
+      const y = 140 - ((score / 100) * 110);
+      
+      let dateLabel = "Scan";
+      if (pt.scanned_at) {
+        const dateObj = new Date(pt.scanned_at);
+        const options = { month: 'short', day: '2-digit' };
+        dateLabel = dateObj.toLocaleDateString('en-US', options);
+      }
+
+      return { x, y, score, dateLabel };
+    });
+  };
+
+  const points = getCoordinates();
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const areaD = points.length > 0 
+    ? `${pathD} L ${points[points.length - 1].x.toFixed(1)} 130 L ${points[0].x.toFixed(1)} 130 Z`
+    : "";
+
+  const isPaid = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || (user.allowed_quota && user.allowed_quota > 0);
 
   return (
     <div className="bg-slate-950 min-h-screen text-slate-300 transition-colors duration-300">
@@ -185,6 +274,21 @@ export default function DashboardClient({ user: initialUser }) {
       {/* Main Content Dashboard */}
       <main className="max-w-6xl mx-auto px-4 py-12 space-y-8">
         
+        {/* Portal Notice Banner */}
+        {showPortalNotice && (
+          <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-2xl p-4 flex items-center justify-between gap-4 text-xs animate-fade-in text-left">
+            <div>
+              <span className="font-bold">⚠️ Stripe Key Sandbox Notice:</span> Stripe environment credentials are unconfigured or unavailable. Your billing portal request was simulated using local database variables.
+            </div>
+            <button
+              onClick={() => setShowPortalNotice(false)}
+              className="text-amber-400 hover:text-amber-200 font-bold uppercase text-[10px]"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Welcome Section */}
         <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
           <div className="space-y-2 text-left">
@@ -221,7 +325,7 @@ export default function DashboardClient({ user: initialUser }) {
                   <h2 className="text-sm font-bold text-slate-200">Active Domain Monitors</h2>
                   <p className="text-[10px] text-slate-500">
                     Tier: <span className="capitalize font-bold text-violet-400">{user.subscription_tier}</span>
-                    {isPaid && ` (Quota: ${monitors.length} / ${user.subscription_tier === "agency" ? 5 : 1})`}
+                    {isPaid && ` (Quota: ${monitors.length} / ${user.allowed_quota || (user.subscription_tier === "agency" ? 5 : 1)})`}
                   </p>
                 </div>
                 {isPaid && (
@@ -250,38 +354,59 @@ export default function DashboardClient({ user: initialUser }) {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {monitors.map((mon) => (
-                    <div
-                      key={mon.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl card-inner border gap-4"
-                    >
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-primary truncate max-w-[240px]">{mon.domain}</h4>
-                        <div className="flex flex-wrap gap-2 text-[9px] text-slate-500 font-semibold uppercase tracking-wider items-center">
-                          <span>Auto-scan: Monday</span>
-                          <span>•</span>
-                          <span className="text-violet-400 bg-violet-500/5 px-1.5 py-0.5 rounded border border-violet-500/10">{mon.cms_platform || "Custom"}</span>
-                          <span>•</span>
-                          <span className="text-cyan-400 bg-cyan-500/5 px-1.5 py-0.5 rounded border border-cyan-500/10">{mon.business_niche || "Niche"}</span>
+                  {monitors.map((mon) => {
+                    const isSelected = selectedMonitor?.id === mon.id;
+                    return (
+                      <div
+                        key={mon.id}
+                        onClick={() => {
+                          setSelectedMonitor(mon);
+                          fetchHistory(mon.domain);
+                        }}
+                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl card-inner border gap-4 cursor-pointer transition-all ${
+                          isSelected
+                            ? "border-violet-500/50 bg-violet-950/10 shadow-lg"
+                            : "border-slate-800 hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap text-left">
+                            <h4 className="text-xs font-bold text-primary truncate max-w-[240px]">{mon.domain}</h4>
+                            <span className="bg-teal-500/10 text-teal-400 border border-teal-500/20 text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                              Monitor Project
+                            </span>
+                            {isSelected && (
+                              <span className="bg-violet-500/20 text-violet-300 border border-violet-500/30 text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                                Selected
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-[9px] text-slate-500 font-semibold uppercase tracking-wider items-center">
+                            <span>Auto-scan: Monday</span>
+                            <span>•</span>
+                            <span className="text-violet-400 bg-violet-500/5 px-1.5 py-0.5 rounded border border-violet-500/10">{mon.cms_platform || "Custom"}</span>
+                            <span>•</span>
+                            <span className="text-cyan-400 bg-cyan-500/5 px-1.5 py-0.5 rounded border border-cyan-500/10">{mon.business_niche || "Niche"}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => router.push(`/audit/report?url=${encodeURIComponent(mon.domain)}`)}
+                            className="rounded-xl bg-slate-800 hover:bg-slate-700 px-3 py-2 text-[10px] font-bold text-slate-200 transition-colors border border-slate-800 cursor-pointer"
+                          >
+                            View Report
+                          </button>
+                          <button
+                            onClick={() => handleDeleteMonitor(mon.id)}
+                            className="rounded-xl bg-red-950/25 border border-red-500/20 hover:bg-red-950/50 px-3 py-2 text-[10px] font-bold text-red-400 transition-colors cursor-pointer"
+                          >
+                            Remove
+                          </button>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-3 self-end sm:self-auto">
-                        <button
-                          onClick={() => router.push(`/audit/report?url=${encodeURIComponent(mon.domain)}`)}
-                          className="rounded-xl bg-slate-800 hover:bg-slate-700 px-3 py-2 text-[10px] font-bold text-slate-200 transition-colors border border-slate-800 cursor-pointer"
-                        >
-                          View Report
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMonitor(mon.id)}
-                          className="rounded-xl bg-red-950/25 border border-red-500/20 hover:bg-red-950/50 px-3 py-2 text-[10px] font-bold text-red-400 transition-colors cursor-pointer"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -369,11 +494,16 @@ export default function DashboardClient({ user: initialUser }) {
             <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
               <h2 className="text-sm font-bold text-slate-200">Historical SEO Trends</h2>
               <p className="text-xxs text-slate-500 leading-relaxed max-w-lg">
-                Visual index representing automatic audit score curves logged every Monday. (Visualizing active domain: <span className="font-bold text-cyan-400">{monitors[0]?.domain || "localhost:3000"}</span>).
+                Visual index representing automatic audit score curves logged every Monday. (Visualizing active domain: <span className="font-bold text-cyan-400">{selectedMonitor?.domain || "localhost:3000"}</span>).
               </p>
 
               {/* Premium Vector Chart Visualizer */}
               <div className="pt-4 h-48 w-full flex items-center justify-center relative bg-slate-950/35 rounded-2xl border border-slate-900 p-2.5">
+                {loadingHistory && (
+                  <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center rounded-2xl z-10">
+                    <span className="text-xxs font-semibold text-slate-400 animate-pulse">Loading monitor history...</span>
+                  </div>
+                )}
                 <svg viewBox="0 0 400 150" className="w-full h-full">
                   {/* Grid Lines */}
                   <line x1="0" y1="20" x2="400" y2="20" stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4" />
@@ -389,42 +519,54 @@ export default function DashboardClient({ user: initialUser }) {
                   </defs>
                   
                   {/* Chart Path */}
-                  <path
-                    d="M 50 110 L 150 95 L 250 50 L 350 35"
-                    fill="none"
-                    stroke="url(#chartGlow)"
-                    strokeWidth="0"
-                  />
-                  <path
-                    d="M 50 110 L 150 95 L 250 50 L 350 35 L 350 130 L 50 130 Z"
-                    fill="url(#chartGlow)"
-                  />
-                  <path
-                    d="M 50 110 L 150 95 L 250 50 L 350 35"
-                    fill="none"
-                    stroke="#818cf8"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  {points.length > 0 && (
+                    <>
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke="#818cf8"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d={areaD}
+                        fill="url(#chartGlow)"
+                      />
+                    </>
+                  )}
 
-                  {/* Data Circles */}
-                  <circle cx="50" cy="110" r="4.5" fill="#4f46e5" stroke="#ffffff" strokeWidth="1.5" />
-                  <circle cx="150" cy="95" r="4.5" fill="#4f46e5" stroke="#ffffff" strokeWidth="1.5" />
-                  <circle cx="250" cy="50" r="4.5" fill="#4f46e5" stroke="#ffffff" strokeWidth="1.5" />
-                  <circle cx="350" cy="35" r="4.5" fill="#4f46e5" stroke="#ffffff" strokeWidth="1.5" />
-
-                  {/* Text values */}
-                  <text x="50" y="125" textAnchor="middle" fill="#64748b" className="text-[9px] font-mono font-bold">88/100</text>
-                  <text x="150" y="110" textAnchor="middle" fill="#64748b" className="text-[9px] font-mono font-bold">91/100</text>
-                  <text x="250" y="65" textAnchor="middle" fill="#64748b" className="text-[9px] font-mono font-bold">95/100</text>
-                  <text x="350" y="20" textAnchor="middle" fill="#818cf8" className="text-[10px] font-mono font-black">96/100</text>
-
-                  {/* Label dates */}
-                  <text x="50" y="142" textAnchor="middle" fill="#475569" className="text-[8px] font-bold">May 25</text>
-                  <text x="150" y="142" textAnchor="middle" fill="#475569" className="text-[8px] font-bold">Jun 01</text>
-                  <text x="250" y="142" textAnchor="middle" fill="#475569" className="text-[8px] font-bold">Jun 08</text>
-                  <text x="350" y="142" textAnchor="middle" fill="#475569" className="text-[8px] font-bold">Jun 15</text>
+                  {/* Dynamic Data Circles, Text values, and Label dates */}
+                  {points.map((p, idx) => (
+                    <g key={idx}>
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r="4.5"
+                        fill="#4f46e5"
+                        stroke="#ffffff"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x={p.x}
+                        y={p.y - 12}
+                        textAnchor="middle"
+                        fill={idx === points.length - 1 ? "#818cf8" : "#64748b"}
+                        className={`text-[9px] font-mono font-bold ${idx === points.length - 1 ? "text-[10px] font-black" : ""}`}
+                      >
+                        {p.score}/100
+                      </text>
+                      <text
+                        x={p.x}
+                        y="142"
+                        textAnchor="middle"
+                        fill="#475569"
+                        className="text-[8px] font-bold"
+                      >
+                        {p.dateLabel}
+                      </text>
+                    </g>
+                  ))}
                 </svg>
               </div>
             </div>
@@ -487,6 +629,24 @@ export default function DashboardClient({ user: initialUser }) {
                       >
                         <span>📁 Select Image File</span>
                       </label>
+                    </div>
+                  </div>
+
+                  {/* Live PDF Branding Preview Mockup */}
+                  <div className="mt-2 border border-slate-800/80 rounded-2xl bg-slate-950/50 p-4 space-y-3">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Live PDF Report Header Mockup</h3>
+                    <div className="bg-white text-slate-900 rounded-xl p-3 border border-slate-200 flex items-center justify-between shadow-sm min-h-[56px] transition-all">
+                      {logoPreview ? (
+                        <img src={logoPreview} alt="Agency logo preview" className="max-h-8 max-w-[100px] object-contain" />
+                      ) : (
+                        <span className="text-[9px] text-slate-400 italic font-mono">No Logo Uploaded</span>
+                      )}
+                      <div className="text-right">
+                        <p className="text-[11px] font-bold text-slate-800 truncate max-w-[140px]">
+                          {agencyName || "Default SEO Reports"}
+                        </p>
+                        <p className="text-[7px] text-slate-500 font-medium">Technical SEO Audit Report</p>
+                      </div>
                     </div>
                   </div>
 
@@ -574,7 +734,7 @@ export default function DashboardClient({ user: initialUser }) {
               </div>
 
               <button
-                onClick={() => alert("Stripe Customer Portal Integration Simulating...")}
+                onClick={handleStripePortal}
                 className="w-full rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-950 text-[10px] font-bold py-2.5 shadow-sm transition-colors cursor-pointer border border-slate-800"
               >
                 Manage via Stripe

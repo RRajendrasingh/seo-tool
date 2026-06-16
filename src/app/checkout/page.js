@@ -33,6 +33,9 @@ function CheckoutContent() {
 
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
 
+  const [user, setUser] = useState(null);
+  const [loadingSession, setLoadingSession] = useState(true);
+
   const getPlanPrice = () => {
     if (selectedPlan === "single") return 29;
     if (selectedPlan === "multi") return 59;
@@ -56,12 +59,33 @@ function CheckoutContent() {
     "Generating premium audit credentials..."
   ];
 
-  // If no URL is provided, redirect back to audit page
+  // Fetch session on mount
   useEffect(() => {
-    if (!url) {
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json();
+        if (data.session) {
+          setUser(data.session);
+          setBillingName((prev) => prev || data.session.name || "");
+          setBillingEmail((prev) => prev || data.session.email || "");
+        }
+      } catch (e) {
+        console.error("Error fetching session:", e);
+      } finally {
+        setLoadingSession(false);
+      }
+    }
+    checkSession();
+  }, []);
+
+  // If no URL is provided, redirect back to audit page ONLY if not logged in
+  useEffect(() => {
+    if (loadingSession) return;
+    if (!url && !user) {
       router.push("/audit");
     }
-  }, [url, router]);
+  }, [url, user, loadingSession, router]);
 
   // Wallet countdown effect
   useEffect(() => {
@@ -103,7 +127,7 @@ function CheckoutContent() {
   // Real Stripe Checkout Trigger
   const handleStripePay = async (e) => {
     e.preventDefault();
-    if (!cmsPlatform || !businessNiche || !targetAudience) {
+    if (!user && (!cmsPlatform || !businessNiche || !targetAudience)) {
       setPaymentError("Please fill in the Step 1 Website Profile details first.");
       return;
     }
@@ -115,14 +139,14 @@ function CheckoutContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          url, 
+          url: url || "domain-pending", 
           name: billingName, 
           email: billingEmail, 
           phone,
           plan: selectedPlan,
-          cmsPlatform,
-          businessNiche,
-          targetAudience
+          cmsPlatform: cmsPlatform || "Not Provided",
+          businessNiche: businessNiche || "Not Provided",
+          targetAudience: targetAudience || "Not Provided"
         })
       });
 
@@ -149,7 +173,7 @@ function CheckoutContent() {
   };
 
   const handleWalletPay = () => {
-    if (!cmsPlatform || !businessNiche || !targetAudience) {
+    if (!user && (!cmsPlatform || !businessNiche || !targetAudience)) {
       setPaymentError("Please fill in the Step 1 Website Profile details first.");
       return;
     }
@@ -158,35 +182,36 @@ function CheckoutContent() {
 
   // Local bypass saving
   const completeLocalCheckout = async () => {
+    const finalUrl = url || "domain-pending";
     const token = {
       paid: true,
       transactionId: "MOCK_TXN_" + Math.random().toString(36).substring(2, 11).toUpperCase(),
       date: new Date().toISOString(),
-      url: url,
+      url: finalUrl,
       name: billingName || name,
       email: billingEmail || email,
       phone: phone,
       plan: selectedPlan,
-      cmsPlatform,
-      businessNiche,
-      targetAudience
+      cmsPlatform: cmsPlatform || "Not Provided",
+      businessNiche: businessNiche || "Not Provided",
+      targetAudience: targetAudience || "Not Provided"
     };
 
     try {
-      localStorage.setItem(`premium_token_${url}`, JSON.stringify(token));
+      localStorage.setItem(`premium_token_${finalUrl}`, JSON.stringify(token));
       
       // Write mock database updates
       await fetch("/api/verify-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          url,
+          url: finalUrl,
           email: billingEmail || email,
           name: billingName || name,
           plan: selectedPlan,
-          cmsPlatform,
-          businessNiche,
-          targetAudience
+          cmsPlatform: cmsPlatform || "Not Provided",
+          businessNiche: businessNiche || "Not Provided",
+          targetAudience: targetAudience || "Not Provided"
         })
       });
     } catch (e) {
@@ -196,13 +221,21 @@ function CheckoutContent() {
     setCheckoutState("success");
 
     setTimeout(() => {
-      if (selectedPlan === "weekly" || selectedPlan === "agency") {
+      if (selectedPlan === "weekly" || selectedPlan === "agency" || finalUrl === "domain-pending" || !finalUrl) {
         router.push("/dashboard");
       } else {
-        router.push(`/audit/report?url=${encodeURIComponent(url)}`);
+        router.push(`/audit/report?url=${encodeURIComponent(finalUrl)}`);
       }
     }, 2000);
   };
+
+  if (loadingSession) {
+    return (
+      <div className="bg-zinc-950 min-h-screen flex items-center justify-center text-zinc-100">
+        <div className="h-10 w-10 border-4 border-zinc-800 border-t-violet-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-zinc-950 min-h-screen py-16 px-4 sm:px-6 lg:px-8 relative isolate flex items-center justify-center text-zinc-100">
@@ -218,149 +251,181 @@ function CheckoutContent() {
           {checkoutState === "input" && (
             <div className="space-y-6">
               
-              {/* Step 1: Website Onboarding Profile */}
-              <div className="space-y-4 bg-zinc-950/40 p-5 rounded-xl border border-zinc-800 text-left">
-                <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
-                  Step 1: Tell us about your website
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-zinc-400 font-semibold block">CMS Platform</label>
-                    <select
-                      required
-                      value={cmsPlatform}
-                      onChange={(e) => setCmsPlatform(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
-                    >
-                      <option value="">Select Platform</option>
-                      <option value="wordpress">WordPress</option>
-                      <option value="shopify">Shopify</option>
-                      <option value="webflow">Webflow</option>
-                      <option value="wix">Wix / Squarespace</option>
-                      <option value="nextjs">Next.js / React</option>
-                      <option value="custom">Custom HTML/CSS</option>
-                      <option value="other">Other</option>
-                    </select>
+              {user ? (
+                /* Consolidated Account Information Card */
+                <div className="space-y-4 bg-zinc-950/40 p-5 rounded-xl border border-zinc-800 text-left">
+                  <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
+                    Account Information
+                  </h3>
+                  <div className="flex items-center gap-3 bg-zinc-900/50 p-4 rounded-xl border border-zinc-850">
+                    <div className="h-10 w-10 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-sm font-bold text-violet-400">
+                      {user.name ? user.name[0].toUpperCase() : "U"}
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-white block font-sans">
+                        {user.name || "Logged In User"}
+                      </span>
+                      <span className="text-[10px] text-zinc-400 font-mono block">
+                        {user.email}
+                      </span>
+                    </div>
+                    <span className="ml-auto text-[9px] uppercase tracking-wider font-bold bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded border border-violet-500/20">
+                      Active Account
+                    </span>
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-zinc-400 font-semibold block">Business Niche</label>
-                    <select
-                      required
-                      value={businessNiche}
-                      onChange={(e) => setBusinessNiche(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
-                    >
-                      <option value="">Select Niche</option>
-                      <option value="ecommerce">E-commerce</option>
-                      <option value="local">Local Business</option>
-                      <option value="saas">B2B / SaaS</option>
-                      <option value="agency">Agency</option>
-                      <option value="blog">Blog / Publisher</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-zinc-400 font-semibold block">Target Audience</label>
-                    <select
-                      required
-                      value={targetAudience}
-                      onChange={(e) => setTargetAudience(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
-                    >
-                      <option value="">Select Target</option>
-                      <option value="local">Local City</option>
-                      <option value="national">National Market</option>
-                      <option value="global">International</option>
-                    </select>
-                  </div>
+                  <p className="text-[10px] text-zinc-400 font-sans leading-relaxed">
+                    You are currently logged in. Your purchase will be automatically linked to this account, and subscription settings will activate immediately upon payment verification.
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Step 1: Website Onboarding Profile */}
+                  <div className="space-y-4 bg-zinc-950/40 p-5 rounded-xl border border-zinc-800 text-left">
+                    <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
+                      Step 1: Tell us about your website
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-zinc-400 font-semibold block">CMS Platform</label>
+                        <select
+                          required
+                          value={cmsPlatform}
+                          onChange={(e) => setCmsPlatform(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="">Select Platform</option>
+                          <option value="wordpress">WordPress</option>
+                          <option value="shopify">Shopify</option>
+                          <option value="webflow">Webflow</option>
+                          <option value="wix">Wix / Squarespace</option>
+                          <option value="nextjs">Next.js / React</option>
+                          <option value="custom">Custom HTML/CSS</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
 
-              {/* Step 2: Choose Your Plan */}
-              <div className="space-y-3 bg-zinc-950/40 p-5 rounded-xl border border-zinc-800 text-left">
-                <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
-                  Step 2: Choose Your Plan
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    selectedPlan === "single" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
-                  }`}>
-                    <input
-                      type="radio"
-                      name="plan"
-                      value="single"
-                      checked={selectedPlan === "single"}
-                      onChange={() => setSelectedPlan("single")}
-                      className="mt-1"
-                    />
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-white block">Single Page PDF</span>
-                      <span className="text-[10px] text-zinc-400 block">Unlock 1 full report PDF download.</span>
-                      <span className="text-[11px] font-bold text-violet-400 block">$29 USD (one-time)</span>
-                    </div>
-                  </label>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-zinc-400 font-semibold block">Business Niche</label>
+                        <select
+                          required
+                          value={businessNiche}
+                          onChange={(e) => setBusinessNiche(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="">Select Niche</option>
+                          <option value="ecommerce">E-commerce</option>
+                          <option value="local">Local Business</option>
+                          <option value="saas">B2B / SaaS</option>
+                          <option value="agency">Agency</option>
+                          <option value="blog">Blog / Publisher</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
 
-                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    selectedPlan === "multi" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
-                  }`}>
-                    <input
-                      type="radio"
-                      name="plan"
-                      value="multi"
-                      checked={selectedPlan === "multi"}
-                      onChange={() => setSelectedPlan("multi")}
-                      className="mt-1"
-                    />
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-white block">3-Page Audit Pack</span>
-                      <span className="text-[10px] text-zinc-400 block">Scan up to 3 core pages + PDF downloads.</span>
-                      <span className="text-[11px] font-bold text-violet-400 block">$59 USD (one-time)</span>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-zinc-400 font-semibold block">Target Audience</label>
+                        <select
+                          required
+                          value={targetAudience}
+                          onChange={(e) => setTargetAudience(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="">Select Target</option>
+                          <option value="local">Local City</option>
+                          <option value="national">National Market</option>
+                          <option value="global">International</option>
+                        </select>
+                      </div>
                     </div>
-                  </label>
+                  </div>
 
-                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    selectedPlan === "weekly" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
-                  }`}>
-                    <input
-                      type="radio"
-                      name="plan"
-                      value="weekly"
-                      checked={selectedPlan === "weekly"}
-                      onChange={() => setSelectedPlan("weekly")}
-                      className="mt-1"
-                    />
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-white block">Weekly Monitoring</span>
-                      <span className="text-[10px] text-zinc-400 block">Monday morning audits & alerts.</span>
-                      <span className="text-[11px] font-bold text-violet-400 block">$49 / month</span>
-                    </div>
-                  </label>
+                  {/* Step 2: Choose Your Plan */}
+                  <div className="space-y-3 bg-zinc-950/40 p-5 rounded-xl border border-zinc-800 text-left">
+                    <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
+                      Step 2: Choose Your Plan
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        selectedPlan === "single" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                      }`}>
+                        <input
+                          type="radio"
+                          name="plan"
+                          value="single"
+                          checked={selectedPlan === "single"}
+                          onChange={() => setSelectedPlan("single")}
+                          className="mt-1"
+                        />
+                        <div className="space-y-0.5">
+                          <span className="text-xs font-bold text-white block">Single Page PDF</span>
+                          <span className="text-[10px] text-zinc-400 block">Unlock 1 full report PDF download.</span>
+                          <span className="text-[11px] font-bold text-violet-400 block">$29 USD (one-time)</span>
+                        </div>
+                      </label>
 
-                  <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    selectedPlan === "agency" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
-                  }`}>
-                    <input
-                      type="radio"
-                      name="plan"
-                      value="agency"
-                      checked={selectedPlan === "agency"}
-                      onChange={() => setSelectedPlan("agency")}
-                      className="mt-1"
-                    />
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-white block">White-Label Agency</span>
-                      <span className="text-[10px] text-zinc-400 block">Up to 5 domains + Custom branding (Name/Logo).</span>
-                      <span className="text-[11px] font-bold text-violet-400 block">$99 / month</span>
+                      <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        selectedPlan === "multi" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                      }`}>
+                        <input
+                          type="radio"
+                          name="plan"
+                          value="multi"
+                          checked={selectedPlan === "multi"}
+                          onChange={() => setSelectedPlan("multi")}
+                          className="mt-1"
+                        />
+                        <div className="space-y-0.5">
+                          <span className="text-xs font-bold text-white block">3-Page Audit Pack</span>
+                          <span className="text-[10px] text-zinc-400 block">Scan up to 3 core pages + PDF downloads.</span>
+                          <span className="text-[11px] font-bold text-violet-400 block">$59 USD (one-time)</span>
+                        </div>
+                      </label>
+
+                      <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        selectedPlan === "weekly" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                      }`}>
+                        <input
+                          type="radio"
+                          name="plan"
+                          value="weekly"
+                          checked={selectedPlan === "weekly"}
+                          onChange={() => setSelectedPlan("weekly")}
+                          className="mt-1"
+                        />
+                        <div className="space-y-0.5">
+                          <span className="text-xs font-bold text-white block">Weekly Monitoring</span>
+                          <span className="text-[10px] text-zinc-400 block">Monday morning audits & alerts.</span>
+                          <span className="text-[11px] font-bold text-violet-400 block">$49 / month</span>
+                        </div>
+                      </label>
+
+                      <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        selectedPlan === "agency" ? "border-violet-500 bg-violet-600/5" : "border-zinc-850 bg-zinc-950/20"
+                      }`}>
+                        <input
+                          type="radio"
+                          name="plan"
+                          value="agency"
+                          checked={selectedPlan === "agency"}
+                          onChange={() => setSelectedPlan("agency")}
+                          className="mt-1"
+                        />
+                        <div className="space-y-0.5">
+                          <span className="text-xs font-bold text-white block">White-Label Agency</span>
+                          <span className="text-[10px] text-zinc-400 block">Up to 5 domains + Custom branding (Name/Logo).</span>
+                          <span className="text-[11px] font-bold text-violet-400 block">$99 / month</span>
+                        </div>
+                      </label>
                     </div>
-                  </label>
-                </div>
-              </div>
+                  </div>
+                </>
+              )}
 
               {/* Step 3: Payment Method Tabs */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-4 border-b border-zinc-800 gap-4">
-                <h2 className="text-xs uppercase tracking-wider font-bold text-violet-400">Step 3: Payment Method</h2>
+                <h2 className="text-xs uppercase tracking-wider font-bold text-violet-400">
+                  {user ? "Payment Method" : "Step 3: Payment Method"}
+                </h2>
                 <div className="flex gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-850 w-full sm:w-auto justify-between sm:justify-start">
                   <button
                     onClick={() => setMethod("card")}
@@ -613,7 +678,7 @@ function CheckoutContent() {
                     {getPlanName()}
                   </h4>
                   <p className="text-xxs text-zinc-400 font-mono truncate">
-                    Domain: {url}
+                    Domain: {url || "domain-pending"}
                   </p>
                 </div>
 
@@ -687,10 +752,16 @@ function CheckoutContent() {
             </div>
             
             <button
-              onClick={() => router.push(`/audit?url=${encodeURIComponent(url)}`)}
+              onClick={() => {
+                if (user) {
+                  router.push("/dashboard");
+                } else {
+                  router.push(`/audit?url=${encodeURIComponent(url)}`);
+                }
+              }}
               className="text-[10px] text-zinc-400 hover:text-white transition-all underline flex items-center gap-1 pt-2 cursor-pointer"
             >
-              ← Cancel & return to audit dashboard
+              {user ? "← Cancel & return to dashboard" : "← Cancel & return to audit dashboard"}
             </button>
           </div>
         </div>

@@ -40,25 +40,41 @@ export async function POST(req) {
     cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/, "");
     cleanDomain = cleanDomain.split("/")[0];
 
-    // Check subscription details to verify quota limits
-    const users = await query("SELECT subscription_tier FROM users WHERE id = ?", [user.id]);
-    if (!users || users.length === 0) {
-      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
+    // Calculate quota dynamically based on Closed Won subscriptions
+    const purchasedSubs = await query(
+      "SELECT packageRequest, COUNT(*) as count FROM leads WHERE email = ? AND status = 'Closed Won' GROUP BY packageRequest",
+      [user.email]
+    );
+
+    let allowedQuota = 0;
+    if (purchasedSubs && purchasedSubs.length > 0) {
+      for (const row of purchasedSubs) {
+        if (row.packageRequest === "Premium weekly") {
+          allowedQuota += row.count * 1;
+        } else if (row.packageRequest === "Premium agency") {
+          allowedQuota += row.count * 5;
+        }
+      }
     }
 
-    const tier = users[0].subscription_tier;
-    if (tier !== "weekly" && tier !== "agency") {
+    if (allowedQuota === 0) {
+      const users = await query("SELECT subscription_tier FROM users WHERE id = ?", [user.id]);
+      if (users && users.length > 0) {
+        const tier = users[0].subscription_tier;
+        if (tier === "weekly") allowedQuota = 1;
+        if (tier === "agency") allowedQuota = 5;
+      }
+    }
+
+    if (allowedQuota === 0) {
       return NextResponse.json({ error: "Weekly Monitoring or Agency plan required to add monitors" }, { status: 403 });
     }
 
     // Check quota limits
     const existing = await query("SELECT COUNT(*) as count FROM monitored_domains WHERE user_id = ?", [user.id]);
     const currentCount = existing[0].count;
-    if (tier === "weekly" && currentCount >= 1) {
-      return NextResponse.json({ error: "Weekly Monitoring is limited to 1 domain. Please upgrade to Agency for more." }, { status: 400 });
-    }
-    if (tier === "agency" && currentCount >= 5) {
-      return NextResponse.json({ error: "Agency license is limited to 5 domains." }, { status: 400 });
+    if (currentCount >= allowedQuota) {
+      return NextResponse.json({ error: `Your subscription quota is limited to ${allowedQuota} domains. Please upgrade to add more.` }, { status: 400 });
     }
 
     const id = "mon_" + Math.random().toString(36).substring(2, 11);

@@ -22,6 +22,15 @@ export default function AuditClient() {
   const [phone, setPhone] = useState("");
   const [countryCode, setCountryCode] = useState("+1");
   const [currentLeadId, setCurrentLeadId] = useState(null);
+
+  // User session state
+  const [user, setUser] = useState(null);
+
+  // Impact areas / Website Details
+  const [cmsPlatform, setCmsPlatform] = useState("");
+  const [businessNiche, setBusinessNiche] = useState("");
+  const [targetAudience, setTargetAudience] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
   
   // App states
   const [leadCaptured, setLeadCaptured] = useState(false);
@@ -55,6 +64,23 @@ export default function AuditClient() {
       setUrl(initialUrl);
     }
   }, [initialUrl]);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json();
+        if (data.session) {
+          setUser(data.session);
+          setName(data.session.full_name || data.session.name || "Logged In User");
+          setEmail(data.session.email || "");
+        }
+      } catch (e) {
+        console.error("Error fetching session:", e);
+      }
+    }
+    checkSession();
+  }, []);
 
   useEffect(() => {
     let interval;
@@ -692,22 +718,37 @@ export default function AuditClient() {
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
-    if (!url || !name || !email || !phone) {
-      setFormError("Please fill out all required fields.");
-      return;
+
+    const isUserLoggedIn = !!user;
+
+    if (isUserLoggedIn) {
+      if (!url || !cmsPlatform || !businessNiche || !targetAudience) {
+        setFormError("Please fill out all required fields.");
+        return;
+      }
+    } else {
+      if (!url || !name || !email || !phone) {
+        setFormError("Please fill out all required fields.");
+        return;
+      }
     }
     
     let leadId = null;
     try {
+      const leadNotes = isUserLoggedIn
+        ? `CMS Platform: ${cmsPlatform}, Business Niche: ${businessNiche}, Target Location: ${targetAudience}. (Logged in user SEO audit)`
+        : "Guest user SEO audit";
+
       const newLead = await addLead({
-        name,
-        email,
-        phone: `${countryCode} ${phone}`,
+        name: isUserLoggedIn ? (user.full_name || user.name || "Logged In User") : name,
+        email: isUserLoggedIn ? user.email : email,
+        phone: isUserLoggedIn ? "N/A" : `${countryCode} ${phone}`,
         website: url,
         status: "New",
         packageRequest: initialPlan === "premium" ? "Premium Report" : "Free Audit",
         seoScore: 0,
-        grade: "Pending"
+        grade: "Pending",
+        notes: leadNotes
       });
       leadId = newLead.id;
       setCurrentLeadId(leadId);
@@ -746,7 +787,10 @@ export default function AuditClient() {
             Deep-Scan Website SEO Auditor
           </h1>
           <p className="text-sm text-zinc-400 max-w-xl mx-auto">
-            Enter your details below to run a comprehensive check on your website&apos;s speed, mobile friendliness, meta configurations, and technical errors.
+            {user
+              ? `Authorized plan active: ${user.subscription_tier.charAt(0).toUpperCase() + user.subscription_tier.slice(1)}. Run on-demand technical audits on any website URL.`
+              : "Enter your details below to run a comprehensive check on your website's speed, mobile friendliness, meta configurations, and technical errors."
+            }
           </p>
         </div>
 
@@ -772,147 +816,317 @@ export default function AuditClient() {
           )
         )}
 
-        {/* LEAD CAPTURE FORM */}
+        {/* LEAD CAPTURE / AUDIT RUN FORM */}
         {!leadCaptured && !loading && !report && (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md max-w-lg mx-auto space-y-6 text-left">
-            <h3 className="text-lg font-bold text-white">Enter Details to Run Audit</h3>
+          <div className={`rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md mx-auto space-y-6 text-left ${
+            user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency") ? "max-w-2xl" : "max-w-lg"
+          }`}>
+            <h3 className="text-lg font-bold text-white">
+              {user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency")
+                ? "Run Technical SEO Audit"
+                : "Enter Details to Run Audit"
+              }
+            </h3>
             
             <form onSubmit={handleLeadSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
-                  Website URL
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. www.mybusiness.com"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
-                />
-              </div>
+              {user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency") ? (
+                /* Sleek Search-Bar Style Layout for Paid Subscribers */
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                        Website URL
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. www.mybusiness.com"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        className="w-full bg-zinc-950 px-4 py-3 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="sm:mt-5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] whitespace-nowrap cursor-pointer"
+                    >
+                      Analyze Website
+                    </button>
+                  </div>
 
-              <div>
-                <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
-                  Your Full Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
-                />
-              </div>
+                  {/* Advanced Settings Collapsible Chevron */}
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="flex items-center gap-2 text-xxs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-350 transition-colors cursor-pointer"
+                    >
+                      <span>{showAdvanced ? "▼" : "▶"} Advanced Report Settings</span>
+                    </button>
 
-              <div>
-                <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="e.g. john@business.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
-                />
-              </div>
+                    {showAdvanced && (
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl border border-zinc-850 bg-zinc-950/40 animate-fade-in">
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">
+                            CMS Platform
+                          </label>
+                          <select
+                            value={cmsPlatform}
+                            onChange={(e) => setCmsPlatform(e.target.value)}
+                            className="w-full bg-zinc-950 px-3 py-2 rounded-lg border border-zinc-850 text-xs text-zinc-400 focus:outline-none focus:border-violet-500"
+                          >
+                            <option value="">Select Platform</option>
+                            <option value="wordpress">WordPress</option>
+                            <option value="shopify">Shopify</option>
+                            <option value="webflow">Webflow</option>
+                            <option value="nextjs">Next.js</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
 
-              <div>
-                <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
-                  Contact Phone Number
-                </label>
-                <div className="flex bg-zinc-950 rounded-xl border border-zinc-850 focus-within:border-violet-500 overflow-visible relative">
-                  {/* Custom Dropdown Trigger */}
-                  <button
-                    type="button"
-                    onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                    onBlur={() => setTimeout(() => setIsCountryDropdownOpen(false), 200)}
-                    className="bg-zinc-950 border-r border-zinc-850 px-3 py-2.5 text-xs text-white focus:outline-none cursor-pointer flex items-center gap-1.5 min-w-[70px] justify-center hover:bg-zinc-900 transition-colors"
-                  >
-                    <span className="text-sm">
-                      {[
-                        { code: "+1", flag: "🇺🇸" },
-                        { code: "+44", flag: "🇬🇧" },
-                        { code: "+91", flag: "🇮🇳" },
-                        { code: "+61", flag: "🇦🇺" },
-                        { code: "+49", flag: "🇩🇪" },
-                        { code: "+33", flag: "🇫🇷" },
-                        { code: "+81", flag: "🇯🇵" },
-                      ].find(c => c.code === countryCode)?.flag || "🌐"}
-                    </span>
-                    <span className="font-medium">{countryCode}</span>
-                    <svg className={`w-3 h-3 text-zinc-500 transition-transform ${isCountryDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </button>
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">
+                            Business Niche
+                          </label>
+                          <select
+                            value={businessNiche}
+                            onChange={(e) => setBusinessNiche(e.target.value)}
+                            className="w-full bg-zinc-950 px-3 py-2 rounded-lg border border-zinc-850 text-xs text-zinc-400 focus:outline-none focus:border-violet-500"
+                          >
+                            <option value="">Select Niche</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="local">Local Business</option>
+                            <option value="saas">SaaS / B2B</option>
+                            <option value="blog">Blog / Publisher</option>
+                          </select>
+                        </div>
 
-                  {/* Dropdown Menu */}
-                  {isCountryDropdownOpen && (
-                    <ul className="absolute top-full left-0 mt-1 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-50 max-h-48 overflow-y-auto">
-                      {[
-                        { code: "+1", flag: "🇺🇸", label: "United States" },
-                        { code: "+44", flag: "🇬🇧", label: "United Kingdom" },
-                        { code: "+91", flag: "🇮🇳", label: "India" },
-                        { code: "+61", flag: "🇦🇺", label: "Australia" },
-                        { code: "+49", flag: "🇩🇪", label: "Germany" },
-                        { code: "+33", flag: "🇫🇷", label: "France" },
-                        { code: "+81", flag: "🇯🇵", label: "Japan" },
-                      ].map((country) => (
-                        <li key={country.code}>
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wide mb-1">
+                            Target Location
+                          </label>
+                          <select
+                            value={targetAudience}
+                            onChange={(e) => setTargetAudience(e.target.value)}
+                            className="w-full bg-zinc-950 px-3 py-2 rounded-lg border border-zinc-850 text-xs text-zinc-400 focus:outline-none focus:border-violet-500"
+                          >
+                            <option value="">Select Scope</option>
+                            <option value="local">Local City</option>
+                            <option value="national">National Market</option>
+                            <option value="global">International</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {formError && (
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-start gap-2 animate-fade-in">
+                      <span className="shrink-0 mt-0.5">⚠️</span>
+                      <span>{formError}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Original vertical form layout for Free users and Guests */
+                <>
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                      Website URL
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. www.mybusiness.com"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+
+                  {user ? (
+                    /* Free tier logged-in user fields */
+                    <>
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                          CMS Platform
+                        </label>
+                        <select
+                          required
+                          value={cmsPlatform}
+                          onChange={(e) => setCmsPlatform(e.target.value)}
+                          className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="">Select Platform</option>
+                          <option value="wordpress">WordPress</option>
+                          <option value="shopify">Shopify</option>
+                          <option value="webflow">Webflow</option>
+                          <option value="nextjs">Next.js</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                          Business Niche
+                        </label>
+                        <select
+                          required
+                          value={businessNiche}
+                          onChange={(e) => setBusinessNiche(e.target.value)}
+                          className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="">Select Niche</option>
+                          <option value="ecommerce">E-commerce</option>
+                          <option value="local">Local Business</option>
+                          <option value="saas">SaaS / B2B</option>
+                          <option value="blog">Blog / Publisher</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                          Target Location
+                        </label>
+                        <select
+                          required
+                          value={targetAudience}
+                          onChange={(e) => setTargetAudience(e.target.value)}
+                          className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="">Select Scope</option>
+                          <option value="local">Local City</option>
+                          <option value="national">National Market</option>
+                          <option value="global">International</option>
+                        </select>
+                      </div>
+                    </>
+                  ) : (
+                    /* Guest fields */
+                    <>
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                          Your Full Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. John Doe"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="e.g. john@business.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1">
+                          Contact Phone Number
+                        </label>
+                        <div className="flex bg-zinc-950 rounded-xl border border-zinc-850 focus-within:border-violet-500 overflow-visible relative">
                           <button
                             type="button"
-                            onClick={() => {
-                              setCountryCode(country.code);
-                              setIsCountryDropdownOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-violet-600 hover:text-white transition-colors flex items-center justify-between group"
+                            onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                            onBlur={() => setTimeout(() => setIsCountryDropdownOpen(false), 200)}
+                            className="bg-zinc-950 border-r border-zinc-850 px-3 py-2.5 text-xs text-white focus:outline-none cursor-pointer flex items-center gap-1.5 min-w-[70px] justify-center hover:bg-zinc-900 transition-colors"
                           >
-                            <span className="flex items-center gap-2">
-                              <span className="text-base">{country.flag}</span>
-                              <span className="truncate max-w-[100px]">{country.label}</span>
+                            <span className="text-sm">
+                              {[
+                                { code: "+1", flag: "🇺🇸" },
+                                { code: "+44", flag: "🇬🇧" },
+                                { code: "+91", flag: "🇮🇳" },
+                                { code: "+61", flag: "🇦🇺" },
+                                { code: "+49", flag: "🇩🇪" },
+                                { code: "+33", flag: "🇫🇷" },
+                                { code: "+81", flag: "🇯🇵" },
+                              ].find(c => c.code === countryCode)?.flag || "🌐"}
                             </span>
-                            <span className="text-zinc-500 text-[10px] font-mono group-hover:text-violet-200">{country.code}</span>
+                            <span className="font-medium">{countryCode}</span>
+                            <svg className={`w-3 h-3 text-zinc-500 transition-transform ${isCountryDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                           </button>
-                        </li>
-                      ))}
-                    </ul>
+
+                          {isCountryDropdownOpen && (
+                            <ul className="absolute top-full left-0 mt-1 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-50 max-h-48 overflow-y-auto">
+                              {[
+                                { code: "+1", flag: "🇺🇸", label: "United States" },
+                                { code: "+44", flag: "🇬🇧", label: "United Kingdom" },
+                                { code: "+91", flag: "🇮🇳", label: "India" },
+                                { code: "+61", flag: "🇦🇺", label: "Australia" },
+                                { code: "+49", flag: "🇩🇪", label: "Germany" },
+                                { code: "+33", flag: "🇫🇷", label: "France" },
+                                { code: "+81", flag: "🇯🇵", label: "Japan" },
+                              ].map((country) => (
+                                <li key={country.code}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setCountryCode(country.code);
+                                      setIsCountryDropdownOpen(false);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-violet-600 hover:text-white transition-colors flex items-center justify-between group"
+                                  >
+                                    <span className="flex items-center gap-2">
+                                      <span className="text-base">{country.flag}</span>
+                                      <span className="truncate max-w-[100px]">{country.label}</span>
+                                    </span>
+                                    <span className="text-zinc-500 text-[10px] font-mono group-hover:text-violet-200">{country.code}</span>
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          <input
+                            type="tel"
+                            required
+                            maxLength={
+                              countryCode === "+1" ? 10 :
+                              countryCode === "+44" ? 11 :
+                              countryCode === "+91" ? 10 :
+                              countryCode === "+61" ? 9 :
+                              countryCode === "+49" ? 11 :
+                              countryCode === "+33" ? 9 :
+                              countryCode === "+81" ? 10 :
+                              15
+                            }
+                            placeholder={countryCode === "+1" ? "555 555 5555" : countryCode === "+91" ? "98765 43210" : "Mobile Number"}
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                            className="w-full bg-transparent px-3 py-2.5 text-xs text-white placeholder-zinc-650 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </>
                   )}
 
-                  <input
-                    type="tel"
-                    required
-                    maxLength={
-                      countryCode === "+1" ? 10 :
-                      countryCode === "+44" ? 11 :
-                      countryCode === "+91" ? 10 :
-                      countryCode === "+61" ? 9 :
-                      countryCode === "+49" ? 11 :
-                      countryCode === "+33" ? 9 :
-                      countryCode === "+81" ? 10 :
-                      15
-                    }
-                    placeholder={countryCode === "+1" ? "555 555 5555" : countryCode === "+91" ? "98765 43210" : "Mobile Number"}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
-                    className="w-full bg-transparent px-3 py-2.5 text-xs text-white placeholder-zinc-650 focus:outline-none"
-                  />
-                </div>
-              </div>
+                  {formError && (
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-start gap-2 animate-fade-in">
+                      <span className="shrink-0 mt-0.5">⚠️</span>
+                      <span>{formError}</span>
+                    </div>
+                  )}
 
-              {formError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-start gap-2 animate-fade-in">
-                  <span className="shrink-0 mt-0.5">⚠️</span>
-                  <span>{formError}</span>
-                </div>
+                  <button
+                    type="submit"
+                    className="w-full mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                  >
+                    Analyze My Website Now
+                  </button>
+                </>
               )}
-
-              <button
-                type="submit"
-                className="w-full mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99]"
-              >
-                Analyze My Website Now
-              </button>
             </form>
           </div>
         )}

@@ -83,7 +83,8 @@ export const addLead = async (leadData) => {
   }
 
   const phoneRegex = /^[\+0-9\-\s\(\)]{8,20}$/;
-  if (!leadData.phone || !phoneRegex.test(leadData.phone.trim())) {
+  const isPlaceholderPhone = leadData.phone === "Not Provided" || leadData.phone === "N/A";
+  if (!leadData.phone || (!isPlaceholderPhone && !phoneRegex.test(leadData.phone.trim()))) {
     throw new Error("Invalid phone number format. Must be 8-20 digits long.");
   }
 

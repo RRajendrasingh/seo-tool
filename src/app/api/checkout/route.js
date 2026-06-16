@@ -12,7 +12,7 @@ const getStripe = () => {
 
 export async function POST(req) {
   try {
-    const { 
+    let { 
       url, 
       name, 
       email, 
@@ -22,6 +22,10 @@ export async function POST(req) {
       businessNiche, 
       targetAudience 
     } = await req.json();
+
+    if (!url && (plan === "weekly" || plan === "agency")) {
+      url = "domain-pending";
+    }
 
     if (!url) {
       return NextResponse.json({ error: "Target website URL is required" }, { status: 400 });

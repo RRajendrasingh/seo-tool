@@ -64,13 +64,15 @@ export async function GET(req) {
 
         // 2. Link to User Profile (Subscription & Monitors)
         if (email) {
-          const users = await query("SELECT id FROM users WHERE email = ?", [email]);
+          const users = await query("SELECT id, subscription_tier FROM users WHERE email = ?", [email]);
           if (users && users.length > 0) {
             const userId = users[0].id;
+            const currentTier = users[0].subscription_tier || "free";
             if (plan === "weekly" || plan === "agency") {
+              const newTier = (currentTier === "agency" && plan === "weekly") ? "agency" : plan;
               await query(
                 "UPDATE users SET subscription_tier = ?, subscription_status = 'active' WHERE id = ?",
-                [plan, userId]
+                [newTier, userId]
               );
               const monitorId = "mon_" + Math.random().toString(36).substring(2, 11);
               await query(
@@ -116,10 +118,12 @@ export async function POST(req) {
     const { query } = require("@/utils/db");
     
     // Find or create mock user
-    let users = await query("SELECT id FROM users WHERE email = ?", [email]);
+    let users = await query("SELECT id, subscription_tier FROM users WHERE email = ?", [email]);
     let userId;
+    let currentTier = "free";
     if (users && users.length > 0) {
       userId = users[0].id;
+      currentTier = users[0].subscription_tier || "free";
     } else {
       userId = "usr_" + Math.random().toString(36).substring(2, 11);
       await query(
@@ -132,11 +136,20 @@ export async function POST(req) {
     cleanWebsite = cleanWebsite.replace(/^(https?:\/\/)?(www\.)?/, "");
     cleanWebsite = cleanWebsite.split("/")[0];
 
+    // Create a Closed Won lead for consistency in local checkout simulation
+    const amountPaid = plan === "multi" ? 59.00 : plan === "weekly" ? 49.00 : plan === "agency" ? 99.00 : 29.00;
+    const leadId = "lead_" + Date.now();
+    await query(
+      "INSERT INTO leads (id, name, email, phone, website, date, seoScore, grade, status, packageRequest, amountPaid, notes) VALUES (?, ?, ?, ?, ?, ?, 0, 'Pending', 'Closed Won', ?, ?, ?)",
+      [leadId, name || "Client", email, "Not Provided", cleanWebsite, new Date().toISOString(), `Premium ${plan}`, amountPaid, `Local checkout simulation`]
+    );
+
     // Update user sub details or purchases in DB
     if (plan === "weekly" || plan === "agency") {
+      const newTier = (currentTier === "agency" && plan === "weekly") ? "agency" : plan;
       await query(
         "UPDATE users SET subscription_tier = ?, subscription_status = 'active' WHERE id = ?",
-        [plan, userId]
+        [newTier, userId]
       );
       
       const monitorId = "mon_" + Math.random().toString(36).substring(2, 11);

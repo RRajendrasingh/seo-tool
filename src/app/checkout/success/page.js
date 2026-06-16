@@ -47,8 +47,13 @@ function SuccessContent() {
           // Clear verifying spinner and trigger redirect
           setVerifying(false);
           
+          const plan = data.metadata?.plan || "";
           setTimeout(() => {
-            router.push(`/audit/report?url=${encodeURIComponent(targetUrl)}`);
+            if (plan === "weekly" || plan === "agency" || targetUrl === "domain-pending" || !targetUrl) {
+              router.push("/dashboard");
+            } else {
+              router.push(`/audit/report?url=${encodeURIComponent(targetUrl)}`);
+            }
           }, 1500);
         } else {
           setError("Stripe indicates this transaction checkout is unpaid or failed.");

@@ -24,6 +24,7 @@ function ReportContent() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
   const [session, setSession] = useState(null);
+  const [loadingSession, setLoadingSession] = useState(true);
 
   useEffect(() => {
     async function fetchSession() {
@@ -38,6 +39,8 @@ function ReportContent() {
         }
       } catch (err) {
         console.error("Failed to load user session on report page:", err);
+      } finally {
+        setLoadingSession(false);
       }
     }
     fetchSession();
@@ -73,7 +76,6 @@ function ReportContent() {
         const token = JSON.parse(tokenString);
         if (token && token.paid) {
           setIsPaid(true);
-          runAudit(urlParam);
         } else {
           setIsPaid(false);
         }
@@ -86,8 +88,15 @@ function ReportContent() {
     } finally {
       setCheckingPayment(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlParam, router]);
+
+  // 1b. Trigger Audit run when payment is verified or session tier is active
+  useEffect(() => {
+    if (isPaid && !report && !loading && !error && urlParam) {
+      runAudit(urlParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPaid, report, loading, error, urlParam]);
 
   // Loading animation loop
   useEffect(() => {
@@ -673,7 +682,7 @@ function ReportContent() {
   };
 
   // Render Check payment status screen
-  if (checkingPayment) {
+  if (checkingPayment || loadingSession) {
     return (
       <div className="bg-zinc-950 min-h-screen flex items-center justify-center text-white">
         <div className="text-center space-y-4">
