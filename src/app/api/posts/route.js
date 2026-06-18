@@ -1,24 +1,30 @@
 import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
 
-// GET: Fetch all posts
-export async function GET() {
+// GET: Fetch posts (supports ?status=draft for admin, defaults to published only)
+export async function GET(request) {
   try {
-    const posts = await query("SELECT * FROM posts");
-    
-    // Sort posts by date descending (latest first)
-    const sortedPosts = posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const { searchParams } = new URL(request.url);
+    const statusFilter = searchParams.get("status"); // 'draft', 'published', or null (all published)
 
-    // Map database featured boolean/integer 1/0 to javascript boolean true/false
-    const formattedPosts = sortedPosts.map(post => ({
+    let posts;
+    if (statusFilter === "draft") {
+      posts = await query("SELECT * FROM posts WHERE status = 'draft' ORDER BY date DESC");
+    } else if (statusFilter === "all") {
+      posts = await query("SELECT * FROM posts ORDER BY date DESC");
+    } else {
+      // Default: only published posts for the public news page
+      posts = await query("SELECT * FROM posts WHERE status = 'published' OR status IS NULL ORDER BY date DESC");
+    }
+
+    const formattedPosts = posts.map(post => ({
       ...post,
-      featured: !!post.featured
+      featured: !!post.featured,
+      status: post.status || "published",
     }));
 
     return NextResponse.json(formattedPosts, {
-      headers: {
-        "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59"
-      }
+      headers: { "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59" },
     });
   } catch (error) {
     console.error("Failed to fetch posts:", error);
@@ -45,7 +51,7 @@ export async function POST(request) {
     }
 
     await query(
-      "INSERT INTO posts (id, slug, title, `desc`, content, category, date, readTime, author, featuredImage, featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO posts (id, slug, title, `desc`, content, category, date, readTime, author, featuredImage, featured, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         id,
         postData.slug,
@@ -57,7 +63,8 @@ export async function POST(request) {
         postData.readTime || "1 min read",
         postData.author || "Martin",
         postData.featuredImage || "",
-        featured
+        featured,
+        postData.status || "published",
       ]
     );
 

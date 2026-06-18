@@ -62,6 +62,13 @@ export default function AdminDashboard() {
   const [blogSearch, setBlogSearch] = useState("");
   const ckeditorRef = useRef(null); // Holds the CKEditor instance
 
+  // Auto-Draft Pipeline States
+  const [drafts, setDrafts] = useState([]);
+  const [draftsLoading, setDraftsLoading] = useState(false);
+  const [draftMsg, setDraftMsg] = useState("");
+  const [draftPreview, setDraftPreview] = useState(null); // post object for preview modal
+  const [pollingStatus, setPollingStatus] = useState(null); // null | 'loading' | { processed, skipped, errors }
+
   // Auto-generate slug when title changes (only when creating a new post)
   useEffect(() => {
     if (editingPostId) return;
@@ -141,6 +148,45 @@ export default function AdminDashboard() {
 
   const refreshPosts = () => {
     getAllPosts().then(setPosts).catch(console.error);
+  };
+
+  const refreshDrafts = useCallback(() => {
+    setDraftsLoading(true);
+    fetch("/api/drafts")
+      .then((r) => r.json())
+      .then((data) => { setDrafts(Array.isArray(data) ? data : []); setDraftsLoading(false); })
+      .catch(() => setDraftsLoading(false));
+  }, []);
+
+  const handleDraftAction = async (id, action) => {
+    setDraftMsg("");
+    try {
+      const res = await fetch("/api/drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Action failed");
+      setDraftMsg(action === "publish" ? "✅ Post published successfully!" : "🗑 Draft discarded.");
+      refreshDrafts();
+      if (action === "publish") refreshPosts();
+    } catch (err) {
+      setDraftMsg(`❌ ${err.message}`);
+    }
+  };
+
+  const handleManualPoll = async () => {
+    setPollingStatus("loading");
+    setDraftMsg("");
+    try {
+      const res = await fetch("/api/rss-poll");
+      const data = await res.json();
+      setPollingStatus(data);
+      if (data.processed > 0) refreshDrafts();
+    } catch (err) {
+      setPollingStatus({ error: err.message });
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -697,11 +743,12 @@ export default function AdminDashboard() {
               { id: "leads", label: "Leads Database", icon: "📊" },
               { id: "analytics", label: "Visual Analytics", icon: "📈" },
               { id: "blog", label: "Manage Blog", icon: "📰" },
+              { id: "drafts", label: "Auto-Drafts", icon: "📥", badge: drafts.length || null },
               { id: "settings", label: "Dashboard Settings", icon: "⚙️" },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); if (tab.id === "drafts") refreshDrafts(); }}
                 className={`pb-4 px-4 sm:px-6 text-xs sm:text-sm font-semibold transition-all relative whitespace-nowrap ${
                   activeTab === tab.id
                     ? "text-violet-400 font-bold"
@@ -710,6 +757,9 @@ export default function AdminDashboard() {
               >
                 <span className="mr-1.5">{tab.icon}</span>
                 {tab.label}
+                {tab.badge ? (
+                  <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[9px] font-bold bg-violet-600 text-white rounded-full">{tab.badge}</span>
+                ) : null}
                 {activeTab === tab.id && (
                   <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-violet-500" />
                 )}
@@ -1358,6 +1408,181 @@ export default function AdminDashboard() {
         )}
 
         {/* ==================== TAB 4: BLOG CMS MANAGER ==================== */}
+        {/* ==================== TAB: AUTO-DRAFTS ==================== */}
+        {activeTab === "drafts" && (
+          <div className="space-y-6">
+
+            {/* Header row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-lg font-bold text-white">📥 Auto-Draft Pipeline</h2>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  AI-generated drafts from SEO news sources. Review, edit, and publish with one click.
+                </p>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  onClick={handleManualPoll}
+                  disabled={pollingStatus === "loading"}
+                  className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-xs font-semibold text-white hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {pollingStatus === "loading" ? "⏳ Fetching..." : "🔄 Fetch Latest News"}
+                </button>
+                <button
+                  onClick={refreshDrafts}
+                  className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition-all cursor-pointer"
+                >
+                  ↻ Refresh
+                </button>
+              </div>
+            </div>
+
+            {/* Poll status result */}
+            {pollingStatus && pollingStatus !== "loading" && (
+              <div className={`rounded-xl border px-5 py-4 text-xs leading-relaxed ${
+                pollingStatus.error
+                  ? "border-rose-800/40 bg-rose-950/20 text-rose-300"
+                  : "border-emerald-800/40 bg-emerald-950/20 text-emerald-300"
+              }`}>
+                {pollingStatus.error ? (
+                  <span>❌ Poll error: {pollingStatus.error}</span>
+                ) : (
+                  <span>
+                    ✅ Poll complete — <strong>{pollingStatus.processed}</strong> new draft(s) created,&nbsp;
+                    <strong>{pollingStatus.skipped}</strong> skipped (already seen)
+                    {pollingStatus.errors?.length > 0 && (
+                      <span className="block text-rose-400 mt-1">⚠️ {pollingStatus.errors.join(" | ")}</span>
+                    )}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Draft action feedback */}
+            {draftMsg && (
+              <div className={`rounded-xl border px-5 py-3 text-xs font-medium ${
+                draftMsg.startsWith("✅")
+                  ? "border-emerald-800/40 bg-emerald-950/20 text-emerald-300"
+                  : draftMsg.startsWith("🗑")
+                  ? "border-zinc-800 bg-zinc-900/40 text-zinc-400"
+                  : "border-rose-800/40 bg-rose-950/20 text-rose-300"
+              }`}>
+                {draftMsg}
+              </div>
+            )}
+
+            {/* RSS Sources info panel */}
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 space-y-3">
+              <h3 className="text-xxs uppercase tracking-widest font-bold text-zinc-500">📡 Monitored Sources</h3>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { name: "Search Engine Roundtable", url: "seroundtable.com", color: "violet" },
+                  { name: "Search Engine Journal", url: "searchenginejournal.com", color: "cyan" },
+                ].map((src) => (
+                  <div key={src.url} className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium
+                    ${ src.color === "violet" ? "border-violet-500/30 bg-violet-500/10 text-violet-300" : "border-cyan-500/30 bg-cyan-500/10 text-cyan-300" }`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                    {src.name}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-zinc-600 leading-relaxed">
+                Vercel Cron polls these RSS feeds every 30 minutes automatically. Use &quot;Fetch Latest News&quot; to trigger manually.
+              </p>
+            </div>
+
+            {/* Drafts List */}
+            {draftsLoading ? (
+              <div className="text-center py-16 text-zinc-500 text-sm animate-pulse">Loading drafts...</div>
+            ) : drafts.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/40 py-20 text-center space-y-3">
+                <div className="text-4xl">📭</div>
+                <p className="text-sm font-semibold text-zinc-400">No drafts yet</p>
+                <p className="text-xs text-zinc-600">Click &quot;Fetch Latest News&quot; to pull the latest articles from monitored sources.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">{drafts.length} draft(s) awaiting review</p>
+                {drafts.map((draft) => (
+                  <div
+                    key={draft.id}
+                    className="rounded-2xl border border-zinc-850 bg-zinc-900/40 backdrop-blur-md overflow-hidden hover:border-violet-500/30 transition-all group"
+                  >
+                    <div className="flex flex-col sm:flex-row gap-0">
+                      {/* Cover image */}
+                      {draft.featuredImage && (
+                        <div className="sm:w-56 flex-shrink-0 h-40 sm:h-auto relative overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={draft.featuredImage}
+                            alt={draft.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => { e.target.style.display = "none"; }}
+                          />
+                        </div>
+                      )}
+                      {/* Content */}
+                      <div className="flex-1 p-5 space-y-3">
+                        <div className="flex items-start gap-3 justify-between">
+                          <div className="space-y-1 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-400 border border-violet-500/20">
+                                {draft.category}
+                              </span>
+                              <span className="text-[9px] text-zinc-600">{draft.author} · {draft.date}</span>
+                            </div>
+                            <h3 className="text-sm font-bold text-white leading-snug line-clamp-2">{draft.title}</h3>
+                            <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">{draft.desc}</p>
+                          </div>
+                        </div>
+                        {/* Action buttons */}
+                        <div className="flex gap-2 flex-wrap pt-1">
+                          <button
+                            onClick={() => setDraftPreview(draft)}
+                            className="rounded-lg border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition-all cursor-pointer"
+                          >
+                            👁 Preview
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingPostId(draft.id);
+                              setPostTitle(draft.title);
+                              setPostDesc(draft.desc);
+                              setPostContent(draft.content);
+                              setPostCategory(draft.category);
+                              setPostAuthor(draft.author);
+                              setPostFeaturedImage(draft.featuredImage || "");
+                              setPostSlug(draft.slug);
+                              setActiveTab("blog");
+                              setTimeout(() => document.getElementById("blog-editor-form")?.scrollIntoView({ behavior: "smooth" }), 100);
+                            }}
+                            className="rounded-lg border border-cyan-800/40 bg-cyan-950/20 px-4 py-2 text-xs font-semibold text-cyan-300 hover:bg-cyan-900/30 transition-all cursor-pointer"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => handleDraftAction(draft.id, "publish")}
+                            className="rounded-lg bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 px-4 py-2 text-xs font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                          >
+                            🚀 Publish
+                          </button>
+                          <button
+                            onClick={() => { if (confirm("Discard this draft permanently?")) handleDraftAction(draft.id, "discard"); }}
+                            className="rounded-lg border border-rose-900/40 bg-rose-950/10 hover:bg-rose-900/20 px-4 py-2 text-xs font-semibold text-rose-400 transition-all cursor-pointer"
+                          >
+                            🗑 Discard
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ==================== TAB: BLOG CMS ==================== */}
         {activeTab === "blog" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
             
@@ -1943,6 +2168,59 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* ==================== DRAFT PREVIEW MODAL ==================== */}
+        {draftPreview && (
+          <div
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setDraftPreview(null)}
+          >
+            <div
+              className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-zinc-850 sticky top-0 bg-zinc-900 rounded-t-2xl">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] uppercase tracking-widest font-bold text-violet-400">{draftPreview.category} · {draftPreview.readTime}</span>
+                  <h2 className="text-base font-bold text-white leading-snug">{draftPreview.title}</h2>
+                  <p className="text-[10px] text-zinc-500">{draftPreview.author} · {draftPreview.date}</p>
+                </div>
+                <button
+                  onClick={() => setDraftPreview(null)}
+                  className="ml-4 flex-shrink-0 w-8 h-8 rounded-full border border-zinc-800 text-zinc-500 hover:text-white flex items-center justify-center text-sm transition-all cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              {/* Cover image */}
+              {draftPreview.featuredImage && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={draftPreview.featuredImage} alt={draftPreview.title} className="w-full h-56 object-cover" />
+              )}
+              {/* Content */}
+              <div
+                className="p-6 prose prose-sm prose-invert max-w-none text-zinc-300 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: draftPreview.content }}
+              />
+              {/* Footer actions */}
+              <div className="flex gap-3 p-6 border-t border-zinc-850">
+                <button
+                  onClick={() => { handleDraftAction(draftPreview.id, "publish"); setDraftPreview(null); }}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 py-3 text-xs font-bold text-white transition-all cursor-pointer"
+                >
+                  🚀 Publish Now
+                </button>
+                <button
+                  onClick={() => setDraftPreview(null)}
+                  className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-5 py-3 text-xs font-semibold text-zinc-400 hover:text-white transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}

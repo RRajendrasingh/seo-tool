@@ -47,7 +47,22 @@ export async function GET() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
-    // 4. Pre-seed default blog posts if table is empty
+    // 4. Add status column to posts (safe migration — ignored if already exists)
+    try {
+      await query("ALTER TABLE posts ADD COLUMN status VARCHAR(20) DEFAULT 'published'");
+    } catch { /* column already exists */ }
+
+    // 5. Create rss_seen table for Auto-Draft deduplication
+    await query(`
+      CREATE TABLE IF NOT EXISTS rss_seen (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        guid VARCHAR(512) NOT NULL UNIQUE,
+        source_url VARCHAR(255),
+        seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 6. Pre-seed default blog posts if table is empty
     const postsCount = await query("SELECT COUNT(*) as count FROM posts");
     if (postsCount && postsCount[0] && postsCount[0].count === 0) {
       const defaultPosts = [

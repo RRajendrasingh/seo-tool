@@ -24,6 +24,10 @@ export default function ServicesClient() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
         </svg>
       ),
+      marketFocusTitle: "Local SEO & Location Targeting",
+      marketFocusDesc: "Optimizing your footprint for local searches drives 3x more qualified leads. Implementing localized schema and city landing pages enables search engines to map your services to regional intent.",
+      marketFocusLinkText: "Explore our local SEO location pages",
+      marketFocusHref: "/seo-services/",
     },
     {
       id: "aeo-geo",
@@ -44,6 +48,10 @@ export default function ServicesClient() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </svg>
       ),
+      marketFocusTitle: "The Rise of Generative AI Search",
+      marketFocusDesc: "By 2027, over 50% of search traffic is estimated to occur on generative response engines. Traditional keywords are shifting to conversational queries. Optimizing for AEO and GEO ensures your brand is chosen by LLMs to fulfill search requests.",
+      marketFocusLinkText: "Audit your site’s AEO readiness",
+      marketFocusHref: "/audit/",
     },
     {
       id: "web-dev",
@@ -64,6 +72,10 @@ export default function ServicesClient() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
         </svg>
       ),
+      marketFocusTitle: "Core Web Vitals & Loading Speed",
+      marketFocusDesc: "Google's page experience ranking metrics favor websites with a Largest Contentful Paint under 2.5s and zero layout shifts. Statically exported builds load Edge-cached code instantly to maximize retention.",
+      marketFocusLinkText: "Test your page loading score",
+      marketFocusHref: "/audit/",
     },
     {
       id: "saas",
@@ -84,6 +96,10 @@ export default function ServicesClient() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
       ),
+      marketFocusTitle: "Lead Generation Tools & Platforms",
+      marketFocusDesc: "Proprietary software tools and custom audit scanners serve as highly effective marketing lead magnets. Secure payments and dashboards drive customer conversions and recurring subscriptions.",
+      marketFocusLinkText: "Explore our dashboard portal",
+      marketFocusHref: "/dashboard/",
     },
   ];
 
@@ -217,17 +233,17 @@ export default function ServicesClient() {
                     Market Focus
                   </span>
                   <div className="space-y-3">
-                    <h4 className="text-lg font-bold text-white">The Rise of Generative AI Search</h4>
+                    <h4 className="text-lg font-bold text-white">{service.marketFocusTitle}</h4>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      By 2027, over 50% of search traffic is estimated to occur on generative response engines. Traditional keywords are shifting to conversational queries. Optimizing for AEO and GEO ensures your brand is chosen by LLMs to fulfill search requests.
+                      {service.marketFocusDesc}
                     </p>
                   </div>
                   <div className="h-px bg-zinc-850" />
                   <Link
-                    href="/audit/"
+                    href={service.marketFocusHref}
                     className="flex items-center justify-between text-xs font-bold text-white hover:text-violet-400 transition-colors group"
                   >
-                    <span>Audit your site’s AEO readiness</span>
+                    <span>{service.marketFocusLinkText}</span>
                     <svg
                       className="h-4.5 w-4.5 text-zinc-500 group-hover:text-violet-400 transition-colors"
                       fill="none"

@@ -92,7 +92,7 @@ export async function PUT(request, { params }) {
     const dateStr = postData.date || new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
 
     await query(
-      "UPDATE posts SET slug = ?, title = ?, `desc` = ?, content = ?, category = ?, date = ?, readTime = ?, author = ?, featuredImage = ?, featured = ? WHERE id = ?",
+      "UPDATE posts SET slug = ?, title = ?, `desc` = ?, content = ?, category = ?, date = ?, readTime = ?, author = ?, featuredImage = ?, featured = ?, status = ? WHERE id = ?",
       [
         postData.slug,
         postData.title,
@@ -104,6 +104,7 @@ export async function PUT(request, { params }) {
         postData.author || "Martin",
         postData.featuredImage || "",
         featured,
+        postData.status || "published",
         dbPostId
       ]
     );

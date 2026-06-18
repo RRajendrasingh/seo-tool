@@ -826,6 +826,15 @@ export default function HomeClient() {
               </Link>
             ))}
           </div>
+
+          <div className="mt-12 text-center relative z-10">
+            <Link
+              href="/seo-services/"
+              className="inline-flex items-center gap-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 hover:border-violet-500/30 px-6 py-3 text-xs font-bold text-violet-400 hover:text-violet-300 transition-all uppercase tracking-wider"
+            >
+              Explore All USA Locations →
+            </Link>
+          </div>
         </div>
       </div>
 
