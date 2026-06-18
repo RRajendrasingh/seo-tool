@@ -4,7 +4,7 @@
 export const RSS_SOURCES = [
   {
     name: "Search Engine Roundtable",
-    url: "https://www.seroundtable.com/feed",
+    url: "https://www.seroundtable.com/index.xml",  // Correct feed (not /feed)
     category: "Core Updates",
     author: "Barry Schwartz",
   },

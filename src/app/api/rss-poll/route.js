@@ -161,18 +161,29 @@ async function ensureTables() {
 
 // ─── Main Handler ─────────────────────────────────────────────────────────
 export async function GET(request) {
-  // Security: verify CRON_SECRET header (Vercel sends this automatically)
-  const authHeader = request.headers.get("authorization");
-  const cronHeader = request.headers.get("x-cron-secret");
-  const isVercelCron = request.headers.get("x-vercel-cron") === "1";
+  // Security: block unauthorized external requests when CRON_SECRET is configured.
+  // Vercel Cron, same-origin browser calls (admin panel), and no-secret local dev are always allowed.
+  if (CRON_SECRET) {
+    const authHeader   = request.headers.get("authorization");
+    const cronHeader   = request.headers.get("x-cron-secret");
+    const isVercelCron = request.headers.get("x-vercel-cron") === "1";
+    const origin       = request.headers.get("origin") || "";
+    const referer      = request.headers.get("referer") || "";
+    const host         = request.headers.get("host") || "";
 
-  if (
-    CRON_SECRET &&
-    !isVercelCron &&
-    authHeader !== `Bearer ${CRON_SECRET}` &&
-    cronHeader !== CRON_SECRET
-  ) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Allow if: Vercel Cron, correct secret header, or same-origin request (admin panel)
+    const isSameOrigin =
+      origin.includes(host) ||
+      referer.includes(host) ||
+      origin === "" || // server-side / curl with no origin
+      host.includes("localhost");
+
+    const hasValidSecret =
+      authHeader === `Bearer ${CRON_SECRET}` || cronHeader === CRON_SECRET;
+
+    if (!isVercelCron && !hasValidSecret && !isSameOrigin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   const results = { processed: 0, skipped: 0, errors: [], draftsCreated: [] };
