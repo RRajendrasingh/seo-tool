@@ -220,8 +220,27 @@ export async function GET(request) {
             continue;
           }
 
-          // 2. Rewrite with Gemini
-          const rewrittenHTML = await rewriteWithGemini(item.title, rawContent, source.name);
+          // 2. Rewrite with Gemini — GRACEFUL FALLBACK if key is missing or API fails.
+          //    This NEVER crashes the pipeline or affects the main website.
+          let rewrittenHTML;
+          if (!GEMINI_API_KEY) {
+            rewrittenHTML = `<div style="border:2px dashed #f59e0b;padding:16px;margin-bottom:20px;border-radius:8px;background:#fef9c3;color:#854d0e;font-family:sans-serif;">
+              <strong>&#9888; Gemini API key not configured.</strong> Original article saved as draft.
+              Add <code>GEMINI_API_KEY</code> to your .env.local for AI rewrites.
+            </div><p>${rawContent.substring(0, 3000)}</p>`;
+            results.errors.push(`Gemini key missing \u2014 raw draft saved for: ${item.title}`);
+          } else {
+            try {
+              rewrittenHTML = await rewriteWithGemini(item.title, rawContent, source.name);
+            } catch (geminiErr) {
+              // Key invalid / quota exceeded / network error \u2014 save raw draft, don\u2019t crash
+              rewrittenHTML = `<div style="border:2px dashed #f59e0b;padding:16px;margin-bottom:20px;border-radius:8px;background:#fef9c3;color:#854d0e;font-family:sans-serif;">
+                <strong>&#9888; AI rewrite failed:</strong> ${String(geminiErr.message).substring(0, 200)}<br/>
+                Original content saved. Please edit before publishing.
+              </div><p>${rawContent.substring(0, 3000)}</p>`;
+              results.errors.push(`Gemini error for "${item.title}": ${geminiErr.message.substring(0, 100)}`);
+            }
+          }
 
           // 3. Build image URL
           const imageUrl = buildImageUrl(item.title);
