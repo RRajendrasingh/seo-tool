@@ -121,7 +121,7 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
    pre-compiled colors at runtime via specificity.
 ═══════════════════════════════════════════════════════════ */
 
-/* ── Page backgrounds ───────────────────────────────────── */
+.light .bg-black\/60 { background-color: rgba(255, 255, 255, 0.85) !important; color: #1e293b !important; }
 .light .bg-zinc-950  { background-color: #f8fafc !important; }
 .light .bg-zinc-900  { background-color: #f1f5f9 !important; }
 .light .bg-zinc-800  { background-color: #e2e8f0 !important; }
@@ -173,7 +173,15 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .bg-amber-500\/\[0\.05\] { background-color: rgba(217, 119, 6, 0.05) !important; }
 .light .bg-rose-500\/\[0\.05\] { background-color: rgba(225, 29, 72, 0.05) !important; }
 .light .bg-rose-950\/40     { background-color: rgba(225, 29, 72, 0.1) !important; }
+.light .bg-rose-950\/80     { background-color: rgba(225, 29, 72, 0.15) !important; }
+.light .hover\:bg-rose-900:hover { background-color: rgba(225, 29, 72, 0.25) !important; }
 .light .bg-amber-950\/40    { background-color: rgba(217, 119, 6, 0.1) !important; }
+.light .bg-amber-950\/15    { background-color: rgba(217, 119, 6, 0.08) !important; }
+.light .bg-emerald-950\/15  { background-color: rgba(5, 150, 105, 0.08) !important; }
+.light .bg-rose-950\/20     { background-color: rgba(225, 29, 72, 0.08) !important; }
+.light .bg-cyan-950\/10     { background-color: rgba(6, 182, 212, 0.05) !important; }
+.light .bg-violet-500\/8    { background-color: rgba(124, 58, 237, 0.05) !important; }
+.light .bg-cyan-500\/8      { background-color: rgba(6, 182, 212, 0.05) !important; }
 .light .bg-cyan-600\/5      { background-color: rgba(6, 182, 212, 0.03) !important; }
 .light .bg-violet-600\/5    { background-color: rgba(124, 58, 237, 0.03) !important; }
 .light .bg-cyan-500\/5      { background-color: rgba(6, 182, 212, 0.06) !important; }
@@ -217,6 +225,8 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .text-amber-400   { color: #d97706 !important; }
 .light .text-amber-500   { color: #b45309 !important; }
 .light .text-amber-300   { color: #d97706 !important; }
+.light .text-emerald-300 { color: #059669 !important; }
+.light .text-cyan-300    { color: #0891b2 !important; }
 .light .text-red-400     { color: #dc2626 !important; }
 .light .text-red-500     { color: #b91c1c !important; }
 
@@ -263,6 +273,13 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .border-cyan-400      { border-color: #0891b2 !important; }
 .light .border-cyan-500\/20   { border-color: rgba(6, 182, 212, 0.15) !important; }
 .light .border-cyan-500\/10   { border-color: rgba(6, 182, 212, 0.08) !important; }
+.light .border-amber-800\/40  { border-color: rgba(217, 119, 6, 0.2) !important; }
+.light .border-emerald-800\/40 { border-color: rgba(5, 150, 105, 0.2) !important; }
+.light .border-rose-800\/50   { border-color: rgba(225, 29, 72, 0.2) !important; }
+.light .border-rose-900\/40   { border-color: rgba(225, 29, 72, 0.2) !important; }
+.light .border-cyan-800\/30   { border-color: rgba(6, 182, 212, 0.2) !important; }
+.light .border-violet-500\/25 { border-color: rgba(124, 58, 237, 0.15) !important; }
+.light .border-cyan-500\/25   { border-color: rgba(6, 182, 212, 0.15) !important; }
 .light .border-indigo-500\/20 { border-color: rgba(79, 70, 229, 0.15) !important; }
 .light .border-indigo-500\/10 { border-color: rgba(79, 70, 229, 0.08) !important; }
 .light .border-violet-500\/30 { border-color: rgba(124, 58, 237, 0.15) !important; }

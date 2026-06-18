@@ -1,10 +1,8 @@
 import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { RSS_SOURCES } from "@/data/rssSources";
+import sanitizeHtml from "sanitize-html";
 
 // ─── Config ───────────────────────────────────────────────────────────────
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const CRON_SECRET   = process.env.CRON_SECRET || "";
 const IMAGE_W       = 1280;
 const IMAGE_H       = 675;
@@ -21,8 +19,8 @@ async function fetchRSSItems(feedUrl) {
   const xml = await res.text();
 
   const items = [];
-  // Match <item> or <entry> blocks
-  const itemRegex = /<(?:item|entry)>([\s\S]*?)<\/(?:item|entry)>/g;
+  // Match <item>, <entry>, or <url> blocks
+  const itemRegex = /<(?:item|entry|url)>([\s\S]*?)<\/(?:item|entry|url)>/g;
   let match;
   while ((match = itemRegex.exec(xml)) !== null) {
     const block = match[1];
@@ -38,10 +36,10 @@ async function fetchRSSItems(feedUrl) {
       return m ? m[1] : "";
     };
 
-    const guid = get("guid") || get("id") || getAttr("link", "href") || get("link");
-    const link = get("link") || getAttr("link", "href") || guid;
-    const title = get("title");
-    const pubDate = get("pubDate") || get("published") || get("updated");
+    const guid = get("guid") || get("id") || get("loc") || getAttr("link", "href") || get("link");
+    const link = get("link") || getAttr("link", "href") || get("loc") || guid;
+    const title = get("title") || get("news:title") || get("image:title");
+    const pubDate = get("pubDate") || get("published") || get("updated") || get("lastmod") || get("news:publication_date");
 
     if (guid && title && link) {
       items.push({ guid, link, title, pubDate });
@@ -50,7 +48,7 @@ async function fetchRSSItems(feedUrl) {
   return items;
 }
 
-/** Fetch full article HTML and extract readable text content */
+/** Fetch full article HTML and sanitize it to keep formatting and images */
 async function fetchArticleContent(url) {
   try {
     const res = await fetch(url, {
@@ -61,67 +59,47 @@ async function fetchArticleContent(url) {
     if (!res.ok) return "";
     const html = await res.text();
 
-    // Remove scripts, styles, nav, footer, aside, ads
-    let cleaned = html
-      .replace(/<script[\s\S]*?<\/script>/gi, "")
-      .replace(/<style[\s\S]*?<\/style>/gi, "")
-      .replace(/<nav[\s\S]*?<\/nav>/gi, "")
-      .replace(/<footer[\s\S]*?<\/footer>/gi, "")
-      .replace(/<aside[\s\S]*?<\/aside>/gi, "")
-      .replace(/<header[\s\S]*?<\/header>/gi, "")
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s{2,}/g, " ")
-      .trim();
+    // Try to extract the main article body to avoid nav/footers
+    const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+    const mainMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+    const coreHtml = articleMatch ? articleMatch[1] : (mainMatch ? mainMatch[1] : html);
 
-    // Limit to first 4000 chars for Gemini context
-    return cleaned.substring(0, 4000);
-  } catch {
+    // Sanitize and keep safe HTML tags including images and headings
+    const cleanHtml = sanitizeHtml(coreHtml, {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'figure', 'figcaption' ]),
+      nonTextTags: [ 'style', 'script', 'textarea', 'noscript', 'header', 'footer', 'nav', 'aside', 'form', 'iframe', 'svg', 'button' ],
+      exclusiveFilter: function(frame) {
+        if (frame.tag === 'div' && frame.attribs.class) {
+           const cls = frame.attribs.class.toLowerCase();
+           if (cls.match(/(?:^|\s|-|_)(nav|menu|footer|sidebar|widget|header|social|share)(?:$|\s|-|_)/)) {
+              return true;
+           }
+        }
+        if (frame.tag === 'div' && frame.attribs.id) {
+           const id = frame.attribs.id.toLowerCase();
+           if (id.match(/(?:^|\s|-|_)(nav|menu|footer|sidebar|widget|header|social|share)(?:$|\s|-|_)/)) {
+              return true;
+           }
+        }
+        return false;
+      },
+      allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        'img': ['src', 'alt', 'width', 'height'],
+        'a': ['href', 'title', 'target']
+      }
+    });
+
+    return cleanHtml.trim();
+  } catch (err) {
+    console.error("Fetch article error:", err);
     return "";
   }
 }
 
-/** Rewrite article using Gemini 2.0 Flash */
-async function rewriteWithGemini(title, rawContent, sourceName) {
-  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not set");
-
-  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0.9, maxOutputTokens: 2048 },
-  });
-
-  const prompt = `You are an expert SEO journalist writing for a leading SEO tools blog. 
-Rewrite the following article titled "${title}" (originally from ${sourceName}) as a fresh, engaging blog post.
-
-STRICT RULES:
-- Write in a natural, human voice — conversational but authoritative
-- Use contractions (it's, you'll, we've, don't)
-- Vary sentence lengths — mix short punchy lines with longer explanations
-- Add your own editorial perspective ("In our view...", "What this means for you...", "Here's the thing...")
-- NEVER use: "In conclusion", "It's worth noting", "Delve into", "Certainly", "Moreover", "Furthermore", "Leverage"
-- Ground abstract points with real examples
-- Structure with proper H2/H3 headings using HTML tags
-- Output VALID HTML only (h2, h3, p, ul, li, strong, em tags)
-- Aim for 500-700 words
-- At the end, add one paragraph that ties the insight back to the reader's SEO strategy
-- DO NOT mention the original source or that this is a rewrite
-
-SOURCE CONTENT:
-${rawContent}
-
-OUTPUT: HTML blog post content only (no <html>, <body>, or markdown).`;
-
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  return response.text().trim();
-}
-
-/** Build a Pollinations.ai image URL (no API key needed, 1280×675) */
+/** Return a static dummy image (1280x675) instead of AI generation */
 function buildImageUrl(title) {
-  const prompt = `Professional blog cover image for an SEO article titled: "${title}". Modern tech aesthetic, dark gradient background with glowing violet and cyan accents, abstract data visualization, search engine icons, clean typography. No text overlay. Ultra HD, 16:9 ratio.`;
-  const encoded = encodeURIComponent(prompt);
-  return `https://image.pollinations.ai/prompt/${encoded}?width=${IMAGE_W}&height=${IMAGE_H}&nologo=true&seed=${Date.now()}`;
+  return `https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1280&q=80&auto=format&fit=crop`;
 }
 
 /** Generate a URL slug from a title */
@@ -191,7 +169,13 @@ export async function GET(request) {
   try {
     await ensureTables();
 
-    for (const source of RSS_SOURCES) {
+    // Fetch dynamic sources from the database
+    const dbSources = await query("SELECT * FROM rss_sources");
+    if (!dbSources || dbSources.length === 0) {
+      return NextResponse.json({ success: true, message: "No RSS sources configured in database." });
+    }
+
+    for (const source of dbSources) {
       let items = [];
       try {
         items = await fetchRSSItems(source.url);
@@ -200,10 +184,13 @@ export async function GET(request) {
         continue;
       }
 
-      // Process only the 3 most recent items from each source per poll cycle
-      const recentItems = items.slice(0, 3);
+      // Sort items by date descending to get the newest first
+      items.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
-      for (const item of recentItems) {
+      let processedCount = 0;
+      for (const item of items) {
+        if (processedCount >= 10) break;
+
         // Skip if already seen
         const seen = await query("SELECT id FROM rss_seen WHERE guid = ?", [item.guid]);
         if (seen && seen.length > 0) {
@@ -220,27 +207,8 @@ export async function GET(request) {
             continue;
           }
 
-          // 2. Rewrite with Gemini — GRACEFUL FALLBACK if key is missing or API fails.
-          //    This NEVER crashes the pipeline or affects the main website.
-          let rewrittenHTML;
-          if (!GEMINI_API_KEY) {
-            rewrittenHTML = `<div style="border:2px dashed #f59e0b;padding:16px;margin-bottom:20px;border-radius:8px;background:#fef9c3;color:#854d0e;font-family:sans-serif;">
-              <strong>&#9888; Gemini API key not configured.</strong> Original article saved as draft.
-              Add <code>GEMINI_API_KEY</code> to your .env.local for AI rewrites.
-            </div><p>${rawContent.substring(0, 3000)}</p>`;
-            results.errors.push(`Gemini key missing \u2014 raw draft saved for: ${item.title}`);
-          } else {
-            try {
-              rewrittenHTML = await rewriteWithGemini(item.title, rawContent, source.name);
-            } catch (geminiErr) {
-              // Key invalid / quota exceeded / network error \u2014 save raw draft, don\u2019t crash
-              rewrittenHTML = `<div style="border:2px dashed #f59e0b;padding:16px;margin-bottom:20px;border-radius:8px;background:#fef9c3;color:#854d0e;font-family:sans-serif;">
-                <strong>&#9888; AI rewrite failed:</strong> ${String(geminiErr.message).substring(0, 200)}<br/>
-                Original content saved. Please edit before publishing.
-              </div><p>${rawContent.substring(0, 3000)}</p>`;
-              results.errors.push(`Gemini error for "${item.title}": ${geminiErr.message.substring(0, 100)}`);
-            }
-          }
+          // 2. We bypass the AI entirely and use the exact sanitized HTML content
+          const rewrittenHTML = rawContent;
 
           // 3. Build image URL
           const imageUrl = buildImageUrl(item.title);
@@ -256,10 +224,13 @@ export async function GET(request) {
           // 5. Save as DRAFT post
           const postId = `draft_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
           const dateStr = new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
-          const desc = rawContent.replace(/<[^>]+>/g, " ").substring(0, 200).trim() + "...";
+          // Truncate desc cleanly by extracting text from HTML
+          const textOnly = rawContent.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+          let desc = textOnly.split(/\s+/).slice(0, 25).join(" ");
+          if (textOnly.split(/\s+/).length > 25) desc += "...";
 
           await query(
-            "INSERT INTO posts (id, slug, title, `desc`, content, category, date, readTime, author, featuredImage, featured, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO posts (id, slug, title, `desc`, content, category, date, readTime, author, featuredImage, featured, status, source_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
               postId,
               finalSlug,
@@ -269,10 +240,11 @@ export async function GET(request) {
               source.category,
               dateStr,
               readTime(rewrittenHTML),
-              source.author,
+              "Martin",
               imageUrl,
               0,
               "draft",
+              source.name,
             ]
           );
 
@@ -288,6 +260,7 @@ export async function GET(request) {
             await query("INSERT IGNORE INTO rss_seen (guid, source_url) VALUES (?, ?)", [item.guid, source.url]);
           } catch {}
         }
+        processedCount++;
       }
     }
 

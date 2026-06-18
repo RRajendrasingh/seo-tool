@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import TrackingScripts from "@/components/TrackingScripts";
 
 export const metadata = {
   title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
@@ -39,6 +40,7 @@ export default function RootLayout({ children }) {
         className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300 selection:bg-violet-500/30 selection:text-violet-200 overflow-x-hidden"
         suppressHydrationWarning={true}
       >
+        <TrackingScripts />
         <Navbar />
         <main className="flex-grow overflow-x-hidden">
           {children}

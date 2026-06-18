@@ -24,7 +24,7 @@ export const metadata = {
 export default async function NewsPage() {
   let initialPosts = [];
   try {
-    const posts = await query("SELECT * FROM posts");
+    const posts = await query("SELECT * FROM posts WHERE status = 'published' OR status IS NULL");
     const sortedPosts = posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     initialPosts = sortedPosts.map(post => ({
       ...post,

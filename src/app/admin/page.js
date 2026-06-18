@@ -69,6 +69,15 @@ export default function AdminDashboard() {
   const [draftPreview, setDraftPreview] = useState(null); // post object for preview modal
   const [pollingStatus, setPollingStatus] = useState(null); // null | 'loading' | { processed, skipped, errors }
 
+  // RSS Sources States
+  const [rssSources, setRssSources] = useState([]);
+  const [rssSourcesLoading, setRssSourcesLoading] = useState(false);
+  const [newRssName, setNewRssName] = useState("");
+  const [newRssUrl, setNewRssUrl] = useState("");
+  const [newRssCategory, setNewRssCategory] = useState("SEO Strategy");
+  const [newRssAuthor, setNewRssAuthor] = useState("Martin");
+  const [editingRssId, setEditingRssId] = useState(null);
+
   // Auto-generate slug when title changes (only when creating a new post)
   useEffect(() => {
     if (editingPostId) return;
@@ -98,6 +107,9 @@ export default function AdminDashboard() {
   const [confirmPasscode, setConfirmPasscode] = useState("");
   const [webhookInput, setWebhookInput] = useState("");
   const [web3formsInput, setWeb3formsInput] = useState("");
+  const [gscVerificationInput, setGscVerificationInput] = useState("");
+  const [gtmIdInput, setGtmIdInput] = useState("");
+  const [clarityIdInput, setClarityIdInput] = useState("");
   const [settingsSuccess, setSettingsSuccess] = useState("");
   const [settingsError, setSettingsError] = useState("");
   const [webhookTesting, setWebhookTesting] = useState(false);
@@ -110,6 +122,9 @@ export default function AdminDashboard() {
     setSettings(loadedSettings);
     setWebhookInput(loadedSettings.webhookUrl || "");
     setWeb3formsInput(loadedSettings.web3formsKey || "");
+    setGscVerificationInput(loadedSettings.gscVerificationToken || "");
+    setGtmIdInput(loadedSettings.gtmId || "");
+    setClarityIdInput(loadedSettings.clarityId || "");
 
     // Check session storage for auto-login during active session
     if (typeof window !== "undefined") {
@@ -118,6 +133,7 @@ export default function AdminDashboard() {
         setIsAuthenticated(true);
         getAllLeads().then(setLeads).catch(console.error);
         getAllPosts().then(setPosts).catch(console.error); // Fetch posts
+        refreshRssSources();
       }
     }
   }, []);
@@ -128,6 +144,7 @@ export default function AdminDashboard() {
       setIsAuthenticated(true);
       getAllLeads().then(setLeads).catch(console.error);
       getAllPosts().then(setPosts).catch(console.error); // Fetch posts
+      refreshRssSources();
       sessionStorage.setItem("admin_authenticated", "true");
       setLoginError("");
     } else {
@@ -148,6 +165,72 @@ export default function AdminDashboard() {
 
   const refreshPosts = () => {
     getAllPosts().then(setPosts).catch(console.error);
+  };
+
+  const refreshRssSources = async () => {
+    setRssSourcesLoading(true);
+    try {
+      const res = await fetch("/api/rss-sources");
+      const data = await res.json();
+      if (data.success) {
+        setRssSources(data.sources || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setRssSourcesLoading(false);
+  };
+
+  const handleAddRssSource = async (e) => {
+    e.preventDefault();
+    try {
+      const isEditing = !!editingRssId;
+      const method = isEditing ? "PUT" : "POST";
+      const payload = { name: newRssName, url: newRssUrl, category: newRssCategory, author: newRssAuthor };
+      if (isEditing) payload.id = editingRssId;
+
+      const res = await fetch("/api/rss-sources", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNewRssName("");
+        setNewRssUrl("");
+        setNewRssCategory("SEO Strategy");
+        setNewRssAuthor("Martin");
+        setEditingRssId(null);
+        refreshRssSources();
+      } else {
+        alert("Error saving source: " + data.error);
+      }
+    } catch (e) {
+      alert("Failed to save source");
+    }
+  };
+
+  const handleEditRssClick = (source) => {
+    setEditingRssId(source.id);
+    setNewRssName(source.name);
+    setNewRssUrl(source.url);
+    setNewRssCategory(source.category || "");
+    setNewRssAuthor(source.author || "");
+  };
+
+  const handleDeleteRssSource = async (id) => {
+    if (!confirm("Remove this RSS source?")) return;
+    try {
+      const res = await fetch(`/api/rss-sources?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        refreshRssSources();
+      } else {
+        alert("Error removing source: " + data.error);
+      }
+    } catch (e) {
+      alert("Failed to delete source");
+    }
   };
 
   const refreshDrafts = useCallback(() => {
@@ -442,6 +525,9 @@ export default function AdminDashboard() {
       ...settings,
       webhookUrl: webhookInput.trim(),
       web3formsKey: web3formsInput.trim(),
+      gscVerificationToken: gscVerificationInput.trim(),
+      gtmId: gtmIdInput.trim(),
+      clarityId: clarityIdInput.trim(),
     };
 
     if (newPasscode) {
@@ -744,6 +830,7 @@ export default function AdminDashboard() {
               { id: "analytics", label: "Visual Analytics", icon: "📈" },
               { id: "blog", label: "Manage Blog", icon: "📰" },
               { id: "drafts", label: "Auto-Drafts", icon: "📥", badge: drafts.length || null },
+              { id: "sources", label: "RSS Sources", icon: "🌐" },
               { id: "settings", label: "Dashboard Settings", icon: "⚙️" },
             ].map((tab) => (
               <button
@@ -1379,6 +1466,68 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Section C: SEO & Web Analytics Integrations */}
+                <div className="space-y-4 pt-4 border-t border-zinc-850/60">
+                  <div className="space-y-1">
+                    <h3 className="text-xs uppercase font-extrabold text-emerald-400 tracking-wider">
+                      📊 SEO & Web Analytics Integrations
+                    </h3>
+                    <p className="text-[10px] text-zinc-500 leading-relaxed">
+                      Deploy search engine verification tags and traffic analytics container IDs across your static website.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1.5 pl-0.5">
+                        Google Search Console HTML Tag
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. wXyZ1234abcd..."
+                        value={gscVerificationInput}
+                        onChange={(e) => setGscVerificationInput(e.target.value)}
+                        className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500 font-mono"
+                      />
+                      <p className="text-[8px] text-zinc-650 leading-relaxed mt-1">
+                        Pasted from the <code className="text-violet-400">content=&quot;...&quot;</code> attribute of your Google HTML verification meta tag.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1.5 pl-0.5">
+                        Google Tag Manager (GTM ID)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. GTM-XXXXXXX"
+                        value={gtmIdInput}
+                        onChange={(e) => setGtmIdInput(e.target.value)}
+                        className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500 font-mono"
+                      />
+                      <p className="text-[8px] text-zinc-650 leading-relaxed mt-1">
+                        The GTM container ID from your Tag Manager workspace (contains GTM tag, GA4 metrics, and conversion pixels).
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wide mb-1.5 pl-0.5">
+                        Microsoft Clarity Project ID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. c89dfj12k3"
+                        value={clarityIdInput}
+                        onChange={(e) => setClarityIdInput(e.target.value)}
+                        className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500 font-mono"
+                      />
+                      <p className="text-[8px] text-zinc-650 leading-relaxed mt-1">
+                        Your MS Clarity project code (found in the setup tracking code URL, e.g. <code className="text-violet-400">clarity.ms/tag/ID</code>).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Notifications & Submit */}
                 <div className="pt-4 border-t border-zinc-850/60 space-y-4">
                   {settingsSuccess && (
@@ -1409,6 +1558,133 @@ export default function AdminDashboard() {
 
         {/* ==================== TAB 4: BLOG CMS MANAGER ==================== */}
         {/* ==================== TAB: AUTO-DRAFTS ==================== */}
+        {/* ── RSS SOURCES TAB ─────────────────────────────────────────────────── */}
+        {activeTab === "sources" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">RSS Sources</h2>
+                <p className="text-sm text-zinc-500">Manage the websites that the system monitors for new articles.</p>
+              </div>
+            </div>
+
+            {/* Guidelines */}
+            <div className="rounded-xl border border-cyan-800/30 bg-cyan-950/10 p-4 text-sm text-cyan-300 space-y-2">
+              <p><strong>URL Format:</strong> Use the direct <code>/feed</code>, <code>/rss</code>, or <code>/sitemap.xml</code> URL of the blog (e.g. <code>https://example.com/feed/</code>).</p>
+              <ul className="list-disc pl-5 space-y-1 text-xs opacity-90">
+                <li><strong>Fetching:</strong> Automatically polls every 30 minutes (or instantly via the Fetch button).</li>
+                <li><strong>How Much:</strong> Pulls the latest 10-50 articles currently broadcasting on the source website.</li>
+                <li><strong>No Deletions:</strong> Old drafted/published news is never automatically deleted.</li>
+                <li><strong>No Duplicates:</strong> Only brand-new, unseen articles are added to your drafts.</li>
+              </ul>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Form Side */}
+              <div className="lg:col-span-1 rounded-2xl border border-zinc-800 bg-zinc-950/40 p-6 space-y-4 h-fit">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold text-white">{editingRssId ? "Edit Source" : "Add New Source"}</h3>
+                  {editingRssId && (
+                    <button type="button" onClick={() => { setEditingRssId(null); setNewRssName(""); setNewRssUrl(""); }} className="text-xs text-zinc-500 hover:text-white">Cancel</button>
+                  )}
+                </div>
+                <form onSubmit={handleAddRssSource} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">Website Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newRssName}
+                      onChange={(e) => setNewRssName(e.target.value)}
+                      placeholder="e.g. Search Engine Journal"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">RSS/XML Feed URL *</label>
+                    <input
+                      type="url"
+                      required
+                      value={newRssUrl}
+                      onChange={(e) => setNewRssUrl(e.target.value)}
+                      placeholder="https://example.com/feed"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">Default Category</label>
+                    <input
+                      type="text"
+                      value={newRssCategory}
+                      onChange={(e) => setNewRssCategory(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-400 mb-1">Default Author</label>
+                    <input
+                      type="text"
+                      value={newRssAuthor}
+                      onChange={(e) => setNewRssAuthor(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-cyan-600 hover:bg-cyan-500 py-2 text-sm font-semibold text-white transition-all shadow-lg hover:shadow-cyan-500/20 cursor-pointer"
+                  >
+                    {editingRssId ? "Update Source" : "+ Add Source"}
+                  </button>
+                </form>
+              </div>
+
+              {/* List Side */}
+              <div className="lg:col-span-2 space-y-4">
+                {rssSourcesLoading ? (
+                  <div className="text-center py-10 text-zinc-500 text-sm animate-pulse">Loading sources...</div>
+                ) : rssSources.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/40 py-20 text-center space-y-3">
+                    <div className="text-4xl">🌐</div>
+                    <p className="text-sm font-semibold text-zinc-400">No RSS sources yet</p>
+                    <p className="text-xs text-zinc-600">Add your first website to start monitoring.</p>
+                  </div>
+                ) : (
+                  rssSources.map((source) => (
+                    <div key={source.id} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 flex items-center justify-between gap-4 hover:border-cyan-500/30 transition-all">
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-white text-sm truncate">{source.name}</h4>
+                        <a href={source.url} target="_blank" rel="noreferrer" className="text-xs text-cyan-500 hover:underline truncate block max-w-sm mt-1">
+                          {source.url}
+                        </a>
+                        <div className="flex gap-2 mt-2">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">{source.category}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">✍️ {source.author}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          onClick={() => handleEditRssClick(source)}
+                          className="p-2.5 rounded-lg border border-cyan-800/30 bg-cyan-950/20 text-cyan-500 hover:bg-cyan-500 hover:text-white transition-colors cursor-pointer"
+                          title="Edit Source"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRssSource(source.id)}
+                          className="p-2.5 rounded-lg border border-rose-900/40 bg-rose-950/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
+                          title="Delete Source"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === "drafts" && (
           <div className="space-y-6">
 
@@ -1437,58 +1713,129 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Poll status result */}
+            {/* ── Poll Result Toast ─────────────────────────────────── */}
             {pollingStatus && pollingStatus !== "loading" && (
-              <div className={`rounded-xl border px-5 py-4 text-xs leading-relaxed ${
+              <div className={`relative rounded-2xl border overflow-hidden ${
                 pollingStatus.error
-                  ? "border-rose-800/40 bg-rose-950/20 text-rose-300"
-                  : "border-emerald-800/40 bg-emerald-950/20 text-emerald-300"
+                  ? "border-rose-800/50 bg-rose-950/20"
+                  : pollingStatus.processed === 0
+                  ? "border-amber-800/40 bg-amber-950/15"
+                  : "border-emerald-800/40 bg-emerald-950/15"
               }`}>
-                {pollingStatus.error ? (
-                  <span>❌ Poll error: {pollingStatus.error}</span>
-                ) : (
-                  <span>
-                    ✅ Poll complete — <strong>{pollingStatus.processed}</strong> new draft(s) created,&nbsp;
-                    <strong>{pollingStatus.skipped}</strong> skipped (already seen)
-                    {pollingStatus.errors?.length > 0 && (
-                      <span className="block text-rose-400 mt-1">⚠️ {pollingStatus.errors.join(" | ")}</span>
-                    )}
+                {/* Left accent stripe */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                  pollingStatus.error ? "bg-rose-500" : pollingStatus.processed === 0 ? "bg-amber-500" : "bg-emerald-500"
+                }`} />
+                <div className="pl-5 pr-4 py-4 flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0 mt-0.5">
+                    {pollingStatus.error ? "❌" : pollingStatus.processed === 0 ? "ℹ️" : "✅"}
                   </span>
-                )}
-              </div>
-            )}
-
-            {/* Draft action feedback */}
-            {draftMsg && (
-              <div className={`rounded-xl border px-5 py-3 text-xs font-medium ${
-                draftMsg.startsWith("✅")
-                  ? "border-emerald-800/40 bg-emerald-950/20 text-emerald-300"
-                  : draftMsg.startsWith("🗑")
-                  ? "border-zinc-800 bg-zinc-900/40 text-zinc-400"
-                  : "border-rose-800/40 bg-rose-950/20 text-rose-300"
-              }`}>
-                {draftMsg}
-              </div>
-            )}
-
-            {/* RSS Sources info panel */}
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 space-y-3">
-              <h3 className="text-xxs uppercase tracking-widest font-bold text-zinc-500">📡 Monitored Sources</h3>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { name: "Search Engine Roundtable", url: "seroundtable.com", color: "violet" },
-                  { name: "Search Engine Journal", url: "searchenginejournal.com", color: "cyan" },
-                ].map((src) => (
-                  <div key={src.url} className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium
-                    ${ src.color === "violet" ? "border-violet-500/30 bg-violet-500/10 text-violet-300" : "border-cyan-500/30 bg-cyan-500/10 text-cyan-300" }`}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                    {src.name}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className={`text-xs font-bold ${
+                      pollingStatus.error ? "text-rose-300" : pollingStatus.processed === 0 ? "text-amber-300" : "text-emerald-300"
+                    }`}>
+                      {pollingStatus.error
+                        ? "Poll Failed"
+                        : pollingStatus.processed === 0
+                        ? "No New Articles"
+                        : `${pollingStatus.processed} New Draft${pollingStatus.processed > 1 ? "s" : ""} Created`}
+                    </p>
+                    <p className="text-[11px] text-zinc-400 leading-relaxed">
+                      {pollingStatus.error
+                        ? pollingStatus.error
+                        : `${pollingStatus.skipped} article${pollingStatus.skipped !== 1 ? "s" : ""} already seen and skipped.`}
+                    </p>
+                    {pollingStatus.errors?.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {pollingStatus.errors.map((e, i) => (
+                          <p key={i} className="text-[10px] text-amber-400/80 flex items-start gap-1.5">
+                            <span className="flex-shrink-0">⚠️</span>
+                            <span>{e}</span>
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
+                  <button
+                    onClick={() => setPollingStatus(null)}
+                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-all cursor-pointer text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-              <p className="text-[10px] text-zinc-600 leading-relaxed">
-                Vercel Cron polls these RSS feeds every 30 minutes automatically. Use &quot;Fetch Latest News&quot; to trigger manually.
-              </p>
+            )}
+
+            {/* ── Draft Action Toast ────────────────────────────────── */}
+            {draftMsg && (
+              <div className={`relative rounded-2xl border overflow-hidden ${
+                draftMsg.startsWith("✅")
+                  ? "border-emerald-800/40 bg-emerald-950/15"
+                  : draftMsg.startsWith("🗑")
+                  ? "border-zinc-800/60 bg-zinc-900/30"
+                  : "border-rose-800/40 bg-rose-950/15"
+              }`}>
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                  draftMsg.startsWith("✅") ? "bg-emerald-500" : draftMsg.startsWith("🗑") ? "bg-zinc-600" : "bg-rose-500"
+                }`} />
+                <div className="pl-5 pr-4 py-3.5 flex items-center gap-3">
+                  <p className={`flex-1 text-xs font-medium ${
+                    draftMsg.startsWith("✅") ? "text-emerald-300" : draftMsg.startsWith("🗑") ? "text-zinc-400" : "text-rose-300"
+                  }`}>
+                    {draftMsg}
+                  </p>
+                  <button
+                    onClick={() => setDraftMsg("")}
+                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-all cursor-pointer text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Isolation Notice + Monitored Sources ─────────────── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              {/* Isolation info */}
+              <div className="rounded-2xl border border-cyan-800/30 bg-cyan-950/10 p-5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🔒</span>
+                  <h3 className="text-xs font-bold text-cyan-300 uppercase tracking-wider">100% Isolated Feature</h3>
+                </div>
+                <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  This pipeline runs <strong className="text-zinc-400">completely independent</strong> from your main website logic.
+                  It directly extracts raw HTML from RSS sources with <strong className="text-zinc-400">zero AI dependencies or API costs</strong>.
+                  Your public news page and SEO rankings are never affected by the background polling.
+                </p>
+                <p className="text-[10px] text-cyan-600">
+                  Drafts only appear on the live site after you manually click Publish.
+                </p>
+              </div>
+
+              {/* Monitored sources */}
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 space-y-3">
+                <h3 className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">📡 Monitored Sources</h3>
+                <div className="space-y-2">
+                  {rssSources.length > 0 ? (
+                    rssSources.slice(0, 5).map((src, i) => (
+                      <div key={src.id} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl border text-xs font-medium
+                        ${i % 2 === 0
+                          ? "border-violet-500/25 bg-violet-500/8 text-violet-300"
+                          : "border-cyan-500/25 bg-cyan-500/8 text-cyan-300"}`}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse flex-shrink-0" />
+                        <span className="flex-1">{src.name}</span>
+                        <span className="text-[9px] text-zinc-600 font-normal truncate max-w-[120px] sm:max-w-none">{src.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-zinc-500">No sources configured. Add some in the RSS Sources tab.</div>
+                  )}
+                </div>
+                <p className="text-[10px] text-zinc-600 leading-relaxed">
+                  Auto-polled every 30 min on Vercel. Trigger manually anytime.
+                </p>
+              </div>
             </div>
 
             {/* Drafts List */}
@@ -1530,16 +1877,19 @@ export default function AdminDashboard() {
                                 {draft.category}
                               </span>
                               <span className="text-[9px] text-zinc-600">{draft.author} · {draft.date}</span>
+                              {draft.source_name && (
+                                <span className="text-[9px] text-zinc-500 bg-zinc-900/40 px-1.5 py-0.5 rounded border border-zinc-700/50">via {draft.source_name}</span>
+                              )}
                             </div>
                             <h3 className="text-sm font-bold text-white leading-snug line-clamp-2">{draft.title}</h3>
                             <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">{draft.desc}</p>
                           </div>
                         </div>
                         {/* Action buttons */}
-                        <div className="flex gap-2 flex-wrap pt-1">
+                        <div className="flex gap-2.5 flex-wrap pt-2">
                           <button
                             onClick={() => setDraftPreview(draft)}
-                            className="rounded-lg border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition-all cursor-pointer"
+                            className="flex items-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent px-4 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer shadow-sm"
                           >
                             👁 Preview
                           </button>
@@ -1556,19 +1906,20 @@ export default function AdminDashboard() {
                               setActiveTab("blog");
                               setTimeout(() => document.getElementById("blog-editor-form")?.scrollIntoView({ behavior: "smooth" }), 100);
                             }}
-                            className="rounded-lg border border-cyan-800/40 bg-cyan-950/20 px-4 py-2 text-xs font-semibold text-cyan-300 hover:bg-cyan-900/30 transition-all cursor-pointer"
+                            className="flex items-center gap-1.5 rounded-full border border-cyan-500/40 bg-transparent px-4 py-1.5 text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 transition-all cursor-pointer shadow-sm"
                           >
                             ✏️ Edit
                           </button>
                           <button
                             onClick={() => handleDraftAction(draft.id, "publish")}
-                            className="rounded-lg bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 px-4 py-2 text-xs font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                            className="flex items-center gap-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 px-4 py-1.5 text-xs font-semibold transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/20 cursor-pointer"
+                            style={{ color: "#ffffff" }}
                           >
                             🚀 Publish
                           </button>
                           <button
                             onClick={() => { if (confirm("Discard this draft permanently?")) handleDraftAction(draft.id, "discard"); }}
-                            className="rounded-lg border border-rose-900/40 bg-rose-950/10 hover:bg-rose-900/20 px-4 py-2 text-xs font-semibold text-rose-400 transition-all cursor-pointer"
+                            className="flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-transparent px-4 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer shadow-sm"
                           >
                             🗑 Discard
                           </button>
@@ -1728,20 +2079,20 @@ export default function AdminDashboard() {
                   )}
 
                   {postFeaturedImage && (
-                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-800 relative h-40 bg-zinc-950 flex items-center justify-center">
+                    <div className="mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 relative h-40 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
                       <img
                         src={postFeaturedImage}
                         alt="Featured image preview"
                         className="w-full h-full object-contain"
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
-                      <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-mono">
+                      <div className="absolute bottom-1 right-1 bg-white/85 dark:bg-black/60 text-zinc-800 dark:text-white text-[9px] px-1.5 py-0.5 rounded font-mono font-bold backdrop-blur-sm shadow-sm border border-black/5 dark:border-transparent">
                         Preview (Resized to 1280x720 WebP)
                       </div>
                       <button
                         type="button"
                         onClick={() => setPostFeaturedImage("")}
-                        className="absolute top-1 right-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-900/40 text-rose-300 text-[10px] px-2 py-1 rounded cursor-pointer transition-all"
+                        className="absolute top-1 right-1 bg-rose-100/95 dark:bg-rose-950/80 hover:bg-rose-200 dark:hover:bg-rose-900 border border-rose-200/50 dark:border-rose-900/40 text-rose-600 dark:text-rose-300 text-[10px] px-2 py-1 rounded cursor-pointer transition-all font-semibold shadow-sm backdrop-blur-sm"
                       >
                         Remove
                       </button>
@@ -1776,6 +2127,7 @@ export default function AdminDashboard() {
                     <CKEditorBlock
                       ckeditorRef={ckeditorRef}
                       onChange={setPostContent}
+                      initialData={postContent}
                     />
                   </div>
                   <p className="text-[9px] text-zinc-600 mt-1 leading-relaxed">

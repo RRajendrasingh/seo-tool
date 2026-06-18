@@ -7,6 +7,9 @@ const DEFAULT_SETTINGS = {
   adminPasscode: "admin123",
   webhookUrl: "",
   web3formsKey: "",
+  gscVerificationToken: "",
+  gtmId: "",
+  clarityId: "",
 };
 
 // Read settings (browser-only, persisted in localStorage)

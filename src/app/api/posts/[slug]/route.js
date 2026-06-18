@@ -31,7 +31,7 @@ export async function DELETE(request, { params }) {
     let wasFeatured = false;
     
     // Find post to see if it was featured
-    const identifier = slug.startsWith("post_") ? "id" : "slug";
+    const identifier = (slug.startsWith("post_") || slug.startsWith("draft_")) ? "id" : "slug";
     const postCheck = await query(`SELECT featured FROM posts WHERE ${identifier} = ?`, [slug]);
     
     if (postCheck && postCheck[0]) {
@@ -65,7 +65,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
     }
 
-    const identifier = slug.startsWith("post_") ? "id" : "slug";
+    const identifier = (slug.startsWith("post_") || slug.startsWith("draft_")) ? "id" : "slug";
     
     // Check if the post exists
     const checkPost = await query(`SELECT id, featured FROM posts WHERE ${identifier} = ?`, [slug]);

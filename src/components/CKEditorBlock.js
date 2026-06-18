@@ -10,15 +10,17 @@ import { useEffect, useRef } from "react";
  *  - ckeditorRef: a React ref that will hold the editor instance
  *  - onChange: callback receiving the HTML string on each change
  */
-export default function CKEditorBlock({ ckeditorRef, onChange }) {
+export default function CKEditorBlock({ ckeditorRef, onChange, initialData = "" }) {
   const containerRef = useRef(null);
   const scriptLoadedRef = useRef(false);
+  const isInitializingRef = useRef(false); // Prevent double init in strict mode
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const initEditor = () => {
-      if (!containerRef.current || !window.ClassicEditor) return;
+      if (!containerRef.current || !window.ClassicEditor || isInitializingRef.current) return;
+      isInitializingRef.current = true;
 
       // Destroy previous instance if exists
       if (ckeditorRef.current) {
@@ -27,6 +29,7 @@ export default function CKEditorBlock({ ckeditorRef, onChange }) {
       }
 
       window.ClassicEditor.create(containerRef.current, {
+        initialData: initialData,
         toolbar: {
           items: [
             "heading",

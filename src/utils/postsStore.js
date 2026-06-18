@@ -75,7 +75,7 @@ const calculateReadTime = (content, desc) => {
 export const getAllPosts = async () => {
   if (typeof window === "undefined") return DEFAULT_POSTS;
   try {
-    const res = await fetch("/api/posts");
+    const res = await fetch(`/api/posts?_t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch posts");
     return await res.json();
   } catch (e) {
