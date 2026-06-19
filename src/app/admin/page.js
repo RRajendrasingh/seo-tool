@@ -1572,7 +1572,7 @@ export default function AdminDashboard() {
             <div className="rounded-xl border border-cyan-800/30 bg-cyan-950/10 p-4 text-sm text-cyan-300 space-y-2">
               <p><strong>URL Format:</strong> Use the direct <code>/feed</code>, <code>/rss</code>, or <code>/sitemap.xml</code> URL of the blog (e.g. <code>https://example.com/feed/</code>).</p>
               <ul className="list-disc pl-5 space-y-1 text-xs opacity-90">
-                <li><strong>Fetching:</strong> Automatically polls every 30 minutes (or instantly via the Fetch button).</li>
+                <li><strong>Fetching:</strong> Automatically polls daily on Vercel free tier (or instantly via the Fetch button). Use a free external cron service for 30-min polling.</li>
                 <li><strong>How Much:</strong> Pulls the latest 10-50 articles currently broadcasting on the source website.</li>
                 <li><strong>No Deletions:</strong> Old drafted/published news is never automatically deleted.</li>
                 <li><strong>No Duplicates:</strong> Only brand-new, unseen articles are added to your drafts.</li>
