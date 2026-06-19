@@ -1833,7 +1833,7 @@ export default function AdminDashboard() {
                   )}
                 </div>
                 <p className="text-[10px] text-zinc-600 leading-relaxed">
-                  Auto-polled every 30 min on Vercel. Trigger manually anytime.
+                  Auto-polled daily (Vercel free tier limit). Trigger manually anytime, or use a free external ping service for 30-min polling.
                 </p>
               </div>
             </div>
