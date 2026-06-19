@@ -1,6 +1,8 @@
 import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/drafts — Returns all draft posts for admin review
 export async function GET() {
   try {

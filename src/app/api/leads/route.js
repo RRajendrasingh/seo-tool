@@ -1,6 +1,8 @@
 import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 function verifyAdmin(request) {
   const passcode = request.headers.get("x-admin-passcode");
   const expected = process.env.ADMIN_PASSCODE || "admin123";
