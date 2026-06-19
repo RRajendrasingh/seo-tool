@@ -167,7 +167,7 @@ export default function AdminDashboard() {
     getAllPosts().then(setPosts).catch(console.error);
   };
 
-  const refreshRssSources = async () => {
+  async function refreshRssSources() {
     setRssSourcesLoading(true);
     try {
       const res = await fetch("/api/rss-sources");

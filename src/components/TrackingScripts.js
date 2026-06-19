@@ -13,8 +13,10 @@ export default function TrackingScripts() {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true);
     const loaded = getSettings();
+    // eslint-disable-next-line
     setSettings({
       gscVerificationToken: loaded.gscVerificationToken || "",
       gtmId: loaded.gtmId || "",
