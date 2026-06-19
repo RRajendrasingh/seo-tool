@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { query } from "@/utils/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const sources = await query("SELECT * FROM rss_sources ORDER BY created_at DESC");

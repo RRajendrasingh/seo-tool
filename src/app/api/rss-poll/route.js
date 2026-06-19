@@ -2,6 +2,8 @@ import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
 import sanitizeHtml from "sanitize-html";
 
+export const dynamic = "force-dynamic";
+
 // ─── Config ───────────────────────────────────────────────────────────────
 const CRON_SECRET   = process.env.CRON_SECRET || "";
 const IMAGE_W       = 1280;

@@ -1,6 +1,8 @@
 import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // GET: Fetch posts (supports ?status=draft for admin, defaults to published only)
 export async function GET(request) {
   try {
