@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-export default function Navbar() {
+export default function Navbar({ initialSession = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const [theme, setTheme] = useState("dark");
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(initialSession);
 
   // 1. Initial theme load
   useEffect(() => {
@@ -24,19 +24,10 @@ export default function Navbar() {
     }, 0);
   }, []);
 
-  // 2. Fetch session details when path changes
+  // Sync session with prop (in case server auth state changes)
   useEffect(() => {
-    async function fetchSession() {
-      try {
-        const res = await fetch("/api/auth/session");
-        const data = await res.json();
-        setSession(data.session || null);
-      } catch (err) {
-        console.error("Failed to load user session:", err);
-      }
-    }
-    fetchSession();
-  }, [pathname]);
+    setSession(initialSession);
+  }, [initialSession, pathname]);
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";

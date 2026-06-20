@@ -3,6 +3,56 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    // 0. Create users table
+    await query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(50) PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255),
+        full_name VARCHAR(255),
+        auth_provider VARCHAR(50) DEFAULT 'local',
+        provider_id VARCHAR(255),
+        email_verified BOOLEAN DEFAULT FALSE,
+        subscription_tier VARCHAR(50) DEFAULT 'free',
+        allowed_quota INT DEFAULT 1,
+        stripe_customer_id VARCHAR(255),
+        agency_name VARCHAR(255),
+        agency_logo_id VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 0.1 Create monitored_domains table
+    await query(`
+      CREATE TABLE IF NOT EXISTS monitored_domains (
+        id VARCHAR(50) PRIMARY KEY,
+        user_id VARCHAR(50) NOT NULL,
+        domain VARCHAR(255) NOT NULL,
+        cms_platform VARCHAR(100),
+        business_niche VARCHAR(100),
+        target_audience VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 0.2 Create audit_history table
+    await query(`
+      CREATE TABLE IF NOT EXISTS audit_history (
+        id VARCHAR(50) PRIMARY KEY,
+        domain VARCHAR(255) NOT NULL,
+        scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        performance_score INT NOT NULL,
+        seo_score INT NOT NULL,
+        accessibility_score INT NOT NULL,
+        best_practices_score INT NOT NULL,
+        html_quality_score INT DEFAULT 0,
+        avg_score INT DEFAULT 0,
+        grade VARCHAR(10) DEFAULT 'Pending',
+        full_report_json LONGTEXT
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
     // 1. Create posts table
     await query(`
       CREATE TABLE IF NOT EXISTS posts (

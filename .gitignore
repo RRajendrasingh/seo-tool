@@ -42,3 +42,8 @@ next-env.d.ts
 
 # logs
 chrome-error.log
+
+# Playwright
+/playwright-report/
+/test-results/
+

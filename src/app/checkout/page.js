@@ -753,15 +753,11 @@ function CheckoutContent() {
             
             <button
               onClick={() => {
-                if (user) {
-                  router.push("/dashboard");
-                } else {
-                  router.push(`/audit?url=${encodeURIComponent(url)}`);
-                }
+                router.push(`/audit?url=${encodeURIComponent(url)}&canceled=true`);
               }}
               className="text-[10px] text-zinc-400 hover:text-white transition-all underline flex items-center gap-1 pt-2 cursor-pointer"
             >
-              {user ? "← Cancel & return to dashboard" : "← Cancel & return to audit dashboard"}
+              ← Cancel & return to audit dashboard
             </button>
           </div>
         </div>

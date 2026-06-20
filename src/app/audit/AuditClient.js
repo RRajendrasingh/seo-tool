@@ -9,7 +9,7 @@ import { addLead, updateLead } from "@/utils/leadsStore";
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "false";
 const FALLBACK_API_KEY = ""; 
 
-export default function AuditClient() {
+export default function AuditClient({ initialUser = null }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialUrl = searchParams.get("url") || "";
@@ -17,14 +17,14 @@ export default function AuditClient() {
 
   // Lead capture states
   const [url, setUrl] = useState(initialUrl);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(initialUser?.full_name || initialUser?.name || "");
+  const [email, setEmail] = useState(initialUser?.email || "");
   const [phone, setPhone] = useState("");
   const [countryCode, setCountryCode] = useState("+1");
   const [currentLeadId, setCurrentLeadId] = useState(null);
 
   // User session state
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(initialUser);
 
   // Impact areas / Website Details
   const [cmsPlatform, setCmsPlatform] = useState("");
@@ -42,6 +42,7 @@ export default function AuditClient() {
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [activeEngine, setActiveEngine] = useState("seo-tags");
   const [showPayModal, setShowPayModal] = useState(initialPlan === "premium");
+  const [showCancelPopup, setShowCancelPopup] = useState(false);
   const [filterTab, setFilterTab] = useState("all");
 
   const loadingSteps = [
@@ -60,27 +61,37 @@ export default function AuditClient() {
   };
 
   useEffect(() => {
-    if (initialUrl) {
-      setUrl(initialUrl);
-    }
-  }, [initialUrl]);
-
-  useEffect(() => {
-    async function checkSession() {
-      try {
-        const res = await fetch("/api/auth/session");
-        const data = await res.json();
-        if (data.session) {
-          setUser(data.session);
-          setName(data.session.full_name || data.session.name || "Logged In User");
-          setEmail(data.session.email || "");
-        }
-      } catch (e) {
-        console.error("Error fetching session:", e);
+    if (searchParams.get("canceled") === "true") {
+      setShowCancelPopup(true);
+      // Remove canceled from URL to prevent showing it on refresh
+      if (typeof window !== "undefined") {
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.delete("canceled");
+        window.history.replaceState({}, document.title, newUrl.toString());
       }
     }
-    checkSession();
-  }, []);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (initialUrl) {
+      setUrl(initialUrl);
+      
+      let formattedUrl = initialUrl.trim();
+      if (!/^https?:\/\//i.test(formattedUrl)) {
+        formattedUrl = "https://" + formattedUrl;
+      }
+      
+      const cachedReport = sessionStorage.getItem(`audit_report_${formattedUrl}`);
+      if (cachedReport) {
+        try {
+          setReport(JSON.parse(cachedReport));
+          setLeadCaptured(true);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }, [initialUrl]);
 
   useEffect(() => {
     let interval;
@@ -697,12 +708,47 @@ export default function AuditClient() {
         });
       }
 
-      setReport({
+      if (user) {
+        // Save to user's dashboard history
+        try {
+          await fetch("/api/monitors/history", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              domain: formattedUrl,
+              performance_score: perfScore,
+              seo_score: seoScore,
+              accessibility_score: accessScore,
+              best_practices_score: bpScore,
+              avg_score: avgScore,
+              grade: grade,
+              full_report_json: { avgScore, grade, engines }
+            })
+          });
+        } catch (e) {
+          console.error("Failed to save history to dashboard", e);
+        }
+      }
+
+      const newReport = {
         url: formattedUrl,
         avgScore,
         grade,
-        engines
-      });
+        engines,
+        scores: { perfScore, seoScore, accessScore, bpScore, validationScore },
+        date: new Date().toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        })
+      };
+
+      setReport(newReport);
+      try {
+        sessionStorage.setItem(`audit_report_${formattedUrl}`, JSON.stringify(newReport));
+      } catch (e) {
+        console.error("Failed to cache report", e);
+      }
     } catch (err) {
       console.error(err);
       if (err.message === "429_QUOTA_EXCEEDED") {
@@ -771,13 +817,281 @@ export default function AuditClient() {
   const activeKey = getApiKey();
   const isKeyUnset = !activeKey || activeKey === "PASTE_YOUR_GOOGLE_API_KEY_HERE";
 
+  const renderEngineDetails = (engineId) => {
+    const engine = report?.engines[engineId];
+    if (!engine) return null;
+
+    return (
+      <div className="space-y-6 min-h-[400px]">
+        {/* Engine Header Details */}
+        <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 backdrop-blur-md space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-1 text-left">
+              <h2 className="text-base font-extrabold text-white">
+                {engine.name} Details
+              </h2>
+              <p className="text-xxs text-zinc-400 leading-relaxed">
+                {engine.desc}
+              </p>
+            </div>
+            
+            <div className="relative h-12 w-12 flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
+              <svg className="h-full w-full transform -rotate-90" viewBox="0 0 36 36">
+                <circle
+                  className="text-zinc-850"
+                  strokeWidth="3.5"
+                  stroke="currentColor"
+                  fill="none"
+                  cx="18"
+                  cy="18"
+                  r="15.915"
+                />
+                <circle
+                  className={engine.score >= 90 ? "text-emerald-500" : engine.score >= 50 ? "text-amber-500" : "text-rose-500"}
+                  strokeWidth="3.5"
+                  strokeDasharray={`${engine.score}, 100`}
+                  strokeLinecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  cx="18"
+                  cy="18"
+                  r="15.915"
+                />
+              </svg>
+              <span className="absolute text-[11px] font-black text-white">{engine.score}</span>
+            </div>
+          </div>
+          
+          {/* Filters Bar */}
+          <div className="pt-4 border-t border-zinc-800/80 flex flex-wrap gap-2 text-[10px]">
+            {[
+              { id: "all", label: `All Checks (${engine.checks.length})` },
+              { id: "errors", label: `Critical Errors (${engine.checks.filter(c => !c.passed && c.severity === 'error').length})` },
+              { id: "warnings", label: `Warnings (${engine.checks.filter(c => !c.passed && c.severity === 'warning').length})` },
+              { id: "passed", label: `Passed (${engine.checks.filter(c => c.passed).length})` },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setFilterTab(tab.id)}
+                className={`rounded-lg px-3 py-1.5 font-bold transition-all border cursor-pointer ${
+                  filterTab === tab.id
+                    ? "bg-violet-650/15 border-violet-500/50 text-violet-300"
+                    : "bg-zinc-950 border-zinc-850 text-zinc-555 hover:text-zinc-350 hover:border-zinc-800"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Checks List */}
+        <div className="space-y-4">
+          {engine.checks
+            .filter((check) => {
+              if (filterTab === "all") return true;
+              if (filterTab === "errors") return !check.passed && check.severity === "error";
+              if (filterTab === "warnings") return !check.passed && check.severity === "warning";
+              if (filterTab === "passed") return check.passed;
+              return true;
+            })
+            .map((check) => (
+              <div
+                key={check.name}
+                className={`rounded-xl border p-4 sm:p-5 flex flex-col items-start gap-3 bg-zinc-900/10 transition-all ${
+                  check.passed 
+                    ? "border-zinc-900/60" 
+                    : check.severity === "error"
+                    ? "border-rose-500/15 bg-rose-500/[0.01]"
+                    : "border-amber-500/15 bg-amber-500/[0.01]"
+                }`}
+              >
+                <div className="space-y-1 flex-grow w-full text-left">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className={`inline-flex items-center justify-center rounded-full text-xxs font-bold h-5.5 w-5.5 flex-shrink-0 ${
+                        check.passed 
+                          ? "bg-emerald-500/10 text-emerald-400" 
+                          : check.severity === "error"
+                          ? "bg-rose-500/10 text-rose-400"
+                          : "bg-amber-500/10 text-amber-400"
+                      }`}>
+                        {check.passed ? "✓" : "✗"}
+                      </span>
+                      <h4 className="text-xs font-bold text-white">{check.name}</h4>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {!check.passed && (
+                        <span className={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                          check.severity === "error"
+                            ? "bg-rose-950/40 text-rose-400 border border-rose-500/20"
+                            : "bg-amber-950/40 text-amber-400 border border-amber-500/20"
+                        }`}>
+                          {check.severity === "error" ? "Critical" : "Warning"}
+                        </span>
+                      )}
+                      <span className="text-[8px] font-semibold font-mono text-zinc-500 uppercase">
+                        Impact: {check.impact || "Medium"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xxs text-zinc-400 leading-relaxed pl-8 pt-0.5">
+                    {check.desc}
+                  </p>
+                  
+                  {check.value && (
+                    <p className={`text-xxs font-mono px-2.5 py-1 border rounded-md inline-block ml-8 mt-2 ${
+                      check.passed 
+                        ? "border-emerald-500/20 text-emerald-300 bg-emerald-500/5" 
+                        : check.severity === "error"
+                        ? "border-rose-500/20 text-rose-300 bg-rose-500/5"
+                        : "border-amber-500/20 text-amber-300 bg-amber-500/5"
+                    }`}>
+                      Detected: {check.value}
+                    </p>
+                  )}
+                </div>
+
+                {check.details && check.details.length > 0 && !check.passed && (
+                  <div className="w-full pl-8 mt-1">
+                    <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wide text-left">
+                      Offending Resources ({check.details.length}):
+                    </span>
+                    <div className="mt-1.5 overflow-x-auto rounded-lg border border-zinc-850 bg-zinc-950">
+                      <table className="w-full text-[10px] font-mono border-collapse text-left text-zinc-550">
+                        <thead>
+                          <tr className="bg-zinc-900 text-zinc-500 border-b border-zinc-850">
+                            <th className="p-2 font-bold uppercase tracking-wider">Asset URL / Log</th>
+                            <th className="p-2 font-bold uppercase tracking-wider text-right">Potential Savings / Info</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {check.details.map((item, idx) => (
+                            <tr key={idx} className="border-b border-zinc-900/60 hover:bg-zinc-900/20">
+                              <td className="p-2 break-all max-w-[260px] text-zinc-300">{item.url || item.description}</td>
+                              <td className="p-2 text-right whitespace-nowrap text-rose-400 font-bold">
+                                {item.wastedBytes !== undefined 
+                                  ? `${(item.wastedBytes / 1024).toFixed(1)} KB` 
+                                  : item.wastedMs !== undefined 
+                                  ? `${item.wastedMs} ms delay` 
+                                  : item.source || "Failure diagnostic"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {check.snippet && !check.passed && (
+                  <div className="w-full pl-8 mt-1">
+                    <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wide text-left">
+                      Recommended Fix Template:
+                    </span>
+                    <pre className="mt-1.5 p-3 rounded-lg bg-zinc-950 border border-zinc-850 font-mono text-[9px] text-zinc-350 overflow-x-auto select-all leading-normal text-left">
+                      <code>{check.snippet}</code>
+                    </pre>
+                  </div>
+                )}
+
+                {!check.passed && (
+                  <div className="w-full pl-8 border-t border-zinc-800/80 pt-3 text-left">
+                    <span className="text-[10px] text-rose-400 font-bold block uppercase tracking-wide">
+                      Implementation Guide:
+                    </span>
+                    <p className="text-xxs text-zinc-400 leading-relaxed mt-0.5">
+                      {check.fix}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          
+          {engine.checks.filter((check) => {
+            if (filterTab === "all") return true;
+            if (filterTab === "errors") return !check.passed && check.severity === "error";
+            if (filterTab === "warnings") return !check.passed && check.severity === "warning";
+            if (filterTab === "passed") return check.passed;
+            return true;
+          }).length === 0 && (
+            <div className="rounded-xl border border-zinc-850 p-8 text-center text-zinc-550 text-xs">
+              No parameters match this severity filter for {engine.name}.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-zinc-950 min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative isolate overflow-x-hidden">
       {/* Background radial glow */}
       <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
 
-      <div className="max-w-6xl mx-auto space-y-12">
+      {/* Dismissible Cancellation Popup */}
+      {showCancelPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl animate-scale-up relative">
+            <button 
+              onClick={() => setShowCancelPopup(false)}
+              className="absolute top-3 right-3 text-zinc-500 hover:text-white"
+            >
+              ✕
+            </button>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 border border-rose-500/20">
+              <span className="text-xl">⚠️</span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Payment Cancelled</h3>
+              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                Your checkout was aborted and you haven't been charged. Would you like to stay here and review your current limited report, or run a new audit on a different website?
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => setShowCancelPopup(false)}
+                className="w-full rounded-xl bg-zinc-800 hover:bg-zinc-700 py-2.5 text-xs font-semibold text-white transition-all border border-zinc-700"
+              >
+                Stay on this report
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowCancelPopup(false);
+                  setReport(null);
+                  setLeadCaptured(false);
+                  setUrl("");
+                }}
+                className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 py-2.5 text-xs font-semibold text-white transition-all border border-violet-500/50"
+              >
+                Run a new audit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto space-y-12 relative pt-12 md:pt-0">
+        {/* Back / Reset Button */}
+        {report && (
+          <button
+            onClick={() => {
+              setReport(null);
+              setLeadCaptured(false);
+              setUrl("");
+            }}
+            className="absolute top-0 left-4 flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-all bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 px-4 py-2 rounded-xl backdrop-blur-md z-10"
+          >
+            ← Back
+          </button>
+        )}
+
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-x-2 rounded-full border border-violet-500/30 bg-violet-500/5 px-4 py-1 text-xs font-semibold text-violet-300">
@@ -1041,7 +1355,7 @@ export default function AuditClient() {
                             type="button"
                             onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
                             onBlur={() => setTimeout(() => setIsCountryDropdownOpen(false), 200)}
-                            className="bg-zinc-950 border-r border-zinc-850 px-3 py-2.5 text-xs text-white focus:outline-none cursor-pointer flex items-center gap-1.5 min-w-[70px] justify-center hover:bg-zinc-900 transition-colors"
+                            className="bg-zinc-950 rounded-l-xl border-r border-zinc-850 px-3 py-2.5 text-xs text-white focus:outline-none cursor-pointer flex items-center gap-1.5 min-w-[70px] justify-center hover:bg-zinc-900 transition-colors"
                           >
                             <span className="text-sm">
                               {[
@@ -1298,20 +1612,35 @@ export default function AuditClient() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Sidebar Selector: 7 Engines */}
               <div className="lg:col-span-4 space-y-4">
-                <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1">
+                <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1 text-left">
                   Active Auditing Engines
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4 lg:space-y-3">
                   {Object.entries(report.engines).map(([id, eng]) => {
                     const isSelected = activeEngine === id;
                     return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => {
-                          setActiveEngine(id);
-                          setFilterTab("all");
-                        }}
+                      <div key={id} id={`engine-accordion-${id}`} className="w-full scroll-mt-24">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // On mobile, allow toggling the accordion closed
+                            if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                              if (activeEngine === id) {
+                                setActiveEngine(null); // Close it
+                                return;
+                              }
+                            }
+                            
+                            setActiveEngine(id);
+                            setFilterTab("all");
+
+                            // Smooth scroll the accordion to the top of the viewport on mobile
+                            if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                              setTimeout(() => {
+                                document.getElementById(`engine-accordion-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                              }, 250); // wait for previous accordion to collapse
+                            }
+                          }}
                         className={`w-full text-left rounded-2xl border p-4.5 transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer ${
                           isSelected
                             ? "bg-zinc-900 border-violet-500/50 shadow-md shadow-violet-500/2"
@@ -1351,217 +1680,30 @@ export default function AuditClient() {
                           <span className="absolute text-[10px] font-black text-white">{eng.score}</span>
                         </div>
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Detailed Results Output */}
-              <div className="lg:col-span-8 space-y-6">
-                {/* Engine Header Details */}
-                <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 backdrop-blur-md space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-1">
-                      <h2 className="text-base font-extrabold text-white">
-                        {report.engines[activeEngine].name} Details
-                      </h2>
-                      <p className="text-xxs text-zinc-400 leading-relaxed">
-                        {report.engines[activeEngine].desc}
-                      </p>
-                    </div>
-                    
-                    <div className="relative h-12 w-12 flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
-                      <svg className="h-full w-full transform -rotate-90" viewBox="0 0 36 36">
-                        <circle
-                          className="text-zinc-850"
-                          strokeWidth="3.5"
-                          stroke="currentColor"
-                          fill="none"
-                          cx="18"
-                          cy="18"
-                          r="15.915"
-                        />
-                        <circle
-                          className={report.engines[activeEngine].score >= 90 ? "text-emerald-500" : report.engines[activeEngine].score >= 50 ? "text-amber-500" : "text-rose-500"}
-                          strokeWidth="3.5"
-                          strokeDasharray={`${report.engines[activeEngine].score}, 100`}
-                          strokeLinecap="round"
-                          stroke="currentColor"
-                          fill="none"
-                          cx="18"
-                          cy="18"
-                          r="15.915"
-                        />
-                      </svg>
-                      <span className="absolute text-[11px] font-black text-white">{report.engines[activeEngine].score}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Filters Bar */}
-                  <div className="pt-4 border-t border-zinc-800/80 flex flex-wrap gap-2 text-[10px]">
-                    {[
-                      { id: "all", label: `All Checks (${report.engines[activeEngine].checks.length})` },
-                      { id: "errors", label: `Critical Errors (${report.engines[activeEngine].checks.filter(c => !c.passed && c.severity === 'error').length})` },
-                      { id: "warnings", label: `Warnings (${report.engines[activeEngine].checks.filter(c => !c.passed && c.severity === 'warning').length})` },
-                      { id: "passed", label: `Passed (${report.engines[activeEngine].checks.filter(c => c.passed).length})` },
-                    ].map((tab) => (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setFilterTab(tab.id)}
-                        className={`rounded-lg px-3 py-1.5 font-bold transition-all border cursor-pointer ${
-                          filterTab === tab.id
-                            ? "bg-violet-650/15 border-violet-500/50 text-violet-300"
-                            : "bg-zinc-950 border-zinc-850 text-zinc-555 hover:text-zinc-350 hover:border-zinc-800"
+                      
+                      {/* Mobile Accordion Details */}
+                      <div 
+                        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+                          isSelected 
+                            ? 'max-h-[5000px] opacity-100 mt-4 mb-8' 
+                            : 'max-h-0 opacity-0 mt-0 mb-0'
                         }`}
                       >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Checks List */}
-                <div className="space-y-4">
-                  {report.engines[activeEngine].checks
-                    .filter((check) => {
-                      if (filterTab === "all") return true;
-                      if (filterTab === "errors") return !check.passed && check.severity === "error";
-                      if (filterTab === "warnings") return !check.passed && check.severity === "warning";
-                      if (filterTab === "passed") return check.passed;
-                      return true;
-                    })
-                    .map((check) => (
-                      <div
-                        key={check.name}
-                        className={`rounded-xl border p-4 sm:p-5 flex flex-col items-start gap-3 bg-zinc-900/10 transition-all ${
-                          check.passed 
-                            ? "border-zinc-900/60" 
-                            : check.severity === "error"
-                            ? "border-rose-500/15 bg-rose-500/[0.01]"
-                            : "border-amber-500/15 bg-amber-500/[0.01]"
-                        }`}
-                      >
-                        <div className="space-y-1 flex-grow w-full text-left">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex items-center gap-2.5">
-                              <span className={`inline-flex items-center justify-center rounded-full text-xxs font-bold h-5.5 w-5.5 flex-shrink-0 ${
-                                check.passed 
-                                  ? "bg-emerald-500/10 text-emerald-400" 
-                                  : check.severity === "error"
-                                  ? "bg-rose-500/10 text-rose-400"
-                                  : "bg-amber-500/10 text-amber-400"
-                              }`}>
-                                {check.passed ? "✓" : "✗"}
-                              </span>
-                              <h4 className="text-xs font-bold text-white">{check.name}</h4>
-                            </div>
-
-                            <div className="flex gap-2">
-                              {!check.passed && (
-                                <span className={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                                  check.severity === "error"
-                                    ? "bg-rose-950/40 text-rose-400 border border-rose-500/20"
-                                    : "bg-amber-950/40 text-amber-400 border border-amber-500/20"
-                                }`}>
-                                  {check.severity === "error" ? "Critical" : "Warning"}
-                                </span>
-                              )}
-                              <span className="text-[8px] font-semibold font-mono text-zinc-500 uppercase">
-                                Impact: {check.impact || "Medium"}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <p className="text-xxs text-zinc-400 leading-relaxed pl-8 pt-0.5">
-                            {check.desc}
-                          </p>
-                          
-                          {check.value && (
-                            <p className={`text-xxs font-mono px-2.5 py-1 border rounded-md inline-block ml-8 mt-2 ${
-                              check.passed 
-                                ? "border-emerald-500/20 text-emerald-300 bg-emerald-500/5" 
-                                : check.severity === "error"
-                                ? "border-rose-500/20 text-rose-300 bg-rose-500/5"
-                                : "border-amber-500/20 text-amber-300 bg-amber-500/5"
-                            }`}>
-                              Detected: {check.value}
-                            </p>
-                          )}
-                        </div>
-
-                        {check.details && check.details.length > 0 && !check.passed && (
-                          <div className="w-full pl-8 mt-1">
-                            <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wide">
-                              Offending Resources ({check.details.length}):
-                            </span>
-                            <div className="mt-1.5 overflow-x-auto rounded-lg border border-zinc-850 bg-zinc-950">
-                              <table className="w-full text-[10px] font-mono border-collapse text-left text-zinc-550">
-                                <thead>
-                                  <tr className="bg-zinc-900 text-zinc-500 border-b border-zinc-850">
-                                    <th className="p-2 font-bold uppercase tracking-wider">Asset URL / Log</th>
-                                    <th className="p-2 font-bold uppercase tracking-wider text-right">Potential Savings / Info</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {check.details.map((item, idx) => (
-                                    <tr key={idx} className="border-b border-zinc-900/60 hover:bg-zinc-900/20">
-                                      <td className="p-2 break-all max-w-[260px] text-zinc-300">{item.url || item.description}</td>
-                                      <td className="p-2 text-right whitespace-nowrap text-rose-400 font-bold">
-                                        {item.wastedBytes !== undefined 
-                                          ? `${(item.wastedBytes / 1024).toFixed(1)} KB` 
-                                          : item.wastedMs !== undefined 
-                                          ? `${item.wastedMs} ms delay` 
-                                          : item.source || "Failure diagnostic"}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        )}
-
-                        {check.snippet && !check.passed && (
-                          <div className="w-full pl-8 mt-1">
-                            <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wide">
-                              Recommended Fix Template:
-                            </span>
-                            <pre className="mt-1.5 p-3 rounded-lg bg-zinc-950 border border-zinc-850 font-mono text-[9px] text-zinc-350 overflow-x-auto select-all leading-normal text-left">
-                              <code>{check.snippet}</code>
-                            </pre>
-                          </div>
-                        )}
-
-                        {!check.passed && (
-                          <div className="w-full pl-8 border-t border-zinc-800/80 pt-3 text-left">
-                            <span className="text-[10px] text-rose-400 font-bold block uppercase tracking-wide">
-                              Implementation Guide:
-                            </span>
-                            <p className="text-xxs text-zinc-400 leading-relaxed mt-0.5">
-                              {check.fix}
-                            </p>
-                          </div>
-                        )}
+                        {isSelected && renderEngineDetails(id)}
                       </div>
-                    ))}
-                  
-                  {report.engines[activeEngine].checks.filter((check) => {
-                    if (filterTab === "all") return true;
-                    if (filterTab === "errors") return !check.passed && check.severity === "error";
-                    if (filterTab === "warnings") return !check.passed && check.severity === "warning";
-                    if (filterTab === "passed") return check.passed;
-                    return true;
-                  }).length === 0 && (
-                    <div className="rounded-xl border border-zinc-850 p-8 text-center text-zinc-550 text-xs">
-                      No parameters match this severity filter for {report.engines[activeEngine].name}.
                     </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Back Button */}
+            {/* Detailed Results Output (Desktop Only) */}
+            <div className="hidden lg:block lg:col-span-8">
+              {renderEngineDetails(activeEngine)}
+            </div>
+          </div>
+
+          {/* Back Button */}
             <div className="pt-6 text-center">
               <button
                 type="button"

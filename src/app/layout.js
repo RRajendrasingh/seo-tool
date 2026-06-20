@@ -2,6 +2,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TrackingScripts from "@/components/TrackingScripts";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/utils/auth";
 
 export const metadata = {
   title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
@@ -9,7 +11,7 @@ export const metadata = {
   keywords: ["SEO services", "AI SEO audit", "local SEO agency", "website audit tool", "automated SEO report"],
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
   const themeScript = `
     (function() {
       try {
@@ -22,6 +24,13 @@ export default function RootLayout({ children }) {
       } catch (e) {}
     })();
   `;
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  let session = null;
+  if (token) {
+    session = verifyToken(token);
+  }
 
   return (
     <html
@@ -41,7 +50,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning={true}
       >
         <TrackingScripts />
-        <Navbar />
+        <Navbar initialSession={session} />
         <main className="flex-grow overflow-x-hidden">
           {children}
         </main>

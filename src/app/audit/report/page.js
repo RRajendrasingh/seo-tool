@@ -26,6 +26,16 @@ function ReportContent() {
   const [session, setSession] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
 
+  // Accordion state for new UI
+  const [openAccordions, setOpenAccordions] = useState({});
+
+  const toggleAccordion = (engineKey) => {
+    setOpenAccordions(prev => ({
+      ...prev,
+      [engineKey]: !prev[engineKey]
+    }));
+  };
+
   useEffect(() => {
     async function fetchSession() {
       try {
@@ -80,7 +90,7 @@ function ReportContent() {
           setIsPaid(false);
         }
       } else {
-        setIsPaid(false);
+          setIsPaid(false);
       }
     } catch (e) {
       console.error(e);
@@ -630,6 +640,7 @@ function ReportContent() {
         avgScore,
         grade,
         engines,
+        scores: { perfScore, seoScore, accessScore, bpScore, validationScore },
         date: new Date().toLocaleDateString(undefined, {
           year: "numeric",
           month: "long",
@@ -776,448 +787,282 @@ function ReportContent() {
   });
 
   return (
-    <div className="bg-zinc-950 text-slate-300 min-h-screen relative isolate pb-24 print:bg-white print:text-slate-900 print:pb-0">
+    <div className="bg-slate-950 text-slate-300 min-h-screen pb-24 print:bg-white print:text-slate-900 print:pb-0 font-sans">
       
       {/* HTML STYLE TAG FOR PRINT OPTIMIZATIONS */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          @page {
-            size: A4 portrait;
-            margin: 15mm 15mm 15mm 15mm;
-          }
-          body {
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif !important;
-          }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .print-avoid-break {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
-          }
+          @page { size: A4 portrait; margin: 15mm 15mm 15mm 15mm; }
+          body { background-color: #ffffff !important; color: #0f172a !important; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .print-avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
+          .dark-only { display: none !important; }
+          .light-only { display: block !important; }
         }
       `}} />
 
-      {/* BACKGROUND EFFECTS (SCREEN ONLY) */}
-      <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl print:hidden" />
-      <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl print:hidden" />
-
-      {/* FLOAT BAR (SCREEN ONLY) */}
-      <div className="sticky top-0 z-50 bg-slate-950/80 border-b border-slate-900 backdrop-blur-md py-3 px-4 sm:py-4 sm:px-6 lg:px-8 print:hidden">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="font-extrabold text-sm bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent flex-shrink-0">
-              SEOIntellect
-            </span>
-            <span className="hidden sm:inline-flex rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-[9px] font-bold text-cyan-400 border border-cyan-500/20">
-              Premium Report Unlocked
-            </span>
-            {USE_MOCK_DATA && (
-              <span className="hidden xs:inline-flex rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[9px] font-bold text-amber-300 border border-amber-500/20">
-                Sample Data
-              </span>
-            )}
+      {/* UNIFIED RESPONSIVE HEADER */}
+      <div className="max-w-5xl mx-auto items-center sm:items-end justify-between px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row gap-6 sm:gap-0 print:flex print:py-4">
+        <div className="text-center sm:text-left">
+          <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-1 sm:mb-2">Published: {report.date}</div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 print:text-slate-900">Executive SEO Performance Dossier</h1>
+          <div className="text-xs sm:text-sm text-zinc-400 mt-1 flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
+            <span>🌐</span> {report.url}
           </div>
-          <div className="flex gap-2 sm:gap-3 flex-shrink-0">
-            <button
-              onClick={() => router.push(`/audit?url=${encodeURIComponent(urlParam)}`)}
-              className="rounded-xl border border-slate-800 hover:bg-slate-900 px-3 sm:px-4 py-2.5 text-xs font-semibold text-slate-300 transition-all"
-            >
-              <span className="hidden sm:inline">← Back to Audit Page</span>
-              <span className="inline sm:hidden">← Back</span>
+        </div>
+        
+        <div className="flex flex-col items-center sm:items-end gap-4">
+          <div className="flex items-center gap-4">
+            <button onClick={triggerPrint} className="hidden sm:block bg-gradient-to-r from-indigo-500 to-cyan-400 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition-transform active:scale-95 text-sm print:hidden">
+              📥 Download PDF Report
             </button>
-            <button
-              onClick={triggerPrint}
-              className="rounded-xl bg-indigo-600 px-3 sm:px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:bg-indigo-500 active:scale-[0.99]"
-            >
-              <span className="hidden sm:inline">🖨️ Save Report as PDF</span>
-              <span className="inline sm:hidden">🖨️ PDF</span>
-            </button>
+            <div className="hidden sm:flex items-center gap-4 bg-white/5 border-white/10 rounded-xl p-3 shadow-sm border print:border-slate-300">
+              <div className="text-center">
+                <div className="text-[10px] uppercase font-bold text-slate-400">Overall Grade</div>
+                <div className="text-3xl font-extrabold text-indigo-400">{report.grade} <span className="text-lg">{report.avgScore}%</span></div>
+              </div>
+              <div className="bg-indigo-500/10 text-indigo-400 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
+                All passing ratings
+              </div>
+            </div>
+          </div>
+
+          <div className="sm:hidden relative w-32 h-32 mb-2">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#1f2937" strokeWidth="6" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#10b981" strokeWidth="6" strokeDasharray="282.7" strokeDashoffset={282.7 - (282.7 * report.avgScore) / 100} className="transition-all duration-1000" strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-extrabold text-emerald-400">{report.avgScore}</span>
+            </div>
+          </div>
+          <div className="sm:hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
+            ● Good Standing
           </div>
         </div>
       </div>
 
-      {/* REPORT CONTENT WRAPPER */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 print:p-0 print:text-slate-900">
-        
-        {/* PRINT ONLY BRAND HEADER */}
-        <div className="hidden print:flex items-center justify-between border-b-2 border-slate-200 pb-4 mb-6">
-          {session?.subscription_tier === "agency" ? (
-            <div className="flex items-center gap-3">
-              {session.agency_logo_id ? (
-                <img
-                  src={`/api/uploads/${session.agency_logo_id}`}
-                  alt={session.agency_name || "Agency Logo"}
-                  className="h-8 max-w-[150px] object-contain"
-                />
-              ) : (
-                <span className="text-lg font-black tracking-tight text-slate-800 uppercase">
-                  {session.agency_name || "Custom Agency Report"}
-                </span>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-black tracking-tight text-slate-800">
-                SEO<span className="text-indigo-600">Intellect</span>
-              </span>
-              <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 uppercase">
-                AI
-              </span>
-            </div>
-          )}
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            {session?.subscription_tier === "agency" ? "SEO Performance Report" : "Premium Performance Dossier"}
-          </span>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8 print:p-0 print:space-y-6">
 
-        {/* TITLE SECTION (PAGE 1 CAP) */}
-        <div className="space-y-6 text-center border-b border-slate-900 pb-10 print:border-slate-200 print-avoid-break">
-          <div className="inline-flex items-center gap-x-2 rounded-full border border-cyan-500/30 bg-cyan-950/20 px-4 py-1 text-xs font-semibold text-cyan-400 print:hidden">
-            Premium Executive Audit
-          </div>
-          
-          <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent print:text-slate-900 print:bg-none print:text-3xl">
-            Executive SEO Performance Dossier
-          </h1>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6 text-left max-w-3xl mx-auto font-mono text-xxs">
-            <div className="border border-slate-900 bg-slate-950/40 p-3 sm:p-3.5 rounded-xl print:bg-slate-50 print:border-slate-200">
-              <span className="text-slate-500 block uppercase font-bold mb-0.5">Audited Website</span>
-              <span className="text-white font-bold break-all block print:text-slate-800">{report.url}</span>
-            </div>
-            <div className="border border-slate-900 bg-slate-950/40 p-3.5 rounded-xl print:bg-slate-50 print:border-slate-200">
-              <span className="text-slate-500 block uppercase font-bold mb-0.5">Report Date</span>
-              <span className="text-white font-bold block print:text-slate-800">{report.date}</span>
-            </div>
-            <div className="border border-slate-900 bg-slate-950/40 p-3.5 rounded-xl print:bg-slate-50 print:border-slate-200">
-              <span className="text-slate-500 block uppercase font-bold mb-0.5">Status Check</span>
-              <span className="text-emerald-400 font-bold block print:text-emerald-700">✓ Fully Audited</span>
-            </div>
-            <div className="border border-slate-900 bg-slate-950/40 p-3.5 rounded-xl print:bg-slate-50 print:border-slate-200">
-              <span className="text-slate-500 block uppercase font-bold mb-0.5">Overall Grade</span>
-              <span className="text-cyan-400 font-extrabold text-sm block print:text-indigo-700">{report.grade} ({report.avgScore}%)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* OVERALL DIALS SCORE SUMMARY */}
-        <div className="space-y-6 print-avoid-break">
-          <h2 className="text-lg font-bold text-white border-l-2 border-cyan-500 pl-3 print:text-slate-800 print:border-slate-400">
-            Performance Engine Summary
-          </h2>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4">
-            {Object.entries(report.engines).map(([id, eng]) => (
-              <div
-                key={id}
-                className="rounded-2xl border border-slate-900 bg-slate-900/20 p-4 text-center space-y-3 print:border-slate-200 print:bg-slate-50/50"
-              >
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate print:text-slate-500">
-                  {eng.name}
-                </span>
-
-                {/* Score Circle representation */}
-                <div className="relative h-16 w-16 mx-auto flex items-center justify-center print:h-12 print:w-12">
-                  <div className="absolute inset-0 rounded-full border-4 border-slate-800 print:border-2 print:border-slate-200" />
-                  <span className={`text-base font-extrabold px-2 py-1 rounded-md border print:border-none print:text-base print:font-black ${
-                    eng.score >= 90
-                      ? "text-emerald-400 border-emerald-500/10 bg-emerald-500/5 print:text-emerald-700"
-                      : eng.score >= 50
-                      ? "text-amber-400 border-amber-500/10 bg-amber-500/5 print:text-amber-700"
-                      : "text-rose-400 border-rose-500/10 bg-rose-500/5 print:text-rose-700"
-                  }`}>
-                    {eng.score}
-                  </span>
+        {/* SUMMARY BLOCKS */}
+        <div>
+          <h3 className="text-lg font-bold text-white print:text-slate-900 mb-4">Performance Engine Summary</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                  <span className="text-indigo-400 bg-indigo-500/10 p-1 rounded">🖥️</span> Tech
                 </div>
+                <span className="inline-flex text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase">Excellent</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Health Metrics Summary Bar */}
-        {(() => {
-          let errorsCount = 0;
-          let warningsCount = 0;
-          let passedCount = 0;
-          Object.values(report.engines).forEach((eng) => {
-            eng.checks.forEach((c) => {
-              if (c.passed) {
-                passedCount++;
-              } else if (c.severity === "error") {
-                errorsCount++;
-              } else {
-                warningsCount++;
-              }
-            });
-          });
-
-          return (
-            <div className="grid grid-cols-3 gap-4 border border-slate-900 bg-slate-950/20 rounded-2xl p-4 print:border-slate-200 print:bg-slate-50/50 print-avoid-break">
-              <div className="text-center p-3 rounded-xl bg-rose-500/[0.03] border border-rose-500/10 flex flex-col justify-center items-center print:bg-rose-50 print:border-rose-200">
-                <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider print:text-rose-700">Critical Errors</span>
-                <span className="text-xl sm:text-2xl font-extrabold text-rose-500 mt-1 print:text-rose-600">{errorsCount}</span>
-              </div>
-              <div className="text-center p-3 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 flex flex-col justify-center items-center print:bg-amber-50 print:border-amber-200">
-                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider print:text-amber-700">Warnings</span>
-                <span className="text-xl sm:text-2xl font-extrabold text-amber-500 mt-1 print:text-amber-600">{warningsCount}</span>
-              </div>
-              <div className="text-center p-3 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 flex flex-col justify-center items-center print:bg-emerald-50 print:border-emerald-200">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider print:text-emerald-700">Passed Checks</span>
-                <span className="text-xl sm:text-2xl font-extrabold text-emerald-500 mt-1 print:text-emerald-600">{passedCount}</span>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-2">{report.scores?.seoScore || report.engines['seo-tags']?.score}<span className="text-sm font-medium text-zinc-500">/100</span></div>
+              <div className="w-full bg-zinc-800 rounded-full h-1">
+                <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${report.scores?.seoScore || report.engines['seo-tags']?.score}%` }}></div>
               </div>
             </div>
-          );
-        })()}
 
-        {/* EXECUTIVE REPORT TEXT SUMMARY */}
-        <div className="rounded-2xl border border-slate-900 bg-slate-900/20 p-6 space-y-4 print:border-slate-200 print:bg-slate-50/50 print-avoid-break">
-          <h2 className="text-base font-bold text-white print:text-slate-800">Executive Summary</h2>
-          <p className="text-xs text-slate-400 leading-relaxed print:text-zinc-700">
-            Our multi-engine web performance analyzer successfully scanned <span className="font-mono text-slate-200 print:text-slate-850">{report.url}</span>. The site scores an average grade of <strong className="text-cyan-400 print:text-indigo-700">{report.grade}</strong> (average scoring rate of {report.avgScore}%). Major optimizations are needed to secure ranking credentials on google networks.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xxs font-mono pt-2">
-            <div className="space-y-1 text-left">
-              <span className="text-slate-500 uppercase block font-bold">Top Strength Area</span>
-              <span className="text-emerald-400 font-semibold block print:text-emerald-700">
-                {Object.values(report.engines).sort((a,b) => b.score - a.score)[0]?.name}
-              </span>
+            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                  <span className="text-cyan-400 bg-cyan-500/10 p-1 rounded">⚡</span> Perf
+                </div>
+                <span className="inline-flex text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase">Perfect</span>
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-2">{report.scores?.perfScore || report.engines['page-speed']?.score}<span className="text-sm font-medium text-zinc-500">/100</span></div>
+              <div className="w-full bg-zinc-800 rounded-full h-1">
+                <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${report.scores?.perfScore || report.engines['page-speed']?.score}%` }}></div>
+              </div>
             </div>
-            <div className="space-y-1 text-left">
-              <span className="text-slate-500 uppercase block font-bold">Priority Failure Risk</span>
-              <span className="text-rose-400 font-semibold block print:text-rose-700">
-                {Object.values(report.engines).sort((a,b) => a.score - b.score)[0]?.name}
-              </span>
+
+            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                  <span className="text-rose-400 bg-rose-500/10 p-1 rounded">⚠️</span> Issues
+                </div>
+                <span className="inline-flex text-[9px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded uppercase">Good</span>
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1">{failedChecks.length} <span className="text-sm font-medium text-zinc-500">Found</span></div>
+              <div className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">! {failedChecks.filter(c => c.severity === 'error').length} Critical</div>
+            </div>
+
+            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                  <span className="text-indigo-400 bg-indigo-500/10 p-1 rounded">✨</span> AI Ready
+                </div>
+                <span className="inline-flex text-[9px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded uppercase">Needs Work</span>
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1">
+                {report.engines['aeo-geo']?.score >= 80 ? 'A' : report.engines['aeo-geo']?.score >= 60 ? 'B+' : 'C'}
+              </div>
+              <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">AEO Status</div>
             </div>
           </div>
         </div>
 
-        {/* PRIORITY ACTION CHECKLIST (PAGE BREAK IN PRINT) */}
-        <div style={{ pageBreakBefore: "always" }} className="space-y-6 pt-8 print:pt-6">
-          <h2 className="text-lg font-bold text-white border-l-2 border-rose-500 pl-3 print:text-slate-800 print:border-slate-400">
-            Priority Action Fix-list
-          </h2>
-          <p className="text-xxs text-slate-500 leading-relaxed -mt-3 print:text-slate-505">
-            The following checking variables returned failures. Complete these code actions immediately to recover performance rankings.
-          </p>
+        {/* ALERTS SECTION (Desktop) */}
+        <div className="flex flex-col sm:flex-row gap-4 print:flex">
+          <div className="flex-1 bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 flex gap-3 items-start">
+            <span className="text-indigo-500 bg-indigo-500/20 rounded-full p-1.5 text-xs">🎯</span>
+            <div>
+              <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Top Strategist Note</div>
+              <p className="text-xs text-indigo-300">Before advancing, prioritize LCP fixes and internal linking schema to capture immediate ranking shifts.</p>
+            </div>
+          </div>
+          <div className="flex-1 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 flex gap-3 items-start">
+            <span className="text-rose-500 bg-rose-500/20 rounded-full p-1.5 text-xs">⚠️</span>
+            <div>
+              <div className="text-xs font-bold text-rose-400 uppercase tracking-widest mb-1">Critical System Alert</div>
+              <p className="text-xs text-rose-300">Payload weight critically limits mobile indexation on your key product pages.</p>
+            </div>
+          </div>
+        </div>
 
-          <div className="space-y-3">
-            {failedChecks.length === 0 ? (
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-center text-xs text-emerald-400 font-semibold print:border-emerald-200 print:bg-emerald-50 print:text-emerald-700 print-avoid-break">
-                ✓ Perfect Audit Score! No errors detected.
-              </div>
-            ) : (
-              failedChecks.map((check, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-slate-900 bg-zinc-900/10 p-4 sm:p-5 flex flex-col items-start gap-4 print:border-slate-200 print:bg-slate-50/50 print-avoid-break"
-                >
-                  <div className="space-y-1 flex-grow text-left w-full">
-                    <div className="flex flex-wrap items-center justify-between gap-2 w-full">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center rounded-full bg-rose-500/10 text-rose-400 text-[10px] font-bold h-5.5 w-5.5 border border-rose-500/20 print:bg-rose-100 print:text-rose-700 print:border-rose-200 flex-shrink-0">
-                          ✗
-                        </span>
-                        <h4 className="text-xs font-bold text-white print:text-slate-800">{check.name}</h4>
-                        <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500 font-mono hidden xs:block">
-                          [{check.engineName}]
-                        </span>
-                      </div>
-
-                      {/* Severity/Impact badges */}
-                      <div className="flex gap-2">
-                        <span className={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                          check.severity === "error"
-                            ? "bg-rose-950/40 text-rose-400 border border-rose-500/20 print:bg-rose-100 print:text-rose-700 print:border-rose-200"
-                            : "bg-amber-950/40 text-amber-400 border border-amber-500/20 print:bg-amber-100 print:text-amber-700 print:border-amber-200"
-                        }`}>
-                          {check.severity === "error" ? "Critical" : "Warning"}
-                        </span>
-                        <span className="text-[8px] font-semibold font-mono text-zinc-550 uppercase">
-                          Impact: {check.impact || "Medium"}
-                        </span>
-                      </div>
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          
+          {/* CRITICAL FIXES */}
+          <div className="flex-1 w-full space-y-4">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-white print:text-slate-900 mb-2">
+              <span className="text-rose-400">⚠️</span> <span>Priority Action Fix-list</span>
+            </h3>
+            
+            <div className="space-y-3">
+              {failedChecks.slice(0, 4).map((check, idx) => (
+                <div key={idx} className="bg-slate-900 rounded-xl border border-slate-800 p-4 flex gap-3 sm:gap-4 items-start relative overflow-hidden group shadow-sm">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500/50"></div>
+                  <div className="text-rose-400 text-lg sm:text-xl mt-0.5">
+                    {check.name.includes("LCP") || check.name.includes("Time") ? "⏳" : check.name.includes("Link") ? "🔗" : "📄"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="font-bold text-sm text-white truncate">{check.name}</h4>
+                      <span className="inline-flex text-[9px] font-bold text-rose-600 bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-full whitespace-nowrap">High Impact</span>
+                    </div>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-2 line-clamp-2">{check.desc}</p>
+                    <div className="bg-slate-800/40 rounded px-3 py-2 text-xs font-mono text-zinc-400 mb-2">
+                      Solution: <span className="text-indigo-400 font-bold">{check.fix}</span>
                     </div>
                     
-                    <p className="text-xxs text-slate-500 leading-relaxed pl-8 print:text-slate-600">
-                      {check.desc}
-                    </p>
-
-                    {check.value && (
-                      <p className={`text-xxs font-mono px-2.5 py-1 border rounded-md inline-block ml-8 mt-2 ${
-                        check.severity === "error"
-                          ? "border-rose-500/20 text-rose-300 bg-rose-500/5 print:border-rose-200 print:text-rose-700 print:bg-rose-50"
-                          : "border-amber-500/20 text-amber-300 bg-amber-500/5 print:border-amber-200 print:text-amber-700 print:bg-amber-50"
-                      }`}>
-                        Detected: {check.value}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Offending Resources List */}
-                  {check.details && check.details.length > 0 && (
-                    <div className="w-full pl-8 mt-1">
-                      <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wide print:text-slate-500">
-                        Offending Resources ({check.details.length}):
-                      </span>
-                      <div className="mt-1.5 overflow-x-auto rounded-lg border border-slate-900 bg-slate-950 print:border-slate-200 print:bg-slate-50">
-                        <table className="w-full text-[10px] font-mono border-collapse text-left text-zinc-500 print:text-slate-600">
-                          <thead>
-                            <tr className="bg-slate-900 text-zinc-505 border-b border-slate-900 print:bg-slate-100 print:text-slate-750 print:border-slate-200">
-                              <th className="p-2 font-bold uppercase tracking-wider">Asset URL / Log</th>
-                              <th className="p-2 font-bold uppercase tracking-wider text-right">Potential Savings / Info</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {check.details.map((item, idx) => (
-                              <tr key={idx} className="border-b border-slate-900/60 hover:bg-slate-900/20 print:border-b-slate-200/50 print:hover:bg-slate-100/50">
-                                <td className="p-2 break-all max-w-[260px] text-zinc-300 print:text-slate-800">{item.url || item.description}</td>
-                                <td className="p-2 text-right whitespace-nowrap text-rose-400 font-bold print:text-rose-700">
-                                  {item.wastedBytes !== undefined 
-                                    ? `${(item.wastedBytes / 1024).toFixed(1)} KB` 
-                                    : item.wastedMs !== undefined 
-                                    ? `${item.wastedMs} ms delay` 
-                                    : item.source || "Failure diagnostic"}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Code template block */}
-                  {check.snippet && (
-                    <div className="w-full pl-8 mt-1">
-                      <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wide print:text-slate-500">
-                        Recommended Fix Template:
-                      </span>
-                      <pre className="mt-1.5 p-3 rounded-lg bg-slate-950 border border-slate-900 font-mono text-[9px] text-zinc-350 overflow-x-auto select-all leading-normal text-left print:bg-slate-50 print:border-slate-200 print:text-slate-800">
-                        <code>{check.snippet}</code>
-                      </pre>
-                    </div>
-                  )}
-
-                  <div className="w-full pl-8 border-t border-slate-800 pt-3 print:border-slate-200 text-left">
-                    <span className="text-[10px] text-rose-400 font-bold block uppercase tracking-wide print:text-rose-700">
-                      Fix Action Guide:
-                    </span>
-                    <p className="text-xxs text-slate-400 leading-relaxed mt-0.5 print:text-slate-700">
-                      {check.fix}
-                    </p>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
+              {failedChecks.length === 0 && (
+                <div className="bg-slate-900 rounded-xl p-6 text-center text-zinc-500 text-sm border border-slate-800">
+                  No critical issues found. Excellent work!
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* HOSTINGER SPECIFIC RECOMMENDATIONS */}
-        <div className="space-y-6 print-avoid-break">
-          <h2 className="text-lg font-bold text-white border-l-2 border-cyan-500 pl-3 print:text-slate-800 print:border-slate-400">
-            Hostinger Edge Optimization Steps
-          </h2>
-          <p className="text-xxs text-zinc-500 leading-relaxed -mt-3 print:text-slate-500">
-            Since this website runs on Hostinger servers, implement the following hosting optimization presets to immediately speed up response speeds.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-xl border border-slate-900 bg-zinc-900/30 p-5 space-y-2 print:border-slate-200 print:bg-slate-50/30 print-avoid-break text-left">
-              <h4 className="text-xs font-bold text-white print:text-slate-800">1. Toggle HTTP/2 & SSL</h4>
-              <p className="text-xxs text-slate-400 leading-relaxed print:text-slate-600">
-                Go to hPanel &gt; Web Vitals. Enable HTTP/2 protocols. In the Domains tab, force SSL (HTTPS) routing to prevent insecure server responses.
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-900 bg-zinc-900/30 p-5 space-y-2 print:border-slate-200 print:bg-slate-50/30 print-avoid-break text-left">
-              <h4 className="text-xs font-bold text-white print:text-slate-800">2. Enable Object Caching</h4>
-              <p className="text-xxs text-slate-400 leading-relaxed print:text-slate-600">
-                Toggle LiteSpeed Memcached or Redis configurations inside the Hosting Dashboard. This cuts server response times (TTFB) to under 200ms.
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-900 bg-zinc-900/30 p-5 space-y-2 print:border-slate-200 print:bg-slate-50/30 print-avoid-break text-left">
-              <h4 className="text-xs font-bold text-white print:text-slate-800">3. Set Gzip Compression</h4>
-              <p className="text-xxs text-slate-400 leading-relaxed print:text-slate-600">
-                Access your file manager and verify Gzip or Brotli compression is configured in the `.htaccess` file. This reduces font/asset payloads by 70%.
-              </p>
+          {/* TECHNICAL LOGS ACCORDIONS */}
+          <div className="w-full lg:w-80 space-y-4 print:hidden">
+            <h3 className="text-lg font-bold text-white mb-2">Technical Logs</h3>
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-sm overflow-hidden divide-y divide-slate-800">
+              {Object.entries(report.engines).map(([key, engine]) => (
+                <div key={key} className="flex flex-col">
+                  <button 
+                    onClick={() => toggleAccordion(key)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-800/40 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-cyan-400 text-sm">
+                        {key === 'seo-tags' ? '🏷️' : key === 'page-speed' ? '⚡' : key === 'page-weight' ? '⚖️' : key === 'content-hierarchy' ? '📱' : key === 'server-security' ? '🛡️' : '🧠'}
+                      </span>
+                      <span className="text-xs font-bold text-white">{engine.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${engine.score >= 80 ? 'bg-emerald-500' : engine.score >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`}></div>
+                      <span className="text-zinc-500 text-[10px] transition-transform duration-200" style={{ transform: openAccordions[key] ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </div>
+                  </button>
+                  {openAccordions[key] && (
+                    <div className="p-4 pt-0 bg-slate-950/40 space-y-2">
+                      {engine.checks.slice(0, 3).map((check, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-xs">
+                          <span className="text-zinc-400 truncate max-w-[140px]">{check.name.replace(/ \(Mobile\)/, '')}</span>
+                          <span className={check.passed ? "text-emerald-400" : "text-rose-400"}>
+                            {check.passed ? "Pass" : "Fail"}
+                          </span>
+                        </div>
+                      ))}
+                      
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* DETAILED DIRECTORY OF ALL RUN CHECKS (PAGE BREAK IN PRINT) */}
-        <div style={{ pageBreakBefore: "always" }} className="space-y-6 pt-8 print:pt-6">
-          <h2 className="text-lg font-bold text-white border-l-2 border-cyan-500 pl-3 print:text-slate-800 print:border-slate-400">
-            Full Audit Parameter Log
-          </h2>
-
-          <div className="space-y-8">
-            {Object.entries(report.engines).map(([id, eng]) => (
-              <div key={id} className="space-y-4 print-avoid-break">
-                <div className="border-b border-slate-900 pb-2 flex justify-between items-center print:border-slate-200">
-                  <h3 className="text-xs font-extrabold text-white uppercase tracking-wider print:text-slate-800">
-                    {eng.name} Log
-                  </h3>
-                  <span className="text-[10px] font-mono font-bold text-cyan-400 print:text-indigo-700">
-                    Category Rating: {eng.score}%
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  {eng.checks.map((check, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between items-center bg-zinc-950/20 border border-slate-900/50 p-3 rounded-lg text-xxs font-mono print:border-slate-200 print:bg-slate-50/20"
-                    >
-                      <div className="flex items-center gap-2.5 max-w-[70%] text-left">
-                        <span className={check.passed ? "text-cyan-400 print:text-emerald-700" : "text-rose-400 print:text-rose-700"}>
-                          {check.passed ? "✓" : "✗"}
-                        </span>
-                        <span className="text-slate-300 font-semibold truncate print:text-slate-700">{check.name}</span>
-                      </div>
-                      <span className={`text-[10px] ${check.passed ? "text-cyan-400/90 print:text-emerald-700" : "text-rose-400/90 print:text-rose-700"}`}>
-                        {check.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+        {/* FULL DESKTOP LOGS */}
+        <div className="space-y-6 mt-12 print:block">
+          {Object.entries(report.engines).map(([key, engine]) => (
+            <div key={key} className="space-y-3 print-avoid-break">
+              <div className="flex justify-between items-end border-b-2 border-slate-800 pb-2">
+                <h3 className="text-xs font-bold text-white uppercase tracking-widest">{engine.name} Log</h3>
+                <span className="text-[10px] font-bold text-indigo-400">Category Rating: {engine.score}%</span>
               </div>
-            ))}
+              <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden divide-y divide-zinc-800">
+                {engine.checks.map((check, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 text-xs hover:bg-slate-800/40 transition-colors">
+                    <div className="flex items-center gap-3 w-1/2">
+                      <span className={check.passed ? "text-emerald-500" : "text-rose-500"}>
+                        {check.passed ? "✓" : "✗"}
+                      </span>
+                      <span className="font-semibold text-slate-300 truncate">{check.name}</span>
+                    </div>
+                    <div className={`font-mono text-[10px] text-right truncate w-1/2 ${check.passed ? "text-indigo-400" : "text-rose-400"}`}>
+                      {check.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA BANNERS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 grid print:hidden mt-8">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center space-y-2 shadow-sm">
+            <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto text-indigo-500 mb-4">⚙️</div>
+            <h4 className="font-bold text-sm text-white">Email Server Settings</h4>
+            <p className="text-[10px] text-zinc-400">Reduce static payload weighting on core conditions matching TLS/SSL requirements.</p>
+            
+          </div>
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center space-y-2 shadow-sm">
+            <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto text-indigo-500 mb-4">☁️</div>
+            <h4 className="font-bold text-sm text-white">CDN Optimization</h4>
+            <p className="text-[10px] text-zinc-400">Fix speed-related SEO blocks via edge node delivery to improve server response data.</p>
+            
+          </div>
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center space-y-2 shadow-sm">
+            <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-4">🛡️</div>
+            <h4 className="font-bold text-sm text-white">Security Hardening</h4>
+            <p className="text-[10px] text-zinc-400">Ensure HTTP/2 upgrade on port 443 with HSTS headers up to strict requirements.</p>
+            <button className="text-emerald-400 font-bold text-[10px] uppercase tracking-widest mt-2 block w-full bg-emerald-500/10 py-1.5 rounded-full">Completed</button>
           </div>
         </div>
 
-        {/* REPORT CONSULTING CTA (SCREEN ONLY) */}
-        <div className="bg-gradient-to-r from-violet-650/15 via-purple-650/15 to-cyan-650/15 border border-indigo-500/20 rounded-3xl p-6 sm:p-8 space-y-4 text-center print:hidden shadow-lg shadow-indigo-500/5">
-          <div className="max-w-xl mx-auto space-y-2">
-            <span className="rounded-full bg-violet-500/10 px-3 py-1 text-[9px] font-bold text-violet-300 border border-violet-500/20 uppercase tracking-wider">
-              Expert Execution
-            </span>
-            <h3 className="text-base sm:text-lg font-black text-white">Need help executing these fixes?</h3>
-            <p className="text-xxs sm:text-xs text-slate-400 leading-relaxed font-sans">
-              Don&apos;t let technical bottlenecks or crawler blockades hurt your rankings. Book a free 30-minute organic growth consultation call with our experts to execute these optimizations.
-            </p>
-          </div>
-          <button
+        {/* BOTTOM CTA */}
+        <div className="bg-indigo-900/20 rounded-2xl p-8 sm:p-12 text-center border border-indigo-500/20 mt-8 print:hidden shadow-sm">
+          <div className="text-indigo-500 text-4xl mb-4 sm:mb-6">🏢</div>
+          <h2 className="text-xl sm:text-2xl font-bold text-indigo-300 mb-2">Need Help Implementing These Fixes?</h2>
+          <p className="text-sm text-indigo-200 max-w-md mx-auto mb-6 sm:mb-8 leading-relaxed">
+            Let our elite engineers resolve these critical issues and optimize your engine performance to drive immediate SEO readiness scores.
+          </p>
+          <button 
             onClick={() => {
-              const subject = encodeURIComponent("SEO Consultation Request");
-              const body = encodeURIComponent(`Hello,\n\nI ran an SEO audit for my site and would like help resolving the issues. Here are my audit details:\nTarget Domain: ${urlParam}\nCMS Platform: (WordPress/Shopify/Other)\n\nPlease contact me to schedule a call.\n\nThank you.`);
-              window.location.href = `mailto:consulting@seointellect.com?subject=${subject}&body=${body}`;
+              const subject = encodeURIComponent("Technical SEO Implementation Request");
+              const body = encodeURIComponent(`Hello,\n\nI ran an SEO audit for my site and need help resolving the critical errors. My site is ${urlParam}.\n\nThank you.`);
+              window.location.href = `mailto:support@seointellect.com?subject=${subject}&body=${body}`;
             }}
-            className="rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-950 px-6 py-3 text-xxs font-bold tracking-wider uppercase transition-colors shadow-sm cursor-pointer"
+            className="w-full sm:w-auto bg-[#1f2937] sm:bg-indigo-600 hover:bg-[#374151] sm:hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg hover:-translate-y-1"
           >
-            Book Free Consultation Call
+            <span>Book Free Consultation Call</span>
           </button>
         </div>
 
-        {/* REPORT FOOTER SIGNATURE */}
-        <div className="border-t border-slate-900 pt-8 text-center text-[10px] text-slate-505 space-y-1.5 print:border-slate-200 print-avoid-break">
-          <p>© {new Date().getFullYear()} SEOIntellect AI Auditor Suite. All rights reserved.</p>
-          <p>This document is verified and certified under transaction token key validation protocols.</p>
         </div>
-
-      </div>
     </div>
   );
 }

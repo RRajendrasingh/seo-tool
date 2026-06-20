@@ -3,10 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+const POSTS_PER_PAGE = 24;
+
 export default function NewsClient({ initialPosts = [] }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [posts, setPosts] = useState(initialPosts);
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
 
   useEffect(() => {
     fetch("/api/posts")
@@ -14,6 +17,11 @@ export default function NewsClient({ initialPosts = [] }) {
       .then((data) => setPosts(data))
       .catch((e) => console.error(e));
   }, []);
+
+  // Reset pagination when category or search changes
+  useEffect(() => {
+    setVisibleCount(POSTS_PER_PAGE);
+  }, [activeCategory, searchQuery]);
 
   // Derive categories dynamically from posts list
   const categories = ["All", ...Array.from(new Set(posts.map((post) => post.category).filter(Boolean)))];
@@ -29,6 +37,7 @@ export default function NewsClient({ initialPosts = [] }) {
 
   const featuredPost = searchQuery ? null : posts.find((p) => p.featured);
   const regularPosts = filteredPosts.filter((p) => searchQuery || !p.featured || activeCategory !== "All");
+  const displayedPosts = regularPosts.slice(0, visibleCount);
 
   return (
     <div className="bg-zinc-950 min-h-screen py-8 sm:py-16 lg:py-24 relative isolate overflow-x-hidden">
@@ -170,65 +179,81 @@ export default function NewsClient({ initialPosts = [] }) {
           </Link>
         )}
 
-        {/* Regular Posts Grid */}
         {regularPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-            {regularPosts.map((post) => (
-              <Link
-                key={post.id || post.title}
-                href={`/news/${post.slug}/`}
-                className="cursor-pointer rounded-2xl border border-zinc-880 bg-zinc-900/30 flex flex-col justify-between hover:border-zinc-700 transition-all group overflow-hidden block"
-              >
-                <div className="space-y-3 sm:space-y-4">
-                  {/* Card Image */}
-                  <div className="h-32 sm:h-44 relative overflow-hidden border-b border-zinc-850/30">
-                    {post.featuredImage ? (
-                      <img
-                        src={post.featuredImage}
-                        alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-zinc-950 flex items-center justify-center text-5xl select-none group-hover:scale-[1.01] transition-transform">
-                        📰
+          <div className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+              {displayedPosts.map((post) => (
+                <Link
+                  key={post.id || post.title}
+                  href={`/news/${post.slug}/`}
+                  className="cursor-pointer rounded-2xl border border-zinc-880 bg-zinc-900/30 flex flex-col justify-between hover:border-zinc-700 transition-all group overflow-hidden block"
+                >
+                  <div className="space-y-3 sm:space-y-4">
+                    {/* Card Image */}
+                    <div className="h-32 sm:h-44 relative overflow-hidden border-b border-zinc-850/30">
+                      {post.featuredImage ? (
+                        <img
+                          src={post.featuredImage}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-zinc-950 flex items-center justify-center text-5xl select-none group-hover:scale-[1.01] transition-transform">
+                          📰
+                        </div>
+                      )}
+                      {/* Gradient overlay on image */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-transparent" />
+                      <span
+                        style={{ color: '#ffffff' }}
+                        className="absolute bottom-3 left-3 rounded-full bg-black/75 backdrop-blur-sm px-2.5 py-0.5 text-[10px] font-semibold border border-white/10"
+                      >
+                        {post.category}
+                      </span>
+                    </div>
+
+                    <div className="px-4 sm:px-6 space-y-1.5 sm:space-y-2">
+                      <div className="flex items-center gap-3 text-[10px] text-zinc-555">
+                        <span>{post.date}</span>
+                        <span>•</span>
+                        <span>{post.readTime}</span>
                       </div>
-                    )}
-                    {/* Gradient overlay on image */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-transparent" />
-                    <span
-                      style={{ color: '#ffffff' }}
-                      className="absolute bottom-3 left-3 rounded-full bg-black/75 backdrop-blur-sm px-2.5 py-0.5 text-[10px] font-semibold border border-white/10"
-                    >
-                      {post.category}
+                      <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-violet-400 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-zinc-400 text-[11px] sm:text-xs leading-relaxed line-clamp-2 sm:line-clamp-3">
+                        {post.desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="px-4 sm:px-6 mt-3 mb-4 border-t border-zinc-850 pt-3 flex items-center justify-between text-xxs">
+                    <span className="text-zinc-555">By {post.author}</span>
+                    <span className="inline-flex items-center gap-1 text-violet-400 group-hover:text-violet-300 font-semibold">
+                      Read
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </span>
                   </div>
+                </Link>
+              ))}
+            </div>
 
-                  <div className="px-4 sm:px-6 space-y-1.5 sm:space-y-2">
-                    <div className="flex items-center gap-3 text-[10px] text-zinc-555">
-                      <span>{post.date}</span>
-                      <span>•</span>
-                      <span>{post.readTime}</span>
-                    </div>
-                    <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-violet-400 transition-colors line-clamp-2">
-                      {post.title}
-                    </h3>
-                    <p className="text-zinc-400 text-[11px] sm:text-xs leading-relaxed line-clamp-2 sm:line-clamp-3">
-                      {post.desc}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="px-4 sm:px-6 mt-3 mb-4 border-t border-zinc-850 pt-3 flex items-center justify-between text-xxs">
-                  <span className="text-zinc-555">By {post.author}</span>
-                  <span className="inline-flex items-center gap-1 text-violet-400 group-hover:text-violet-300 font-semibold">
-                    Read
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </div>
-              </Link>
-            ))}
+            {/* Load More Button */}
+            {regularPosts.length > visibleCount && (
+              <div className="flex justify-center pt-4">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + POSTS_PER_PAGE)}
+                  className="inline-flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 hover:border-zinc-700 px-6 py-3 text-xs font-bold text-zinc-300 hover:text-white transition-all shadow-lg hover:scale-[1.01] active:scale-[0.99] backdrop-blur-md cursor-pointer"
+                >
+                  Load More Articles
+                  <svg className="h-4.5 w-4.5 text-zinc-550 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 13l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-16 border border-zinc-850/40 bg-zinc-900/10 rounded-3xl max-w-md mx-auto backdrop-blur-md">

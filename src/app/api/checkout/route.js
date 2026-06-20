@@ -80,7 +80,7 @@ export async function POST(req) {
       ],
       mode: isSubscription ? "subscription" : "payment",
       success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&url=${encodeURIComponent(url)}`,
-      cancel_url: `${siteUrl}/checkout?url=${encodeURIComponent(url)}&plan=${plan || "pack"}`,
+      cancel_url: `${siteUrl}/audit?url=${encodeURIComponent(url)}&canceled=true`,
       customer_email: email || undefined,
       metadata: {
         url,

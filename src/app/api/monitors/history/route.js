@@ -51,3 +51,33 @@ export async function GET(req) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
+
+export async function POST(req) {
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const data = await req.json();
+    const { domain, performance_score, seo_score, accessibility_score, best_practices_score, full_report_json, avg_score, grade } = data;
+    
+    if (!domain) return NextResponse.json({ error: "Domain required" }, { status: 400 });
+
+    let cleanDomain = domain.trim().toLowerCase();
+    cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0];
+
+    const id = "h_" + Math.random().toString(36).substring(2, 10);
+    const scannedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    await query(
+      "INSERT INTO audit_history (id, domain, performance_score, accessibility_score, best_practices_score, seo_score, scanned_at, avg_score, grade, full_report_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [id, cleanDomain, performance_score || 0, accessibility_score || 0, best_practices_score || 0, seo_score || 0, scannedAt, avg_score || 0, grade || "F", full_report_json ? JSON.stringify(full_report_json) : null]
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error("Failed to save audit history:", e);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}
