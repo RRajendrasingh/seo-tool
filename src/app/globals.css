@@ -249,10 +249,8 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light button.bg-gradient-to-r .text-white,
 .light a.bg-gradient-to-r,
 .light a.bg-gradient-to-r .text-white,
-.light div.bg-gradient-to-r,
-.light div.bg-gradient-to-r .text-white,
-.light div.bg-gradient-to-r *,
 .light div.bg-gradient-to-r.from-violet-600.to-fuchsia-600,
+.light div.bg-gradient-to-r.from-violet-600.to-fuchsia-600 *,
 .light div.bg-gradient-to-r.from-violet-600.to-fuchsia-600 .text-white {
   color: #ffffff !important;
 }
@@ -359,6 +357,76 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
   box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.05) !important;
 }
 
+/* ── Additional Premium Light Mode Polish ────────────────── */
+.light .text-zinc-850,
+.light .text-slate-850 {
+  color: #e2e8f0 !important;
+}
+.light .bg-white\/5 {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+.light .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light button.bg-white,
+.light a.bg-white,
+.light div.bg-white {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+.light button.bg-white:hover,
+.light a.bg-white:hover {
+  background-color: #f1f5f9 !important;
+}
+.light .from-zinc-900\/60 {
+  --tw-gradient-from: rgba(241, 245, 249, 0.8) !important;
+  --tw-gradient-to: rgba(241, 245, 249, 0) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.light .to-zinc-950\/40 {
+  --tw-gradient-to: rgba(248, 250, 252, 0.8) !important;
+}
+.light .bg-zinc-900\/50 {
+  background-color: rgba(241, 245, 249, 0.60) !important;
+}
+.light .bg-indigo-900\/20 {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+}
+.light .text-indigo-300 {
+  color: #3730a3 !important;
+}
+.light .text-indigo-200 {
+  color: #4f46e5 !important;
+}
+/* Ensure white text is kept on hover over dark backgrounds */
+.light .hover\:text-white:hover {
+  color: #ffffff !important;
+}
+.light .group:hover .group-hover\:text-white {
+  color: #ffffff !important;
+}
+.light a.group:hover .group-hover\:text-white {
+  color: #4f46e5 !important;
+}
+.light a.group:hover .group-hover\:text-zinc-400 {
+  color: #475569 !important;
+}
+.light a.group:hover {
+  background-color: rgba(124, 58, 237, 0.05) !important;
+  border-color: rgba(124, 58, 237, 0.25) !important;
+}
+
+/* Custom vector map overrides in light theme */
+.light .dark-road {
+  stroke: #cbd5e1 !important;
+}
+.light .dark-park {
+  fill: rgba(16, 185, 129, 0.12) !important;
+}
+.light .dark-water {
+  fill: rgba(59, 130, 246, 0.12) !important;
+}
+
 /* ═══════════════════════════════════════════════════════════
    CKEDITOR TABLE & FORMATTING STYLES
    Ensures rich content elements render with perfect margins,
@@ -405,4 +473,76 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .prose td {
   border-color: #cbd5e1 !important;
 }
+
+/* ── Directory Search Container and Input ── */
+.directory-search-container {
+  background-color: rgba(24, 24, 27, 0.4) !important;
+  border-color: rgba(39, 39, 42, 0.8) !important;
+}
+
+.light .directory-search-container {
+  background-color: #eef2f6 !important; /* Premium light slate-blue bg for clear container separation */
+  border-color: #cbd5e1 !important;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02) !important;
+}
+
+.directory-search-input {
+  background-color: #09090b !important;
+  border-color: #27272a !important;
+}
+
+.light .directory-search-input {
+  background-color: #ffffff !important; /* Pure white input to stand out against container bg */
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light .directory-search-input:focus {
+  border-color: #7c3aed !important; /* Elegant violet focus border */
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15) !important;
+}
+
+/* ── Directory Card Hover Contrast Fixes ── */
+.light .directory-card {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02) !important;
+}
+
+.light .directory-card:hover {
+  background-color: rgba(124, 58, 237, 0.04) !important; /* Subtle violet tint on hover */
+  border-color: rgba(124, 58, 237, 0.3) !important;
+  box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.05), 0 4px 6px -4px rgba(124, 58, 237, 0.05) !important;
+}
+
+/* Title text color transitions */
+.light .directory-card .text-zinc-300 {
+  color: #1e293b !important;
+  transition: color 0.2s ease;
+}
+
+.light a.directory-card:hover .group-hover\:text-white {
+  color: #7c3aed !important; /* High contrast violet on hover, instead of invisible white */
+}
+
+/* Niche text color transitions */
+.light .directory-card .text-zinc-500 {
+  color: #475569 !important;
+  transition: color 0.2s ease;
+}
+
+.light a.directory-card:hover .group-hover\:text-zinc-400 {
+  color: #1e293b !important; /* Darker gray/black for high contrast on hover */
+}
+
+/* Footer text color transitions */
+.light .directory-card .text-zinc-500 {
+  color: #64748b !important;
+}
+
+.light a.directory-card:hover .group-hover\:text-zinc-400 {
+  color: #334155 !important;
+}
+
 

@@ -142,7 +142,7 @@ export default async function LocationPage({ params }) {
             
             {/* Left Panel: Dynamic Copy & Forms */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <span className="inline-block text-[10px] uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] animate-pulse-subtle">
+              <span className="inline-block text-xs uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] animate-pulse-subtle">
                 Targeted Local SEO • {city.country}
               </span>
 
@@ -161,14 +161,16 @@ export default async function LocationPage({ params }) {
               <div className="mx-auto lg:mx-0 max-w-lg p-1.5 rounded-3xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl transition-all duration-300 focus-within:border-violet-500/50 focus-within:shadow-[0_0_25px_rgba(139,92,246,0.12)]">
                 <form action="/audit/" method="GET" className="flex flex-col sm:flex-row gap-2">
                   <div className="flex-grow flex items-center px-3 gap-2">
-                    <span className="text-zinc-600 text-xs">🔗</span>
+                    <svg className="w-3.5 h-3.5 text-zinc-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
                     <input
                       type="url"
                       name="url"
                       required
                       placeholder="Enter website (e.g. yourbusiness.com)"
                       style={{ backgroundColor: 'transparent' }}
-                      className="w-full bg-transparent py-2.5 text-xs text-white placeholder-zinc-550 focus:outline-none min-w-0 border-0 ring-0 focus:ring-0 focus:border-0"
+                      className="w-full bg-transparent py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none min-w-0 border-0 ring-0 focus:ring-0 focus:border-0"
                     />
                   </div>
                   <input type="hidden" name="ref" value={location} />
@@ -180,7 +182,7 @@ export default async function LocationPage({ params }) {
                   </button>
                 </form>
               </div>
-              <p className="text-xxs text-zinc-500">
+              <p className="text-xs text-zinc-500">
                 Instantly run a speed and metadata audit for any company in {city.name}.
               </p>
             </div>
@@ -203,36 +205,44 @@ export default async function LocationPage({ params }) {
             {/* Card 1 */}
             <div className="group rounded-3xl border border-zinc-800/80 bg-zinc-900/10 hover:border-zinc-700/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500">Market Reach</span>
-                <span className="text-xs">👥</span>
+                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500">Market Reach</span>
+                <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
               </div>
               <div>
                 <span className="text-2xl font-black text-white block tracking-tight">{city.marketSize}</span>
-                <span className="text-[10px] text-zinc-500 leading-normal mt-1 block">Local audience search volume</span>
+                <span className="text-xs text-zinc-500 leading-normal mt-1 block">Local audience search volume</span>
               </div>
             </div>
 
             {/* Card 2 */}
             <div className="group rounded-3xl border border-zinc-800/80 bg-zinc-900/10 hover:border-zinc-700/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between border-l-2 border-l-violet-600/40">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500">Primary Focus</span>
-                <span className="text-xs">🎯</span>
+                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500">Primary Focus</span>
+                <svg className="w-4 h-4 text-violet-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                </svg>
               </div>
               <div>
                 <span className="text-sm font-extrabold text-violet-400 block truncate">{city.niche}</span>
-                <span className="text-[10px] text-zinc-500 leading-normal mt-1.5 block">High-growth target industry</span>
+                <span className="text-xs text-zinc-500 leading-normal mt-1.5 block">High-growth target industry</span>
               </div>
             </div>
 
             {/* Card 3 */}
             <div className="group rounded-3xl border border-zinc-800/80 bg-zinc-900/10 hover:border-zinc-700/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500">Competition</span>
-                <span className="text-xs">⚡</span>
+                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500">Competition</span>
+                <svg className="w-4 h-4 text-fuchsia-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
               </div>
               <div>
                 <span className="text-2xl font-black text-fuchsia-400 block tracking-tight">{city.competitiveness}</span>
-                <span className="text-[10px] text-zinc-500 leading-normal mt-1 block">Niche optimization difficulty</span>
+                <span className="text-xs text-zinc-500 leading-normal mt-1 block">Niche optimization difficulty</span>
               </div>
             </div>
           </div>
@@ -345,16 +355,23 @@ export default async function LocationPage({ params }) {
                 <Link
                   key={slug}
                   href={`/seo-services/${slug}/`}
-                  className="text-xxs text-zinc-400 hover:text-white bg-zinc-900/20 hover:bg-zinc-900/50 border border-zinc-850 px-4 py-2 rounded-full transition-all duration-300 hover:border-violet-500/30"
+                  className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white bg-zinc-900/20 hover:bg-zinc-900/50 border border-zinc-850 px-4 py-2 rounded-full transition-all duration-300 hover:border-violet-500/30"
                 >
-                  📍 SEO in {citiesDb[slug].name}
+                  <svg className="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>SEO in {citiesDb[slug].name}</span>
                 </Link>
               ))}
               <Link
                 href="/seo-services/"
-                className="text-xxs text-violet-400 hover:text-violet-300 bg-violet-950/10 hover:bg-violet-950/20 border border-violet-850/30 px-4 py-2 rounded-full transition-all duration-300 font-bold"
+                className="inline-flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 bg-violet-950/10 hover:bg-violet-950/20 border border-violet-850/30 px-4 py-2 rounded-full transition-all duration-300 font-bold"
               >
-                🗺️ Explore All USA Locations →
+                <svg className="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L16 4m0 13V4m0 0L9 7" />
+                </svg>
+                <span>Explore All USA Locations →</span>
               </Link>
             </div>
           </div>
@@ -379,7 +396,7 @@ export default async function LocationPage({ params }) {
               </Link>
               <Link
                 href="/services/#plans"
-                className="rounded-xl border border-zinc-750 bg-transparent px-5 py-2.5 text-xs font-bold text-zinc-400 hover:bg-zinc-850 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="rounded-xl border border-zinc-800 bg-transparent px-5 py-2.5 text-xs font-bold text-zinc-400 hover:bg-zinc-800 transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
                 View Pricing & Plans
               </Link>

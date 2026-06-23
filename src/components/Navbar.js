@@ -72,7 +72,7 @@ export default function Navbar({ initialSession = null }) {
   const isActive = (path) => pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-slate-200/30 bg-slate-950/85 backdrop-blur-md transition-colors duration-300">
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-200/30 bg-slate-950/85 backdrop-blur-md transition-colors duration-300 print:hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

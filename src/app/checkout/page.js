@@ -669,7 +669,7 @@ function CheckoutContent() {
             </h3>
 
             <div className="space-y-4">
-              <div className="border border-zinc-800/80 bg-zinc-950/50 p-4 rounded-xl space-y-3 text-left">
+              <div className="border border-zinc-800/80 bg-zinc-950/40 p-4 rounded-xl space-y-3 text-left">
                 <div className="space-y-1">
                   <span className="text-[10px] uppercase font-bold text-violet-400 block">
                     Product Item
@@ -687,34 +687,34 @@ function CheckoutContent() {
                 <div className="space-y-1 text-xxs text-zinc-500 leading-relaxed list-none">
                   {selectedPlan === "single" && (
                     <>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> 1-Page Detailed SEO Crawl</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Unlock PDF Generation</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Saves report to account dashboard</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Consulting call upsell CTA</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> 1-Page Detailed SEO Crawl</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Unlock PDF Generation</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Saves report to account dashboard</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Consulting call upsell CTA</li>
                     </>
                   )}
                   {selectedPlan === "multi" && (
                     <>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Up to 3 Core Pages audited</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Multi-page PDF Report download</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Structured entity schema checks</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Saves history under user account</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Up to 3 Core Pages audited</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Multi-page PDF Report download</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Structured entity schema checks</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Saves history under user account</li>
                     </>
                   )}
                   {selectedPlan === "weekly" && (
                     <>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Weekly background scan (Every Monday)</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Performance alerts sent to email</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Historical score progress charts</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Includes PDF report downloads</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Weekly background scan (Every Monday)</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Performance alerts sent to email</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Historical score progress charts</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Includes PDF report downloads</li>
                     </>
                   )}
                   {selectedPlan === "agency" && (
                     <>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Scan up to 5 custom domains</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Upload Agency Logo & Agency Name</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Branded PDFs without watermarks</li>
-                      <li className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Client-ready report delivery</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Scan up to 5 custom domains</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Upload Agency Logo & Agency Name</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Branded PDFs without watermarks</li>
+                      <li className="flex items-start gap-1.5"><span className="text-emerald-500 mt-[1px]">✓</span> Client-ready report delivery</li>
                     </>
                   )}
                 </div>

@@ -29,6 +29,10 @@ export async function generateMetadata({ params }) {
     console.error("generateMetadata: Database fetch failed:", e);
   }
 
+  if (!post) {
+    post = DEFAULT_POSTS.find((p) => p.slug === slug) || null;
+  }
+
   if (post) {
     return {
       title: `${post.title} | SEOIntellect News`,

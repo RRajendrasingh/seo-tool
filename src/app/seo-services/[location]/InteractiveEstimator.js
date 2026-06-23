@@ -59,7 +59,7 @@ export default function InteractiveEstimator({ cityName }) {
         <div className="md:col-span-7 space-y-5">
           {/* Industry Selection */}
           <div className="space-y-2">
-            <label className="text-xxs font-bold text-zinc-500 uppercase tracking-wider block">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">
               Business Sector
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -68,7 +68,7 @@ export default function InteractiveEstimator({ cityName }) {
                   key={ind.name}
                   type="button"
                   onClick={() => setIndustryIndex(idx)}
-                  className={`text-[10px] font-bold px-3 py-2.5 rounded-xl border transition-all text-center cursor-pointer ${
+                  className={`text-xs font-bold px-3 py-2.5 rounded-xl border transition-all text-center cursor-pointer ${
                     industryIndex === idx
                       ? "bg-violet-600 border-violet-500 text-white shadow-md shadow-violet-500/10"
                       : "bg-zinc-900/40 border-zinc-850 text-zinc-400 hover:bg-zinc-900/80 hover:text-white hover:border-zinc-700"
@@ -82,9 +82,9 @@ export default function InteractiveEstimator({ cityName }) {
 
           {/* Search Volume Slider */}
           <div className="space-y-2.5 pt-1">
-            <div className="flex justify-between items-center text-xxs font-bold uppercase tracking-wider">
+            <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider">
               <span className="text-zinc-500">Monthly Local Search Volume</span>
-              <span className="text-violet-400 font-mono text-[10px] bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
+              <span className="text-violet-400 font-mono text-xs bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
                 {searchVolume.toLocaleString()} searches/mo
               </span>
             </div>
@@ -97,7 +97,7 @@ export default function InteractiveEstimator({ cityName }) {
               onChange={(e) => setSearchVolume(parseInt(e.target.value))}
               className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-violet-500 focus:outline-none"
             />
-            <div className="flex justify-between text-[9px] text-zinc-500 font-mono">
+            <div className="flex justify-between text-[11px] text-zinc-500 font-mono">
               <span>500</span>
               <span>5,000</span>
               <span>10,000</span>
@@ -107,14 +107,14 @@ export default function InteractiveEstimator({ cityName }) {
 
           {/* Current Ranking */}
           <div className="space-y-2 pt-1">
-            <label className="text-xxs font-bold text-zinc-500 uppercase tracking-wider block">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">
               Current Google Rank Profile
             </label>
             <div className="flex rounded-xl bg-zinc-950/80 p-1 border border-zinc-850">
               <button
                 type="button"
                 onClick={() => setCurrentRank("page2")}
-                className={`flex-1 text-[10px] font-bold py-2 rounded-lg transition-all text-center cursor-pointer ${
+                className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all text-center cursor-pointer ${
                   currentRank === "page2"
                     ? "bg-zinc-900 text-white border border-zinc-800 shadow"
                     : "text-zinc-500 hover:text-zinc-300"
@@ -125,7 +125,7 @@ export default function InteractiveEstimator({ cityName }) {
               <button
                 type="button"
                 onClick={() => setCurrentRank("pos4_10")}
-                className={`flex-1 text-[10px] font-bold py-2 rounded-lg transition-all text-center cursor-pointer ${
+                className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all text-center cursor-pointer ${
                   currentRank === "pos4_10"
                     ? "bg-zinc-900 text-white border border-zinc-800 shadow"
                     : "text-zinc-500 hover:text-zinc-300"
@@ -136,7 +136,7 @@ export default function InteractiveEstimator({ cityName }) {
               <button
                 type="button"
                 onClick={() => setCurrentRank("pos1_3")}
-                className={`flex-1 text-[10px] font-bold py-2 rounded-lg transition-all text-center cursor-pointer ${
+                className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all text-center cursor-pointer ${
                   currentRank === "pos1_3"
                     ? "bg-zinc-900 text-white border border-zinc-800 shadow"
                     : "text-zinc-500 hover:text-zinc-300"
@@ -154,41 +154,41 @@ export default function InteractiveEstimator({ cityName }) {
           
           <div className="space-y-4">
             <div>
-              <span className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500 block">
+              <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500 block">
                 Estimated Monthly Revenue Growth
               </span>
               <span className="text-3xl lg:text-4xl font-black bg-gradient-to-r from-violet-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent block mt-1.5 tracking-tight leading-none">
                 ${stats.revenueGain}
               </span>
-              <span className="text-[10px] text-zinc-500 leading-normal mt-1 block">
+              <span className="text-xs text-zinc-500 leading-normal mt-1 block">
                 Assuming average contract/deal value of ${selectedIndustry.value}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-3.5 border-t border-zinc-900">
               <div>
-                <span className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500 block">
+                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500 block">
                   New Monthly Traffic
                 </span>
                 <span className="text-base font-extrabold text-white block mt-0.5">
                   +{stats.trafficGain.toLocaleString()}
                 </span>
-                <span className="text-[9px] text-zinc-500 block mt-0.5 leading-none">visitors / mo</span>
+                <span className="text-[11px] text-zinc-500 block mt-0.5 leading-none">visitors / mo</span>
               </div>
               <div>
-                <span className="text-[9px] uppercase font-extrabold tracking-widest text-zinc-500 block">
+                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500 block">
                   New Monthly Leads
                 </span>
                 <span className="text-base font-extrabold text-emerald-400 block mt-0.5">
                   +{stats.leadsGain.toLocaleString()}
                 </span>
-                <span className="text-[9px] text-zinc-500 block mt-0.5 leading-none">conversions / mo</span>
+                <span className="text-[11px] text-zinc-500 block mt-0.5 leading-none">conversions / mo</span>
               </div>
             </div>
           </div>
 
           <div className="pt-4 mt-4 border-t border-zinc-900">
-            <p className="text-[10px] text-zinc-400 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               Achieving Rank #1 yields an organic CTR boost of <strong className="text-violet-400">+{stats.ctrPercent}%</strong> compared to your current position.
             </p>
           </div>

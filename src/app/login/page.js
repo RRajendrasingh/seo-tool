@@ -2,8 +2,9 @@ import LoginClient from "./LoginClient";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Access Your Account - SEO Audit Engine",
-  description: "Sign in or create a secure account to access localized search engine optimization audits and track your performance metrics.",
+  title: "Sign In to SEOIntellect AI | Access Your SEO Dashboard",
+  description: "Log in to your SEOIntellect account to manage your site audits, track search score history, access PDF reports, and monitor weekly SEO metrics.",
+  keywords: ["seo login", "seointellect portal", "seo monitoring account", "client seo portal"],
 };
 
 export default function LoginPage() {

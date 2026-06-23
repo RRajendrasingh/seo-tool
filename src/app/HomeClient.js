@@ -209,9 +209,9 @@ export default function HomeClient() {
 
             {/* Headline */}
             <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15]">
-              Dominate Search Engines with{" "}
+              Dominate Google & AI Search Engines with{" "}
               <span className="bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent">
-                AI-Powered SEO
+                AI-Powered SEO Audits
               </span>
             </h1>
 
@@ -273,7 +273,7 @@ export default function HomeClient() {
                     className={`pb-2.5 text-xs font-bold transition-all duration-200 border-b-2 px-2.5 cursor-pointer relative ${
                       activeMockupTab === tab.id
                         ? "border-cyan-400 text-cyan-400"
-                        : "border-transparent text-zinc-500 hover:text-zinc-350"
+                        : "border-transparent text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
                     {tab.label}
@@ -406,7 +406,7 @@ export default function HomeClient() {
               Why Choose SEOIntellect
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Engineered for Real Ranking Outcomes
+              Engineered for High-Ranking Technical SEO Outcomes
             </h2>
             <p className="text-zinc-400 max-w-xl mx-auto text-sm sm:text-base">
               Skip generic advice. Our system focuses on technical factors that directly impact crawling, speed indexing, and organic visibility.
@@ -473,7 +473,7 @@ export default function HomeClient() {
               The Blueprint
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Our 3-Step Growth Process
+              Our 3-Step Search Engine & AI Optimization Blueprint
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
               A streamlined, friction-free lifecycle built to take your site from crawl-blocked to search-engine dominated.
@@ -513,7 +513,7 @@ export default function HomeClient() {
                 Core Engine
               </span>
               <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                Automated Metadata & Structure Audits
+                Automated Technical SEO & Core Web Vitals Audits
               </h2>
               <p className="text-slate-400 leading-relaxed text-sm sm:text-base">
                 Our lightweight crawler scans headers, image alt attributes, OpenGraph matrices, and SSL certificate parameters. It gives you a clean checklist of exactly what search engines parse, eliminating layout shifts and index blocks.
@@ -571,7 +571,7 @@ export default function HomeClient() {
                 Future-Proof Tech
               </span>
               <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                Generative AI Engine Optimization (GEO)
+                Generative Engine Optimization (GEO) & AEO Optimization
               </h2>
               <p className="text-slate-400 leading-relaxed text-sm sm:text-base">
                 Search is shifting to direct answers. We configure JSON-LD schemas and format content hierarchies to align with LLM scraper requirements. Ensure your site is selected, summarized, and cited by Google AI Overviews and ChatGPT Search.
@@ -631,7 +631,7 @@ export default function HomeClient() {
             Subscription Tiers
           </span>
           <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Simple, Transparent Pricing Plans
+            Affordable SEO Audit & GEO Monitoring Plans
           </h2>
           <p className="text-slate-400 max-w-lg mx-auto text-sm">
             Choose the scale your digital operations require. No setup fees, cancel anytime.
@@ -759,7 +759,7 @@ export default function HomeClient() {
               National Footprint
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Local SEO Service Coverage
+              Targeted Local SEO Services & Coverage Map
             </h2>
             <p className="text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
               We deploy localized search optimization architectures for major US business clusters. Explore our rankings blueprints for key cities.
@@ -846,7 +846,7 @@ export default function HomeClient() {
               Clear Friction
             </span>
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl text-center">
-              Frequently Asked Questions
+              SEO Auditor & GEO Optimization FAQ
             </h2>
             <p className="text-slate-400 text-center max-w-lg mx-auto text-sm">
               Answers to common concerns about Next.js static speed, AI citation guidelines, and local target SEO audits.

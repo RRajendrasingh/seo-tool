@@ -5,8 +5,9 @@ import AuditClient from "./AuditClient";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "SEO Audit Tool - SEOIntellect",
-  description: "Analyze your website SEO performance and speed.",
+  title: "Free AI SEO Audit Tool & Page Speed Checker | SEOIntellect",
+  description: "Run a free instant website SEO audit with SEOIntellect. Analyze page speed, Core Web Vitals, HTML header structure, meta tags, and GEO/AEO alignment.",
+  keywords: ["free seo audit", "website speed checker", "seo analyzer", "page speed audit", "Core Web Vitals test", "GEO audit"],
 };
 
 export default async function AuditPage() {

@@ -99,8 +99,8 @@ export default function PostDetailClient({ slug, initialPost }) {
         {/* Article Container */}
         <div className="space-y-6">
           {/* Metadata info */}
-          <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-550">
-            <span className="font-semibold text-zinc-350">{post.author}</span>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+            <span className="font-semibold text-zinc-300">{post.author}</span>
             <span>•</span>
             <span>{post.date}</span>
             <span>•</span>

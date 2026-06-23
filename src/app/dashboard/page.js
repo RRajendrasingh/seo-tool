@@ -5,8 +5,9 @@ import DashboardClient from "./DashboardClient";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "User Dashboard - SEO Audit Engine",
-  description: "Track your active website health reports, local target keywords, and subscription billing portals.",
+  title: "SEO & GEO Performance Dashboard | SEOIntellect AI",
+  description: "Track your website's real-time SEO crawl metrics, monitor search rankings, download agency-branded PDF audits, and view weekly keyword trends.",
+  keywords: ["seo dashboard", "seo performance tracker", "search monitoring tool", "white label seo dashboard"],
 };
 
 export default async function DashboardPage() {

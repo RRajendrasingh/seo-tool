@@ -7,7 +7,7 @@ export default function Footer() {
     { name: "SEO Optimization", href: "/services/#seo" },
     { name: "Web Development", href: "/services/#web-dev" },
     { name: "SaaS Development", href: "/services/#saas" },
-    { name: "Content Strategy", href: "/services/#content" },
+    { name: "AI Search (GEO/AEO)", href: "/services/#aeo-geo" },
   ];
 
   const locationLinks = [
@@ -29,7 +29,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="border-t border-slate-900 bg-slate-950 text-slate-400">
+    <footer className="border-t border-slate-900 bg-slate-950 text-slate-400 print:hidden">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo & Pitch */}
@@ -96,9 +96,9 @@ export default function Footer() {
             &copy; {currentYear} SEOIntellect AI. All rights reserved. Made for Global & Local SEO domination.
           </p>
           <div className="flex space-x-6 text-xs text-slate-500">
-            <Link href="/privacy/" className="hover:text-slate-350">Privacy Policy</Link>
-            <Link href="/terms/" className="hover:text-slate-350">Terms of Service</Link>
-            <Link href="/admin/" className="hover:text-slate-350">Admin Panel</Link>
+            <Link href="/privacy/" className="hover:text-slate-300">Privacy Policy</Link>
+            <Link href="/terms/" className="hover:text-slate-300">Terms of Service</Link>
+            <Link href="/admin/" className="hover:text-slate-300">Admin Panel</Link>
           </div>
         </div>
       </div>

@@ -577,7 +577,7 @@ export default function LoginClient() {
                         <p className="text-[9px] text-slate-500 font-mono">{account.email}</p>
                       </div>
                     </div>
-                    <span className="text-[10px] text-slate-350 group-hover:text-slate-100">➜</span>
+                    <span className="text-[10px] text-slate-300 group-hover:text-slate-100">➜</span>
                   </button>
                 ))}
               </div>

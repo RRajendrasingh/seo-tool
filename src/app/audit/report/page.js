@@ -706,7 +706,7 @@ function ReportContent() {
   // Render Check payment status screen
   if (checkingPayment || loadingSession) {
     return (
-      <div className="bg-zinc-950 min-h-screen flex items-center justify-center text-white">
+      <div className="bg-zinc-950 min-h-screen flex items-center justify-center text-white print:text-slate-900">
         <div className="text-center space-y-4">
           <div className="h-10 w-10 border-4 border-zinc-800 border-t-violet-500 rounded-full animate-spin mx-auto" />
           <p className="text-xs text-zinc-500">Checking credentials...</p>
@@ -720,14 +720,14 @@ function ReportContent() {
   // Render Loading audit details screen
   if (loading) {
     return (
-      <div className="bg-zinc-950 min-h-screen flex items-center justify-center p-4 text-white">
+      <div className="bg-zinc-950 min-h-screen flex items-center justify-center p-4 text-white print:text-slate-900">
         <div className="max-w-md w-full text-center space-y-6">
           <div className="relative mx-auto h-16 w-16 items-center justify-center">
             <div className="absolute inset-0 rounded-full border-4 border-zinc-800" />
             <div className="absolute inset-0 rounded-full border-4 border-t-violet-500 animate-spin" />
           </div>
           <div className="space-y-2">
-            <p className="text-sm font-semibold animate-pulse text-white">{loadingSteps[loadingStep]}</p>
+            <p className="text-sm font-semibold animate-pulse text-white print:text-slate-900">{loadingSteps[loadingStep]}</p>
             <p className="text-xxs text-zinc-500">
               Querying Google Lighthouse infrastructure. Please wait...
             </p>
@@ -740,12 +740,12 @@ function ReportContent() {
   // Render Error state screen
   if (error) {
     return (
-      <div className="bg-zinc-950 min-h-screen flex items-center justify-center p-4 text-white">
+      <div className="bg-zinc-950 min-h-screen flex items-center justify-center p-4 text-white print:text-slate-900">
         <div className="max-w-md w-full border border-rose-500/20 bg-rose-500/5 rounded-2xl p-8 text-center space-y-6">
           <span className="text-3xl block">⚠️</span>
           <div className="space-y-2">
-            <h3 className="text-sm font-bold text-white">Error Compiling Report</h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">{error}</p>
+            <h3 className="text-sm font-bold text-white print:text-slate-900">Error Compiling Report</h3>
+            <p className="text-xs text-zinc-400 print:text-slate-600 leading-relaxed">{error}</p>
           </div>
           <button
             onClick={() => runAudit(urlParam)}
@@ -775,7 +775,7 @@ function ReportContent() {
   });
 
   return (
-    <div className="bg-slate-950 text-slate-300 min-h-screen pb-24 print:bg-white print:text-slate-900 print:pb-0 font-sans">
+    <div className="bg-slate-950 text-slate-300 print:text-slate-700 min-h-screen pb-24 print:bg-white print:text-slate-900 print:pb-0 font-sans print:color-adjust-exact">
       
       {/* HTML STYLE TAG FOR PRINT OPTIMIZATIONS */}
       <style dangerouslySetInnerHTML={{__html: `
@@ -783,18 +783,18 @@ function ReportContent() {
           @page { size: A4 portrait; margin: 15mm 15mm 15mm 15mm; }
           body { background-color: #ffffff !important; color: #0f172a !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .print-avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
+          .print:break-inside-avoid { break-inside: avoid !important; page-break-inside: avoid !important; }
           .dark-only { display: none !important; }
           .light-only { display: block !important; }
         }
       `}} />
 
       {/* UNIFIED RESPONSIVE HEADER */}
-      <div className="max-w-5xl mx-auto items-center sm:items-end justify-between px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row gap-6 sm:gap-0 print:flex print:py-4">
+      <div className="max-w-5xl mx-auto items-center sm:items-end justify-between px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row gap-6 sm:gap-0 print:flex print:py-4 print:max-w-none print:px-0 print:w-full">
         <div className="text-center sm:text-left">
           <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-1 sm:mb-2">Published: {report.date}</div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 print:text-slate-900">Executive SEO Performance Dossier</h1>
-          <div className="text-xs sm:text-sm text-zinc-400 mt-1 flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white print:text-slate-900 mb-1 print:text-slate-900">Executive SEO Performance Dossier</h1>
+          <div className="text-xs sm:text-sm text-zinc-400 print:text-slate-600 mt-1 flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
             <span>🌐</span> {report.url}
           </div>
         </div>
@@ -809,7 +809,7 @@ function ReportContent() {
                   router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`);
                 }
               }} 
-              className="hidden sm:block bg-gradient-to-r from-indigo-500 to-cyan-400 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition-transform active:scale-95 text-sm print:hidden cursor-pointer"
+              className="hidden sm:block bg-gradient-to-r from-indigo-500 to-cyan-400 text-white print:text-slate-900 font-bold py-2.5 px-6 rounded-xl shadow-lg transition-transform active:scale-95 text-sm print:hidden cursor-pointer"
             >
               📥 Download PDF Report
             </button>
@@ -838,15 +838,15 @@ function ReportContent() {
           </div>
         </div>
       </div>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8 print:p-0 print:space-y-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8 print:max-w-none print:px-0 print:w-full print:space-y-6">
         {/* AGENCY WHITE-LABEL BRANDING */}
         {session?.subscription_tier === "agency" && (
           <div className="w-full bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🏢</span>
               <div className="text-left">
-                <div className="font-extrabold text-white uppercase tracking-wider text-[10px]">White-label Client Report</div>
-                <div className="text-zinc-400 text-xs mt-0.5">Prepared by: <span className="font-bold text-indigo-400">{session.agency_name || "Apex Marketing Group"}</span></div>
+                <div className="font-extrabold text-white print:text-slate-900 uppercase tracking-wider text-[10px]">White-label Client Report</div>
+                <div className="text-zinc-400 print:text-slate-600 text-xs mt-0.5">Prepared by: <span className="font-bold text-indigo-400">{session.agency_name || "Apex Marketing Group"}</span></div>
               </div>
             </div>
             <div className="text-right sm:text-right flex flex-col items-center sm:items-end">
@@ -860,54 +860,54 @@ function ReportContent() {
         <div>
           <h3 className="text-lg font-bold text-white print:text-slate-900 mb-4">Performance Engine Summary</h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+            <div className="bg-slate-900 print:bg-slate-50 p-5 rounded-2xl border border-slate-800 print:border-slate-200 shadow-sm print:shadow-none">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 print:text-slate-600">
                   <span className="text-indigo-400 bg-indigo-500/10 p-1 rounded">🖥️</span> Tech
                 </div>
                 <span className="inline-flex text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase">Excellent</span>
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-2">{report.scores?.seoScore || report.engines['seo-tags']?.score}<span className="text-sm font-medium text-zinc-500">/100</span></div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white print:text-slate-900 mb-2">{report.scores?.seoScore || report.engines['seo-tags']?.score}<span className="text-sm font-medium text-zinc-500">/100</span></div>
               <div className="w-full bg-zinc-800 rounded-full h-1">
                 <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${report.scores?.seoScore || report.engines['seo-tags']?.score}%` }}></div>
               </div>
             </div>
 
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+            <div className="bg-slate-900 print:bg-slate-50 p-5 rounded-2xl border border-slate-800 print:border-slate-200 shadow-sm print:shadow-none">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 print:text-slate-600">
                   <span className="text-cyan-400 bg-cyan-500/10 p-1 rounded">⚡</span> Perf
                 </div>
                 <span className="inline-flex text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded uppercase">Perfect</span>
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-2">{report.scores?.perfScore || report.engines['page-speed']?.score}<span className="text-sm font-medium text-zinc-500">/100</span></div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white print:text-slate-900 mb-2">{report.scores?.perfScore || report.engines['page-speed']?.score}<span className="text-sm font-medium text-zinc-500">/100</span></div>
               <div className="w-full bg-zinc-800 rounded-full h-1">
                 <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${report.scores?.perfScore || report.engines['page-speed']?.score}%` }}></div>
               </div>
             </div>
 
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+            <div className="bg-slate-900 print:bg-slate-50 p-5 rounded-2xl border border-slate-800 print:border-slate-200 shadow-sm print:shadow-none">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 print:text-slate-600">
                   <span className="text-rose-400 bg-rose-500/10 p-1 rounded">⚠️</span> Issues
                 </div>
                 <span className="inline-flex text-[9px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded uppercase">Good</span>
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1">{failedChecks.length} <span className="text-sm font-medium text-zinc-500">Found</span></div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white print:text-slate-900 mb-1">{failedChecks.length} <span className="text-sm font-medium text-zinc-500">Found</span></div>
               <div className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">! {failedChecks.filter(c => c.severity === 'error').length} Critical</div>
             </div>
 
-            <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
+            <div className="bg-slate-900 print:bg-slate-50 p-5 rounded-2xl border border-slate-800 print:border-slate-200 shadow-sm print:shadow-none">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400 print:text-slate-600">
                   <span className="text-indigo-400 bg-indigo-500/10 p-1 rounded">✨</span> AI Ready
                 </div>
                 <span className="inline-flex text-[9px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded uppercase">Needs Work</span>
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-white mb-1">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white print:text-slate-900 mb-1">
                 {report.engines['aeo-geo']?.score >= 80 ? 'A' : report.engines['aeo-geo']?.score >= 60 ? 'B+' : 'C'}
               </div>
-              <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">AEO Status</div>
+              <div className="text-[10px] text-zinc-400 print:text-slate-600 font-bold uppercase tracking-wider">AEO Status</div>
             </div>
           </div>
         </div>
@@ -940,18 +940,18 @@ function ReportContent() {
             
             <div className="space-y-3">
               {failedChecks.slice(0, 4).map((check, idx) => (
-                <div key={idx} className="bg-slate-900 rounded-xl border border-slate-800 p-4 flex gap-3 sm:gap-4 items-start relative overflow-hidden group shadow-sm">
+                <div key={idx} className="bg-slate-900 print:bg-white rounded-xl border border-slate-800 print:border-slate-200 p-4 print:p-6 print:shadow-sm flex gap-3 sm:gap-4 items-start relative overflow-hidden group shadow-sm print:break-inside-avoid">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500/50"></div>
                   <div className="text-rose-400 text-lg sm:text-xl mt-0.5">
                     {check.name.includes("LCP") || check.name.includes("Time") ? "⏳" : check.name.includes("Link") ? "🔗" : "📄"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-sm text-white truncate">{check.name}</h4>
+                      <h4 className="font-bold text-sm text-white print:text-slate-900 truncate">{check.name}</h4>
                       <span className="inline-flex text-[9px] font-bold text-rose-600 bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-full whitespace-nowrap">High Impact</span>
                     </div>
-                    <p className="text-xs text-zinc-400 leading-relaxed mb-2 line-clamp-2">{check.desc}</p>
-                    <div className="bg-slate-800/40 rounded px-3 py-2 text-xs font-mono text-zinc-400 mb-2">
+                    <p className="text-xs text-zinc-400 print:text-slate-600 leading-relaxed mb-2 line-clamp-2">{check.desc}</p>
+                    <div className="bg-slate-800/40 print:bg-slate-100 rounded px-3 py-2 text-xs font-mono text-zinc-400 print:text-slate-700 mb-2 print:border print:border-slate-200">
                       Solution: <span className="text-indigo-400 font-bold">{check.fix}</span>
                     </div>
                     
@@ -968,7 +968,7 @@ function ReportContent() {
 
           {/* TECHNICAL LOGS ACCORDIONS */}
           <div className="w-full lg:w-80 space-y-4 print:hidden">
-            <h3 className="text-lg font-bold text-white mb-2">Technical Logs</h3>
+            <h3 className="text-lg font-bold text-white print:text-slate-900 mb-2">Technical Logs</h3>
             <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-sm overflow-hidden divide-y divide-slate-800">
               {Object.entries(report.engines).map(([key, engine]) => (
                 <div key={key} className="flex flex-col">
@@ -980,7 +980,7 @@ function ReportContent() {
                       <span className="text-cyan-400 text-sm">
                         {key === 'seo-tags' ? '🏷️' : key === 'page-speed' ? '⚡' : key === 'page-weight' ? '⚖️' : key === 'content-hierarchy' ? '📱' : key === 'server-security' ? '🛡️' : '🧠'}
                       </span>
-                      <span className="text-xs font-bold text-white">{engine.name}</span>
+                      <span className="text-xs font-bold text-white print:text-slate-900">{engine.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className={`w-1.5 h-1.5 rounded-full ${engine.score >= 80 ? 'bg-emerald-500' : engine.score >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`}></div>
@@ -990,20 +990,20 @@ function ReportContent() {
                   {openAccordions[key] && (
                     !isPremium && !["seo-tags", "page-speed"].includes(key) ? (
                       <div className="p-4 pt-3 pb-3 bg-slate-950/45 text-center space-y-2 border-t border-slate-800">
-                        <span className="text-[10px] text-zinc-400 block font-bold">🔒 Advanced Engine Locked</span>
+                        <span className="text-[10px] text-zinc-400 print:text-slate-600 block font-bold">🔒 Advanced Engine Locked</span>
                         <p className="text-[9px] text-zinc-500 leading-normal">Upgrade to Pro to view payload diagnostics and technical checklist details.</p>
                         <button 
                           onClick={() => router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`)}
-                          className="mt-1 inline-block text-[9px] text-violet-455 hover:text-violet-350 font-extrabold uppercase tracking-wider hover:underline cursor-pointer"
+                          className="mt-1 inline-block text-[9px] text-violet-500 hover:text-violet-400 font-extrabold uppercase tracking-wider hover:underline cursor-pointer"
                         >
                           Upgrade to Pro
                         </button>
                       </div>
                     ) : (
-                      <div className="p-4 pt-0 bg-slate-950/40 space-y-2">
+                      <div className="p-4 pt-3 bg-slate-950/40 space-y-2 border-t border-slate-800">
                         {engine.checks.slice(0, 3).map((check, idx) => (
                           <div key={idx} className="flex justify-between items-center text-xs">
-                            <span className="text-zinc-400 truncate max-w-[140px]">{check.name.replace(/ \(Mobile\)/, '')}</span>
+                            <span className="text-zinc-400 print:text-slate-600 truncate max-w-[140px]">{check.name.replace(/ \(Mobile\)/, '')}</span>
                             <span className={check.passed ? "text-emerald-400" : "text-rose-400"}>
                               {check.passed ? "Pass" : "Fail"}
                             </span>
@@ -1021,37 +1021,47 @@ function ReportContent() {
         {/* FULL DESKTOP LOGS */}
         <div className="space-y-6 mt-12 print:block">
           {Object.entries(report.engines).map(([key, engine]) => (
-            <div key={key} className="space-y-3 print-avoid-break">
+            <div key={key} className="space-y-3 print:break-inside-avoid">
               <div className="flex justify-between items-end border-b-2 border-slate-800 pb-2">
-                <h3 className="text-xs font-bold text-white uppercase tracking-widest">{engine.name} Log</h3>
+                <h3 className="text-xs font-bold text-white print:text-slate-900 uppercase tracking-widest">{engine.name} Log</h3>
                 <span className="text-[10px] font-bold text-indigo-400">Category Rating: {engine.score}%</span>
               </div>
               {!isPremium && !["seo-tags", "page-speed"].includes(key) ? (
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center space-y-3 relative overflow-hidden min-h-[160px] flex flex-col items-center justify-center">
+                <div className="bg-slate-900 print:bg-slate-50 border border-slate-800 print:border-slate-200 rounded-xl p-8 text-center space-y-3 relative overflow-hidden min-h-[160px] flex flex-col items-center justify-center">
                   <span className="text-xl">🔒</span>
-                  <h4 className="font-bold text-xs text-white uppercase tracking-wider">{engine.name} Details Locked</h4>
-                  <p className="text-[10px] text-zinc-400 max-w-sm leading-relaxed">
+                  <h4 className="font-bold text-xs text-white print:text-slate-900 uppercase tracking-wider">{engine.name} Details Locked</h4>
+                  <p className="text-[10px] text-zinc-400 print:text-slate-600 max-w-sm leading-relaxed">
                     Detailed diagnostics for payload weight, render-blocking resources, font configurations, server-response times, and HTML/CSS validation errors are reserved for premium members.
                   </p>
                   <button 
                     onClick={() => router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`)}
-                    className="mt-2 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-400 hover:from-indigo-400 hover:to-cyan-300 px-4 py-2 text-[9px] font-bold text-white shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+                    className="mt-2 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-400 hover:from-indigo-400 hover:to-cyan-300 px-4 py-2 text-[9px] font-bold text-white print:text-slate-900 shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
                   >
                     Upgrade to Pro Plan
                   </button>
                 </div>
               ) : (
-                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden divide-y divide-zinc-800">
+                <div className="bg-slate-900 print:bg-white border border-slate-800 print:border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-800/60 shadow-sm">
                   {engine.checks.map((check, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 text-xs hover:bg-slate-800/40 transition-colors">
-                      <div className="flex items-center gap-3 w-1/2">
-                        <span className={check.passed ? "text-emerald-500" : "text-rose-500"}>
-                          {check.passed ? "✓" : "✗"}
-                        </span>
-                        <span className="font-semibold text-slate-300 truncate">{check.name}</span>
+                    <div key={idx} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 text-xs hover:bg-slate-800/30 transition-all duration-200 gap-3">
+                      <div className="flex items-center gap-3 w-full sm:w-[55%]">
+                        <div className={`flex items-center justify-center w-6 h-6 rounded-full shrink-0 shadow-inner ${check.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                          {check.passed ? (
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                          ) : (
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                          )}
+                        </div>
+                        <span className="font-bold text-slate-300 print:text-slate-700 truncate group-hover:text-white transition-colors">{check.name}</span>
                       </div>
-                      <div className={`font-mono text-[10px] text-right truncate w-1/2 ${check.passed ? "text-indigo-400" : "text-rose-400"}`}>
-                        {check.value}
+                      <div className="flex justify-end w-full sm:w-[45%] pl-9 sm:pl-0">
+                        <span className={`inline-flex justify-center items-center px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow-sm border truncate w-full sm:w-44 ${
+                          check.passed 
+                            ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20 print:bg-emerald-50 print:text-emerald-700 print:border-emerald-200" 
+                            : "bg-rose-500/5 text-rose-400 border-rose-500/20 print:bg-rose-50 print:text-rose-700 print:border-rose-200"
+                        }`}>
+                          <span className="truncate">{check.value}</span>
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -1065,29 +1075,29 @@ function ReportContent() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 grid print:hidden mt-8">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center space-y-2 shadow-sm">
             <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto text-indigo-500 mb-4">⚙️</div>
-            <h4 className="font-bold text-sm text-white">Email Server Settings</h4>
-            <p className="text-[10px] text-zinc-400">Reduce static payload weighting on core conditions matching TLS/SSL requirements.</p>
+            <h4 className="font-bold text-sm text-white print:text-slate-900">Email Server Settings</h4>
+            <p className="text-[10px] text-zinc-400 print:text-slate-600">Reduce static payload weighting on core conditions matching TLS/SSL requirements.</p>
             
           </div>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center space-y-2 shadow-sm">
             <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto text-indigo-500 mb-4">☁️</div>
-            <h4 className="font-bold text-sm text-white">CDN Optimization</h4>
-            <p className="text-[10px] text-zinc-400">Fix speed-related SEO blocks via edge node delivery to improve server response data.</p>
+            <h4 className="font-bold text-sm text-white print:text-slate-900">CDN Optimization</h4>
+            <p className="text-[10px] text-zinc-400 print:text-slate-600">Fix speed-related SEO blocks via edge node delivery to improve server response data.</p>
             
           </div>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center space-y-2 shadow-sm">
             <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-4">🛡️</div>
-            <h4 className="font-bold text-sm text-white">Security Hardening</h4>
-            <p className="text-[10px] text-zinc-400">Ensure HTTP/2 upgrade on port 443 with HSTS headers up to strict requirements.</p>
+            <h4 className="font-bold text-sm text-white print:text-slate-900">Security Hardening</h4>
+            <p className="text-[10px] text-zinc-400 print:text-slate-600">Ensure HTTP/2 upgrade on port 443 with HSTS headers up to strict requirements.</p>
             <button className="text-emerald-400 font-bold text-[10px] uppercase tracking-widest mt-2 block w-full bg-emerald-500/10 py-1.5 rounded-full">Completed</button>
           </div>
         </div>
 
         {/* BOTTOM CTA */}
-        <div className="bg-indigo-900/20 rounded-2xl p-8 sm:p-12 text-center border border-indigo-500/20 mt-8 print:hidden shadow-sm">
+        <div className="bg-slate-900 print:bg-slate-50 rounded-2xl p-8 sm:p-12 text-center border border-slate-800 print:border-slate-200 mt-8 print:hidden shadow-sm">
           <div className="text-indigo-500 text-4xl mb-4 sm:mb-6">🏢</div>
-          <h2 className="text-xl sm:text-2xl font-bold text-indigo-300 mb-2">Need Help Implementing These Fixes?</h2>
-          <p className="text-sm text-indigo-200 max-w-md mx-auto mb-6 sm:mb-8 leading-relaxed">
+          <h2 className="text-xl sm:text-2xl font-bold text-white print:text-slate-900 mb-2">Need Help Implementing These Fixes?</h2>
+          <p className="text-sm text-zinc-400 print:text-slate-600 max-w-md mx-auto mb-6 sm:mb-8 leading-relaxed">
             Let our elite engineers resolve these critical issues and optimize your engine performance to drive immediate SEO readiness scores.
           </p>
           <button 
@@ -1096,7 +1106,7 @@ function ReportContent() {
               const body = encodeURIComponent(`Hello,\n\nI ran an SEO audit for my site and need help resolving the critical errors. My site is ${urlParam}.\n\nThank you.`);
               window.location.href = `mailto:support@seointellect.com?subject=${subject}&body=${body}`;
             }}
-            className="w-full sm:w-auto bg-[#1f2937] sm:bg-indigo-600 hover:bg-[#374151] sm:hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg hover:-translate-y-1"
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg hover:-translate-y-1"
           >
             <span>Book Free Consultation Call</span>
           </button>
