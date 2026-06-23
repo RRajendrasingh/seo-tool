@@ -774,10 +774,7 @@ export default function AdminDashboard() {
             </button>
           </form>
 
-          <div className="border-t border-zinc-850/60 pt-4 text-xxs text-zinc-500 leading-relaxed text-left">
-            <span className="font-bold text-zinc-400 block mb-1">🔑 First Time Login?</span>
-            The default passcode is <span className="font-mono text-zinc-300 bg-zinc-950 px-1.5 py-0.5 border border-zinc-800 rounded-md">admin123</span>. You can change this immediately in the dashboard settings panel.
-          </div>
+
         </div>
       </div>
     );
