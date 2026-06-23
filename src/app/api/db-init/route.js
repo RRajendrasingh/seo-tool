@@ -1,5 +1,6 @@
 import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
+import { hashPassword } from "@/utils/auth";
 
 export async function GET() {
   try {
@@ -191,7 +192,50 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ success: true, message: "Hostinger SQL Tables initialized successfully and default posts seeded." });
+    // 7. Seed test users
+    const testUsers = [
+      {
+        id: "usr_free1234567890abcdef0123456",
+        email: "free@test.com",
+        name: "Free Test User",
+        password: "Password123!",
+        tier: "free",
+        status: "inactive",
+        agency_name: null
+      },
+      {
+        id: "usr_weekly1234567890abcdef01234",
+        email: "weekly@test.com",
+        name: "Weekly Pro Test User",
+        password: "Password123!",
+        tier: "weekly",
+        status: "active",
+        agency_name: null
+      },
+      {
+        id: "usr_agency1234567890abcdef01234",
+        email: "agency@test.com",
+        name: "Agency Owner Test User",
+        password: "Password123!",
+        tier: "agency",
+        status: "active",
+        agency_name: "Apex Marketing Group"
+      }
+    ];
+
+    for (const u of testUsers) {
+      const existing = await query("SELECT id FROM users WHERE email = ?", [u.email]);
+      if (existing.length === 0) {
+        const hash = await hashPassword(u.password);
+        await query(
+          `INSERT INTO users (id, email, password_hash, full_name, auth_provider, subscription_tier, subscription_status, agency_name) 
+           VALUES (?, ?, ?, ?, 'local', ?, ?, ?)`,
+          [u.id, u.email, hash, u.name, u.tier, u.status, u.agency_name]
+        );
+      }
+    }
+
+    return NextResponse.json({ success: true, message: "Hostinger SQL Tables initialized successfully, default posts and test users seeded." });
   } catch (error) {
     console.error("Database initialization failed:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

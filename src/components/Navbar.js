@@ -26,6 +26,7 @@ export default function Navbar({ initialSession = null }) {
 
   // Sync session with prop (in case server auth state changes)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSession(initialSession);
   }, [initialSession, pathname]);
 

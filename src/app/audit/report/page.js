@@ -17,7 +17,7 @@ function ReportContent() {
   const urlParam = searchParams.get("url") || "";
 
   // Page States
-  const [isPaid, setIsPaid] = useState(false);
+  const [isPaid, setIsPaid] = useState(true);
   const [checkingPayment, setCheckingPayment] = useState(true);
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -56,6 +56,17 @@ function ReportContent() {
     fetchSession();
   }, []);
 
+  const isPremium = session?.subscription_tier === "weekly" || session?.subscription_tier === "agency" || (typeof window !== "undefined" && (() => {
+    try {
+      const token = localStorage.getItem(`premium_token_${urlParam}`);
+      if (token) {
+        const parsed = JSON.parse(token);
+        return !!(parsed && parsed.paid);
+      }
+    } catch (e) {}
+    return false;
+  })());
+
   const loadingSteps = [
     "Verifying premium payment key...",
     "Querying Google PageSpeed API servers...",
@@ -86,15 +97,10 @@ function ReportContent() {
         const token = JSON.parse(tokenString);
         if (token && token.paid) {
           setIsPaid(true);
-        } else {
-          setIsPaid(false);
         }
-      } else {
-          setIsPaid(false);
       }
     } catch (e) {
       console.error(e);
-      setIsPaid(false);
     } finally {
       setCheckingPayment(false);
     }
@@ -143,7 +149,7 @@ function ReportContent() {
         const activeKey = getApiKey();
         let apiEndpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
           formattedUrl
-        )}&category=performance&category=seo&category=accessibility&category=best-practices`;
+        )}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
 
         if (activeKey && activeKey !== "PASTE_YOUR_GOOGLE_API_KEY_HERE") {
           apiEndpoint += `&key=${activeKey}`;
@@ -681,7 +687,12 @@ function ReportContent() {
 
       // Rename document title temporarily for professional PDF filename branding
       const originalTitle = document.title;
-      document.title = `${domain} - Technical SEO Audit Report | SEOIntellect AI`;
+      if (session?.subscription_tier === "agency") {
+        const agencyName = session.agency_name || "Apex Marketing Group";
+        document.title = `${domain} - Technical SEO Audit Report | Prepared by ${agencyName}`;
+      } else {
+        document.title = `${domain} - Technical SEO Audit Report | SEOIntellect AI`;
+      }
 
       window.print();
 
@@ -704,30 +715,7 @@ function ReportContent() {
     );
   }
 
-  // Render Locked gate screen if unpaid
-  if (!isPaid) {
-    return (
-      <div className="bg-zinc-950 min-h-screen flex items-center justify-center p-4 text-white">
-        <div className="max-w-md w-full rounded-2xl border border-zinc-850 bg-zinc-900/40 p-8 backdrop-blur-md text-center space-y-6">
-          <div className="h-16 w-16 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center justify-center mx-auto text-xl">
-            🔒
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold">Premium Report Locked</h2>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              To view this comprehensive, print-ready PDF audit report, you must first complete the payment checkout step.
-            </p>
-          </div>
-          <button
-            onClick={() => router.push(`/audit?url=${encodeURIComponent(urlParam)}`)}
-            className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 py-3 text-xs font-semibold text-white transition-all"
-          >
-            Return to Checkout
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   // Render Loading audit details screen
   if (loading) {
@@ -813,7 +801,16 @@ function ReportContent() {
         
         <div className="flex flex-col items-center sm:items-end gap-4">
           <div className="flex items-center gap-4">
-            <button onClick={triggerPrint} className="hidden sm:block bg-gradient-to-r from-indigo-500 to-cyan-400 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition-transform active:scale-95 text-sm print:hidden">
+            <button 
+              onClick={() => {
+                if (isPremium) {
+                  triggerPrint();
+                } else {
+                  router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`);
+                }
+              }} 
+              className="hidden sm:block bg-gradient-to-r from-indigo-500 to-cyan-400 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg transition-transform active:scale-95 text-sm print:hidden cursor-pointer"
+            >
               📥 Download PDF Report
             </button>
             <div className="hidden sm:flex items-center gap-4 bg-white/5 border-white/10 rounded-xl p-3 shadow-sm border print:border-slate-300">
@@ -841,8 +838,23 @@ function ReportContent() {
           </div>
         </div>
       </div>
-
       <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8 print:p-0 print:space-y-6">
+        {/* AGENCY WHITE-LABEL BRANDING */}
+        {session?.subscription_tier === "agency" && (
+          <div className="w-full bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏢</span>
+              <div className="text-left">
+                <div className="font-extrabold text-white uppercase tracking-wider text-[10px]">White-label Client Report</div>
+                <div className="text-zinc-400 text-xs mt-0.5">Prepared by: <span className="font-bold text-indigo-400">{session.agency_name || "Apex Marketing Group"}</span></div>
+              </div>
+            </div>
+            <div className="text-right sm:text-right flex flex-col items-center sm:items-end">
+              <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-semibold block">Branding Status</span>
+              <span className="text-emerald-400 font-bold text-[10px] uppercase mt-0.5">SEOIntellect branding removed</span>
+            </div>
+          </div>
+        )}
 
         {/* SUMMARY BLOCKS */}
         <div>
@@ -976,17 +988,29 @@ function ReportContent() {
                     </div>
                   </button>
                   {openAccordions[key] && (
-                    <div className="p-4 pt-0 bg-slate-950/40 space-y-2">
-                      {engine.checks.slice(0, 3).map((check, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-xs">
-                          <span className="text-zinc-400 truncate max-w-[140px]">{check.name.replace(/ \(Mobile\)/, '')}</span>
-                          <span className={check.passed ? "text-emerald-400" : "text-rose-400"}>
-                            {check.passed ? "Pass" : "Fail"}
-                          </span>
-                        </div>
-                      ))}
-                      
-                    </div>
+                    !isPremium && !["seo-tags", "page-speed"].includes(key) ? (
+                      <div className="p-4 pt-3 pb-3 bg-slate-950/45 text-center space-y-2 border-t border-slate-800">
+                        <span className="text-[10px] text-zinc-400 block font-bold">🔒 Advanced Engine Locked</span>
+                        <p className="text-[9px] text-zinc-500 leading-normal">Upgrade to Pro to view payload diagnostics and technical checklist details.</p>
+                        <button 
+                          onClick={() => router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`)}
+                          className="mt-1 inline-block text-[9px] text-violet-455 hover:text-violet-350 font-extrabold uppercase tracking-wider hover:underline cursor-pointer"
+                        >
+                          Upgrade to Pro
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-4 pt-0 bg-slate-950/40 space-y-2">
+                        {engine.checks.slice(0, 3).map((check, idx) => (
+                          <div key={idx} className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-400 truncate max-w-[140px]">{check.name.replace(/ \(Mobile\)/, '')}</span>
+                            <span className={check.passed ? "text-emerald-400" : "text-rose-400"}>
+                              {check.passed ? "Pass" : "Fail"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )
                   )}
                 </div>
               ))}
@@ -1002,21 +1026,37 @@ function ReportContent() {
                 <h3 className="text-xs font-bold text-white uppercase tracking-widest">{engine.name} Log</h3>
                 <span className="text-[10px] font-bold text-indigo-400">Category Rating: {engine.score}%</span>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden divide-y divide-zinc-800">
-                {engine.checks.map((check, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 text-xs hover:bg-slate-800/40 transition-colors">
-                    <div className="flex items-center gap-3 w-1/2">
-                      <span className={check.passed ? "text-emerald-500" : "text-rose-500"}>
-                        {check.passed ? "✓" : "✗"}
-                      </span>
-                      <span className="font-semibold text-slate-300 truncate">{check.name}</span>
+              {!isPremium && !["seo-tags", "page-speed"].includes(key) ? (
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center space-y-3 relative overflow-hidden min-h-[160px] flex flex-col items-center justify-center">
+                  <span className="text-xl">🔒</span>
+                  <h4 className="font-bold text-xs text-white uppercase tracking-wider">{engine.name} Details Locked</h4>
+                  <p className="text-[10px] text-zinc-400 max-w-sm leading-relaxed">
+                    Detailed diagnostics for payload weight, render-blocking resources, font configurations, server-response times, and HTML/CSS validation errors are reserved for premium members.
+                  </p>
+                  <button 
+                    onClick={() => router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`)}
+                    className="mt-2 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-400 hover:from-indigo-400 hover:to-cyan-300 px-4 py-2 text-[9px] font-bold text-white shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+                  >
+                    Upgrade to Pro Plan
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden divide-y divide-zinc-800">
+                  {engine.checks.map((check, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 text-xs hover:bg-slate-800/40 transition-colors">
+                      <div className="flex items-center gap-3 w-1/2">
+                        <span className={check.passed ? "text-emerald-500" : "text-rose-500"}>
+                          {check.passed ? "✓" : "✗"}
+                        </span>
+                        <span className="font-semibold text-slate-300 truncate">{check.name}</span>
+                      </div>
+                      <div className={`font-mono text-[10px] text-right truncate w-1/2 ${check.passed ? "text-indigo-400" : "text-rose-400"}`}>
+                        {check.value}
+                      </div>
                     </div>
-                    <div className={`font-mono text-[10px] text-right truncate w-1/2 ${check.passed ? "text-indigo-400" : "text-rose-400"}`}>
-                      {check.value}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

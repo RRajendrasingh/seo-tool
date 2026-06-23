@@ -45,6 +45,17 @@ export default function AuditClient({ initialUser = null }) {
   const [showCancelPopup, setShowCancelPopup] = useState(false);
   const [filterTab, setFilterTab] = useState("all");
 
+  const isPremium = user?.subscription_tier === "weekly" || user?.subscription_tier === "agency" || (user?.allowed_quota && user?.allowed_quota > 0) || (typeof window !== "undefined" && (() => {
+    try {
+      const token = localStorage.getItem(`premium_token_${url}`);
+      if (token) {
+        const parsed = JSON.parse(token);
+        return !!(parsed && parsed.paid);
+      }
+    } catch (e) {}
+    return false;
+  })());
+
   const loadingSteps = [
     "Saving lead details into secure database...",
     "Querying Google Lighthouse API servers...",
@@ -136,7 +147,7 @@ export default function AuditClient({ initialUser = null }) {
         
         let apiEndpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
           formattedUrl
-        )}&category=performance&category=seo&category=accessibility&category=best-practices`;
+        )}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
         
         if (activeKey && activeKey !== "PASTE_YOUR_GOOGLE_API_KEY_HERE") {
           apiEndpoint += `&key=${activeKey}`;
@@ -821,6 +832,27 @@ export default function AuditClient({ initialUser = null }) {
     const engine = report?.engines[engineId];
     if (!engine) return null;
 
+    const isGatedKey = !["seo-tags", "page-speed"].includes(engineId);
+    if (!isPremium && isGatedKey) {
+      return (
+        <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-8 text-center space-y-4 max-w-md mx-auto my-6 flex flex-col items-center justify-center min-h-[350px]">
+          <span className="text-3xl">🔒</span>
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider">{engine.name} Details Locked</h3>
+          <p className="text-xxs text-zinc-400 leading-relaxed max-w-xs mx-auto">
+            Detailed checks for page payloads, assets, responsive structures, server security parameters, and AEO indexation are only available for premium members.
+          </p>
+          <button
+            onClick={() => {
+              router.push(`/checkout/?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name || "")}&email=${encodeURIComponent(email || "")}&phone=${encodeURIComponent(phone || "")}`);
+            }}
+            className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-xs font-bold text-white shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
+          >
+            Upgrade to Pro to Unlock
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6 min-h-[400px]">
         {/* Engine Header Details */}
@@ -1049,7 +1081,7 @@ export default function AuditClient({ initialUser = null }) {
             <div>
               <h3 className="text-sm font-bold text-white">Payment Cancelled</h3>
               <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                Your checkout was aborted and you haven't been charged. Would you like to stay here and review your current limited report, or run a new audit on a different website?
+                Your checkout was aborted and you haven&apos;t been charged. Would you like to stay here and review your current limited report, or run a new audit on a different website?
               </p>
             </div>
             
@@ -1565,8 +1597,14 @@ export default function AuditClient({ initialUser = null }) {
 
                 <button
                   type="button"
-                  onClick={() => setShowPayModal(true)}
-                  className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950 hover:bg-zinc-200 transition-all shadow-md hover:scale-[1.01]"
+                  onClick={() => {
+                    if (isPremium) {
+                      window.open(`/audit/report/?url=${encodeURIComponent(report.url)}`, '_blank');
+                    } else {
+                      setShowPayModal(true);
+                    }
+                  }}
+                  className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950 hover:bg-zinc-200 transition-all shadow-md hover:scale-[1.01] cursor-pointer"
                 >
                   Download Report PDF
                 </button>

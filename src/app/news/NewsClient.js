@@ -18,10 +18,7 @@ export default function NewsClient({ initialPosts = [] }) {
       .catch((e) => console.error(e));
   }, []);
 
-  // Reset pagination when category or search changes
-  useEffect(() => {
-    setVisibleCount(POSTS_PER_PAGE);
-  }, [activeCategory, searchQuery]);
+
 
   // Derive categories dynamically from posts list
   const categories = ["All", ...Array.from(new Set(posts.map((post) => post.category).filter(Boolean)))];
@@ -75,13 +72,19 @@ export default function NewsClient({ initialPosts = [] }) {
             type="text"
             placeholder="Search articles by title, description..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setVisibleCount(POSTS_PER_PAGE);
+            }}
             style={{ backgroundColor: 'transparent' }}
             className="w-full bg-transparent border-0 p-0 text-xs text-white placeholder-zinc-400 focus:outline-none focus:ring-0"
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery("")}
+              onClick={() => {
+                setSearchQuery("");
+                setVisibleCount(POSTS_PER_PAGE);
+              }}
               className="text-[10px] text-zinc-400 hover:text-white font-bold px-1.5 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 transition-colors flex-shrink-0"
             >
               Clear
@@ -110,7 +113,10 @@ export default function NewsClient({ initialPosts = [] }) {
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setVisibleCount(POSTS_PER_PAGE);
+                }}
                 className={`rounded-lg px-3 sm:px-4 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
                   activeCategory === cat
                     ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-md shadow-violet-500/10"
@@ -266,6 +272,7 @@ export default function NewsClient({ initialPosts = [] }) {
               onClick={() => {
                 setSearchQuery("");
                 setActiveCategory("All");
+                setVisibleCount(POSTS_PER_PAGE);
               }}
               className="mt-5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2 text-xxs font-bold text-white shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
             >
