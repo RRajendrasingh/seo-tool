@@ -302,8 +302,12 @@ export default function DashboardClient({ user: initialUser }) {
           </div>
           
           <div className="flex items-center gap-3 card-inner p-4 rounded-2xl border self-start sm:self-auto animate-scale-up">
-            <div className="h-10 w-10 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg">
-              {user.picture || "👤"}
+            <div className="h-10 w-10 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg overflow-hidden shrink-0">
+              {user.picture?.startsWith("http") ? (
+                <img src={user.picture} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                user.picture || "👤"
+              )}
             </div>
             <div className="space-y-0.5 text-left">
               <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500 block">User Session</span>
