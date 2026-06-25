@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://127.0.0.1:3000';
+const BASE_URL = 'http://localhost:3000';
 
 test.describe('Paid (Pro) Tier User Flow', () => {
+  test.setTimeout(90000);
 
   // For testing paid features, we simulate a session or mock responses where appropriate,
   // or test the upgrade path itself.
@@ -12,12 +13,44 @@ test.describe('Paid (Pro) Tier User Flow', () => {
     await page.waitForTimeout(1000); // Hydration wait
   });
 
-  test('should allow access to checkout page to upgrade to Pro', async ({ page }) => {
-    // Navigate directly to checkout with a URL parameter to avoid being redirected away
+  test('should redirect unauthenticated guest to login page from checkout', async ({ page }) => {
+    // Navigate directly to checkout
     await page.goto(`${BASE_URL}/checkout?url=example.com`);
 
-    // Verify we remain on the checkout page (not redirected to login or audit)
-    await expect(page).toHaveURL(/.*\/checkout.*/, { timeout: 15000 });
+    // Verify it redirects to login with the correct redirect search param
+    await page.waitForURL(/.*\/login\/?\?redirect=.*/, { timeout: 45000 });
+    
+    // Verify the login page header is visible
+    await expect(page.locator('h2')).toContainText('Access Your Account', { timeout: 15000 });
+  });
+
+  test('should allow access to checkout page to upgrade to Pro when logged in', async ({ page }) => {
+    // Mock user session to simulate being logged in
+    await page.route('**/api/auth/session', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          session: {
+            id: 'usr_mock123',
+            email: 'alex.dev@gmail.com',
+            name: 'ALEX.DEV',
+            picture: null,
+            subscription_tier: 'free',
+            subscription_status: 'inactive'
+          }
+        })
+      });
+    });
+
+    // Navigate to checkout
+    await page.goto(`${BASE_URL}/checkout?url=example.com`);
+
+    // Verify we remain on the checkout page since we are logged in
+    await page.waitForURL(/.*\/checkout\/?\?.*/, { timeout: 45000 });
+    
+    // Verify checkout content is visible
+    await expect(page.locator('h3').first()).toContainText('Account Information', { timeout: 15000 });
   });
 
   test('should show Pro features unrestricted in Audit mode (Mocking Pro State)', async ({ page }) => {

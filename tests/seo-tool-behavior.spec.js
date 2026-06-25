@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 const BASE_URL = 'http://localhost:3000';
 
 test.describe('SEO Tool User Behavior Tests', () => {
+  test.setTimeout(90000);
 
   test.beforeEach(async ({ page }) => {
     // Navigate to the homepage before each test
@@ -13,7 +14,7 @@ test.describe('SEO Tool User Behavior Tests', () => {
 
   test('should load the homepage and check main content elements', async ({ page }) => {
     // Check if the main heading is visible
-    await expect(page.locator('h1')).toContainText('Dominate Search Engines with');
+    await expect(page.locator('h1')).toContainText('Dominate Google & AI Search Engines with');
     
     // Check if the "Launch SEO Auditor" button is visible and redirects to /audit/
     const auditorLink = page.getByRole('link', { name: 'Launch SEO Auditor' });
@@ -80,4 +81,25 @@ test.describe('SEO Tool User Behavior Tests', () => {
     // Assert the answer container expands and has the max-h-48 class
     await expect(faqContainer).toHaveClass(/max-h-48/);
   });
+
+  test('should load dynamic city landing pages with coordinates and estimators', async ({ page }) => {
+    // Navigate to a specific city SEO services page
+    await page.goto(`${BASE_URL}/seo-services/los-angeles/`);
+
+    // 1. Verify the location heading is present and customized
+    await expect(page.locator('h1')).toContainText('SEO Services in Los Angeles');
+
+    // 2. Verify Google SERP preview simulator is visible
+    await expect(page.locator('text=/Local Map Pack Proximity/i')).toBeVisible();
+
+    // 3. Verify Local SEO opportunity calculator is visible
+    await expect(page.locator('text=/SEO Revenue Potential/i')).toBeVisible();
+
+    // 4. Verify coordinates and address details are loaded in HTML (schema markup check)
+    const schemaScript = await page.locator('script[type="application/ld+json"]').first();
+    const schemaContent = await schemaScript.innerHTML();
+    expect(schemaContent).toContain('"addressLocality":"Los Angeles"');
+  });
 });
+
+

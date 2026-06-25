@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
   const [isRegisterMode, setIsRegisterMode] = useState(false);
 
   // Form inputs
@@ -57,14 +59,14 @@ export default function LoginClient() {
         const res = await fetch("/api/auth/session");
         const data = await res.json();
         if (data.session) {
-          router.push("/dashboard");
+          router.push(redirectUrl);
         }
       } catch (err) {
         console.error("Session check failed:", err);
       }
     }
     checkSession();
-  }, [router]);
+  }, [router, redirectUrl]);
 
   // 2. Callback response for real Google Auth
   const handleGoogleCredentialResponse = useCallback(async (response) => {
@@ -87,7 +89,7 @@ export default function LoginClient() {
 
       setSuccessMessage("Authenticated via Google! Redirecting...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(redirectUrl);
         router.refresh();
       }, 1200);
     } catch (err) {
@@ -95,7 +97,7 @@ export default function LoginClient() {
       setErrorMessage("Secure connection to authentication servers failed.");
       setLoading(false);
     }
-  }, [router]);
+  }, [router, redirectUrl]);
 
   // 3. Load Google SSO library dynamically if CLIENT_ID is present
   useEffect(() => {
@@ -180,7 +182,7 @@ export default function LoginClient() {
 
       setSuccessMessage("Account created successfully! Redirecting...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(redirectUrl);
         router.refresh();
       }, 1500);
 
@@ -221,7 +223,7 @@ export default function LoginClient() {
 
       setSuccessMessage("Log in successful! Redirecting...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(redirectUrl);
         router.refresh();
       }, 1500);
 
@@ -257,7 +259,7 @@ export default function LoginClient() {
       setSuccessMessage("Authenticated via Google! Redirecting...");
       setTimeout(() => {
         setShowGooglePopup(false);
-        router.push("/dashboard");
+        router.push(redirectUrl);
         router.refresh();
       }, 1200);
 

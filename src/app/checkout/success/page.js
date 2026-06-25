@@ -39,6 +39,7 @@ function SuccessContent() {
             transactionId: sessionId,
             date: new Date().toISOString(),
             url: targetUrl,
+            email: data.metadata?.email || "",
             metadata: data.metadata
           };
           

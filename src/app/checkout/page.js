@@ -79,10 +79,13 @@ function CheckoutContent() {
     checkSession();
   }, []);
 
-  // If no URL is provided, redirect back to audit page ONLY if not logged in
+  // Require login to purchase. Redirect to login if not authenticated.
   useEffect(() => {
     if (loadingSession) return;
-    if (!url && !user) {
+    if (!user) {
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+    } else if (!url) {
       router.push("/audit");
     }
   }, [url, user, loadingSession, router]);

@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { getMockLighthouseResult } from "../../utils/mockPageSpeed";
 import { addLead, updateLead } from "@/utils/leadsStore";
 
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "false";
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 const FALLBACK_API_KEY = ""; 
 
 export default function AuditClient({ initialUser = null }) {
@@ -78,8 +78,9 @@ export default function AuditClient({ initialUser = null }) {
     "Processing comprehensive audit report card..."
   ];
 
-  const getApiKey = () => {
-    return process.env.NEXT_PUBLIC_GOOGLE_API_KEY || FALLBACK_API_KEY || "";
+  const getApiKeys = () => {
+    const rawKeys = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || FALLBACK_API_KEY || "";
+    return rawKeys.split(",").map((k) => k.trim()).filter(Boolean);
   };
 
   const getStrategyScore = (engineId, baseScore, strategy) => {
@@ -269,34 +270,54 @@ export default function AuditClient({ initialUser = null }) {
         await new Promise((resolve) => setTimeout(resolve, 3200));
         data = getMockLighthouseResult(formattedUrl);
       } else {
-        const activeKey = getApiKey();
+        const keys = getApiKeys();
+        let lastError = null;
         
-        let apiEndpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
-          formattedUrl
-        )}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
-        
-        if (activeKey && activeKey !== "PASTE_YOUR_GOOGLE_API_KEY_HERE") {
-          apiEndpoint += `&key=${activeKey}`;
-        }
+        for (let i = 0; i < Math.max(1, keys.length); i++) {
+          const activeKey = keys[i] || "";
+          let apiEndpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
+            formattedUrl
+          )}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
+          
+          if (activeKey && activeKey !== "PASTE_YOUR_GOOGLE_API_KEY_HERE") {
+            apiEndpoint += `&key=${activeKey}`;
+          }
 
-        const res = await fetch(apiEndpoint);
-        
-        if (res.status === 429) {
-          throw new Error("429_QUOTA_EXCEEDED");
-        }
-        
-        if (!res.ok) {
-          throw new Error("Unable to contact Google Lighthouse servers. Verify the URL is public and try again.");
-        }
+          try {
+            const res = await fetch(apiEndpoint);
+            
+            if (res.status === 429) {
+              throw new Error("429_QUOTA_EXCEEDED");
+            }
+            
+            if (!res.ok) {
+              throw new Error("Unable to contact Google Lighthouse servers. Verify the URL is public and try again.");
+            }
 
-        data = await res.json();
-      }
-
-      if (data.error) {
-        if (data.error.code === 429) {
-          throw new Error("429_QUOTA_EXCEEDED");
+            const jsonData = await res.json();
+            
+            if (jsonData.error) {
+              if (jsonData.error.code === 429) {
+                throw new Error("429_QUOTA_EXCEEDED");
+              }
+              throw new Error(jsonData.error.message || "Google API returned an error.");
+            }
+            
+            data = jsonData;
+            break; 
+          } catch (err) {
+            lastError = err;
+            if (err.message === "429_QUOTA_EXCEEDED" && i < keys.length - 1) {
+              console.warn(`Key ${i + 1} exhausted, trying next key...`);
+              continue; 
+            }
+            break; 
+          }
         }
-        throw new Error(data.error.message || "Google API returned an error.");
+        
+        if (!data && lastError) {
+          throw lastError; 
+        }
       }
 
       const lighthouse = data.lighthouseResult;
@@ -951,8 +972,8 @@ export default function AuditClient({ initialUser = null }) {
     return "text-rose-400 border-rose-500/20 bg-rose-500/5";
   };
 
-  const activeKey = getApiKey();
-  const isKeyUnset = !activeKey || activeKey === "PASTE_YOUR_GOOGLE_API_KEY_HERE";
+  const keys = getApiKeys();
+  const isKeyUnset = keys.length === 0 || keys[0] === "PASTE_YOUR_GOOGLE_API_KEY_HERE";
 
   const renderEngineDetails = (engineId) => {
     const rawEngine = report?.engines[engineId];
@@ -1706,9 +1727,9 @@ export default function AuditClient({ initialUser = null }) {
             </div>
 
             {/* Banner Overview with Live Screenshot */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-[320px]">
               {/* Summary Card */}
-              <div className="lg:col-span-8 rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-900/60 to-zinc-950/40 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 backdrop-blur-md">
+              <div className="lg:col-span-7 rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-900/60 to-zinc-950/40 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 backdrop-blur-md">
                 <div className="space-y-3 text-left">
                   <span className="text-xxs uppercase tracking-wider font-bold text-violet-400">
                     Enterprise Scan Completed (30+ Checks Verified)
@@ -1784,61 +1805,62 @@ export default function AuditClient({ initialUser = null }) {
               {/* Dynamic Viewport Screenshot Panel */}
               {deviceStrategy === "mobile" ? (
                 /* Mobile Mockup (High-Fidelity iPhone Portrait frame) */
-                <div className="lg:col-span-4 flex items-center justify-center p-2">
-                  <div className="relative w-[230px] aspect-[9/18.5] rounded-[38px] border-[10px] border-zinc-900 bg-zinc-950 shadow-2xl ring-1 ring-zinc-800/80 overflow-hidden flex flex-col group select-none">
-                    {/* iPhone Dynamic Island */}
-                    <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-20 h-4.5 bg-black rounded-full z-30 flex items-center justify-center" />
+                <div className="lg:col-span-5 flex items-center justify-center py-3 h-[320px]">
+                  {/* Phone frame — exact 375×667 Chrome DevTools ratio */}
+                  <div
+                    className="relative h-full rounded-[28px] border-[8px] border-zinc-800 bg-black shadow-2xl ring-1 ring-zinc-700/60 overflow-hidden flex flex-col group select-none"
+                    style={{ aspectRatio: '375 / 667' }}
+                  >
+                    {/* Dynamic Island */}
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[30%] h-[4%] bg-black rounded-full z-30" />
 
-                    {/* iOS Status Bar */}
-                    <div className="h-7 w-full bg-black/60 px-5 flex items-center justify-between text-[9px] text-zinc-400 font-semibold select-none z-25 relative shrink-0 pt-1 border-b border-zinc-900/40">
+                    {/* Status Bar */}
+                    <div className="h-[8%] w-full bg-black/80 px-3 flex items-center justify-between text-[8px] text-zinc-400 font-semibold z-25 relative shrink-0">
                       <span>9:41</span>
-                      <div className="w-14 h-3" />
-                      <div className="flex items-center gap-1 scale-[0.85] origin-right">
-                        {/* Signal */}
-                        <svg className="h-2.5 w-2.5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M2 22h20V2z" />
-                        </svg>
-                        {/* Wifi */}
-                        <svg className="h-2.5 w-2.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 00-7.743-3.486m15.486 0A6 6 0 0012 18.75m0 0a3.75 3.75 0 01-4.84-2.18m9.68 0A3.75 3.75 0 0112 18.75m0-11.25a11.25 11.25 0 00-14.516 6.536m29.032 0A11.25 11.25 0 0012 7.5z" />
-                        </svg>
-                        {/* Battery */}
-                        <div className="w-4.5 h-2.5 border border-zinc-500 rounded-[2px] p-[1px] flex items-center">
-                          <div className="h-full w-3 bg-zinc-400 rounded-[1px]" />
-                        </div>
+                      <div className="flex items-center gap-1">
+                        <svg className="h-2 w-2 text-zinc-300" fill="currentColor" viewBox="0 0 24 24"><path d="M2 22h20V2z" /></svg>
+                        <svg className="h-2 w-2 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>
+                        <div className="w-4 h-2 border border-zinc-500 rounded-[2px] p-[1px] flex items-center"><div className="h-full w-3 bg-zinc-300 rounded-[1px]" /></div>
                       </div>
                     </div>
 
-                    {/* Screenshot Container */}
+                    {/* Mobile Address Bar (Adds browser spacing) */}
+                    <div className="h-[7%] w-full bg-zinc-900 border-b border-zinc-850 px-3 flex items-center justify-center text-[7px] text-zinc-450 font-sans shrink-0">
+                      <div className="bg-zinc-950/60 border border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-500 font-mono flex items-center justify-center gap-1 w-full select-none">
+                        <span className="text-[7px] text-emerald-500">🔒</span>
+                        <span className="truncate">{report.url.replace(/^https?:\/\//, '')}</span>
+                      </div>
+                    </div>
+
+                    {/* Screenshot fills remaining space */}
                     <div className="relative flex-1 w-full bg-zinc-950 overflow-hidden">
                       {!screenshotLoaded && (
                         <div className="absolute inset-0 bg-zinc-900 animate-pulse flex items-center justify-center">
-                          <div className="text-[10px] text-zinc-500 font-medium flex flex-col items-center gap-1.5">
-                            <svg className="animate-spin h-3.5 w-3.5 text-violet-500" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            <span>Loading Mobile...</span>
-                          </div>
+                          <svg className="animate-spin h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
                         </div>
                       )}
                       <img
                         src={`https://api.microlink.io/?url=${encodeURIComponent(report.url)}&screenshot=true&embed=screenshot.url&device=iPhone`}
                         alt={`${report.url} Mobile Preview`}
                         onLoad={() => setScreenshotLoaded(true)}
-                        className={`h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105 ${
-                          screenshotLoaded ? "opacity-100" : "opacity-0"
+                        className={`w-full h-full object-cover object-top transition-opacity duration-500 ${
+                          screenshotLoaded ? 'opacity-100' : 'opacity-0'
                         }`}
                       />
                     </div>
 
-                    {/* iOS Bottom Home Indicator Bar */}
-                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-20 h-1 bg-zinc-700 rounded-full z-35" />
+                    {/* Home Bar */}
+                    <div className="h-[5%] w-full bg-black flex items-center justify-center shrink-0">
+                      <div className="w-[35%] h-1 bg-zinc-600 rounded-full" />
+                    </div>
                   </div>
                 </div>
               ) : (
                 /* Desktop Mockup (Browser landscape frame) */
-                <div className="lg:col-span-4 rounded-3xl border border-zinc-800 bg-zinc-900/10 p-3.5 backdrop-blur-md flex flex-col justify-between relative overflow-hidden group">
+                <div className="lg:col-span-5 rounded-3xl border border-zinc-800 bg-zinc-900/10 p-3.5 backdrop-blur-md flex flex-col justify-between relative overflow-hidden group h-[320px]">
                   {/* Browser Top Window Controls */}
                   <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2 mb-2 select-none">
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -1847,7 +1869,7 @@ export default function AuditClient({ initialUser = null }) {
                         <span className="w-2 h-2 rounded-full bg-amber-500/80 block" />
                         <span className="w-2 h-2 rounded-full bg-emerald-500/80 block" />
                       </div>
-                      <div className="hidden sm:flex items-center gap-1.5 pl-2 text-zinc-600 text-[9px]">
+                      <div className="hidden sm:flex items-center gap-1.5 pl-2 text-zinc-650 text-[9px]">
                         <span>←</span>
                         <span>→</span>
                       </div>
@@ -1864,25 +1886,22 @@ export default function AuditClient({ initialUser = null }) {
                     <div className="w-4" />
                   </div>
 
-                  {/* Screenshot Image Container */}
-                  <div className="relative aspect-[16/10.5] w-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-850/60">
+                  {/* Screenshot Frame */}
+                  <div className="relative flex-1 w-full bg-zinc-950 rounded-xl overflow-hidden border border-zinc-850/60">
                     {!screenshotLoaded && (
                       <div className="absolute inset-0 bg-zinc-900 animate-pulse flex items-center justify-center">
-                        <div className="text-[10px] text-zinc-500 font-medium flex items-center gap-2">
-                          <svg className="animate-spin h-3.5 w-3.5 text-violet-500" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Generating Desktop...
-                        </div>
+                        <svg className="animate-spin h-4 w-4 text-violet-500" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
                       </div>
                     )}
                     <img
                       src={`https://api.microlink.io/?url=${encodeURIComponent(report.url)}&screenshot=true&embed=screenshot.url`}
                       alt={`${report.url} Desktop Preview`}
                       onLoad={() => setScreenshotLoaded(true)}
-                      className={`h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105 ${
-                        screenshotLoaded ? "opacity-100" : "opacity-0"
+                      className={`w-full h-full object-cover object-top transition-opacity duration-500 ${
+                        screenshotLoaded ? 'opacity-100' : 'opacity-0'
                       }`}
                     />
                   </div>
