@@ -299,7 +299,8 @@ function ReportContent() {
               throw new Error("429_QUOTA_EXCEEDED");
             }
             if (!res.ok) {
-              throw new Error("Unable to contact Google Lighthouse servers. Verify the URL is live.");
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData?.error?.message || "Unable to contact Google Lighthouse servers. Verify the URL is live.");
             }
 
             const jsonData = await res.json();

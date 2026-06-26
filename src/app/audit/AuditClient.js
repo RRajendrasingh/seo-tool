@@ -291,7 +291,8 @@ export default function AuditClient({ initialUser = null }) {
             }
             
             if (!res.ok) {
-              throw new Error("Unable to contact Google Lighthouse servers. Verify the URL is public and try again.");
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData?.error?.message || "Unable to contact Google Lighthouse servers. Verify the URL is public and try again.");
             }
 
             const jsonData = await res.json();
