@@ -196,33 +196,33 @@ export default function DashboardClient({ user: initialUser }) {
            {/* Left/Main Column: Audit History (2 cols) */}
           <div className="md:col-span-2 space-y-8">
             
-            {/* Quota Progress Bar for Free Users */}
-            {user && user.subscription_tier === "free" && (
+            {/* Quota Progress Bar for All Users */}
+            {user && (
               <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
                 <div className="flex justify-between items-center">
                   <div className="space-y-0.5">
                     <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Manual Audits Used</span>
                     <p className="text-xs font-black text-slate-200">
-                      {user.free_audits_run || 0} of {user.free_audits_allowed || 2} reports generated
+                      {user.free_audits_run || 0} of {isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)} reports generated
                     </p>
                   </div>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    (user.free_audits_run || 0) >= (user.free_audits_allowed || 2)
+                    (user.free_audits_run || 0) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
                       ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                       : "bg-violet-500/10 text-violet-400 border border-violet-500/20"
                   }`}>
-                    {(user.free_audits_run || 0) >= (user.free_audits_allowed || 2) ? "Limit Reached" : "Active Quota"}
+                    {(user.free_audits_run || 0) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)) ? "Limit Reached" : "Active Quota"}
                   </span>
                 </div>
                 
                 <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
                   <div 
                     className={`h-full rounded-full transition-all duration-500 ease-out ${
-                      (user.free_audits_run || 0) >= (user.free_audits_allowed || 2)
+                      (user.free_audits_run || 0) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
                         ? "bg-gradient-to-r from-rose-500 to-amber-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
                         : "bg-gradient-to-r from-violet-500 to-cyan-400 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
                     }`}
-                    style={{ width: `${Math.min(100, ((user.free_audits_run || 0) / (user.free_audits_allowed || 2)) * 100)}%` }}
+                    style={{ width: `${Math.min(100, ((user.free_audits_run || 0) / (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function DashboardClient({ user: initialUser }) {
                                 <line x1="16" y1="17" x2="8" y2="17"/>
                                 <polyline points="10 9 9 9 8 9"/>
                               </svg>
-                              View PDF Report
+                              View Report
                             </>
                           ) : (
                             <>
@@ -328,7 +328,7 @@ export default function DashboardClient({ user: initialUser }) {
                                 <line x1="12" y1="20" x2="12" y2="4"/>
                                 <line x1="6" y1="20" x2="6" y2="14"/>
                               </svg>
-                              View Audit
+                              View Report
                             </>
                           )}
                         </button>
