@@ -33,19 +33,24 @@ export async function POST(request) {
       return NextResponse.json({ error: "Email and website are required" }, { status: 400 });
     }
 
-    // Check if the user is a registered free user and enforce their 2-audit limit
+    // Check if the user is a registered paid user. If not (free or unregistered), enforce their 2-audit limit
+    let isPaidTier = false;
     const userQuery = await query("SELECT subscription_tier FROM users WHERE email = ?", [leadData.email.trim()]);
     if (userQuery && userQuery.length > 0) {
-      const tier = userQuery[0].subscription_tier || "free";
-      if (tier === "free") {
-        const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ?", [leadData.email.trim()]);
-        const auditsCount = leadCountResult[0]?.count || 0;
-        if (auditsCount >= 2) {
-          return NextResponse.json(
-            { error: "You have reached the limit of 2 free audits for your account. Please upgrade to run more audits." },
-            { status: 403 }
-          );
-        }
+      const tier = userQuery[0].subscription_tier;
+      if (tier === "weekly" || tier === "agency") {
+        isPaidTier = true;
+      }
+    }
+
+    if (!isPaidTier) {
+      const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ?", [leadData.email.trim()]);
+      const auditsCount = leadCountResult[0]?.count || 0;
+      if (auditsCount >= 2) {
+        return NextResponse.json(
+          { error: "You have reached the limit of 2 free audits for your email. Please upgrade to run more audits." },
+          { status: 403 }
+        );
       }
     }
 

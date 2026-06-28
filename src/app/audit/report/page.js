@@ -196,16 +196,7 @@ function ReportContent() {
     fetchSession();
   }, []);
 
-  const isPremium = session?.subscription_tier === "weekly" || session?.subscription_tier === "agency" || (typeof window !== "undefined" && (() => {
-    try {
-      const token = localStorage.getItem(`premium_token_${urlParam}`);
-      if (token && session) {
-        const parsed = JSON.parse(token);
-        return !!(parsed && parsed.paid && parsed.email === session.email);
-      }
-    } catch (e) {}
-    return false;
-  })());
+  const isPremium = session?.subscription_tier === "weekly" || session?.subscription_tier === "agency" || isPaid;
 
   const loadingSteps = [
     "Verifying premium payment key...",
@@ -223,7 +214,7 @@ function ReportContent() {
     return rawKeys.split(",").map((k) => k.trim()).filter(Boolean);
   };
 
-  // 1. Verify Payment on Mount (Requires session email match)
+  // 1. Verify Payment on Mount (Secure Server-Side Check)
   useEffect(() => {
     if (loadingSession) return;
     if (!urlParam) {
@@ -231,21 +222,36 @@ function ReportContent() {
       return;
     }
 
-    try {
-      const tokenKey = `premium_token_${urlParam}`;
-      const tokenString = localStorage.getItem(tokenKey);
-      
-      if (tokenString && session) {
-        const token = JSON.parse(tokenString);
-        if (token && token.paid && token.email === session.email) {
+    async function verifyPayment() {
+      try {
+        if (session?.subscription_tier === "weekly" || session?.subscription_tier === "agency") {
           setIsPaid(true);
+          setCheckingPayment(false);
+          return;
         }
+
+        if (session?.email) {
+          const res = await fetch("/api/leads/user");
+          if (res.ok) {
+            const data = await res.json();
+            const cleanUrlParam = urlParam.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
+            const matchingLead = data.audits?.find(a => 
+              a.website.toLowerCase().includes(cleanUrlParam)
+            );
+            
+            if (matchingLead && matchingLead.packageRequest && matchingLead.packageRequest !== "Free Audit") {
+              setIsPaid(true);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to verify premium status securely", e);
+      } finally {
+        setCheckingPayment(false);
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setCheckingPayment(false);
     }
+    
+    verifyPayment();
   }, [urlParam, router, loadingSession, session]);
 
   // 1b. Trigger Audit run when payment is verified or session tier is active

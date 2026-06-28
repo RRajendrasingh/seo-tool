@@ -60,15 +60,19 @@ export async function POST(req) {
           [newTier, newQuota, customerId, email]
         );
         
-        // Also update the lead status to "Closed Won" if they exist in leads
+        // Securely update the specific lead's status to "Closed Won"
         let packageName = "Premium Report";
         if (plan === "weekly") packageName = "Premium weekly";
         if (plan === "agency") packageName = "Premium agency";
         
-        await query(
-          "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ? WHERE email = ?",
-          [packageName, (session.amount_total / 100).toFixed(2), email]
-        );
+        const targetUrl = session.metadata?.url;
+        if (targetUrl && targetUrl !== "domain-pending") {
+          let cleanUrl = targetUrl.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
+          await query(
+            "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ? WHERE email = ? AND website LIKE ?",
+            [packageName, (session.amount_total / 100).toFixed(2), email, `%${cleanUrl}%`]
+          );
+        }
 
         console.log(`Stripe Webhook: Successfully upgraded user ${email} to ${newTier} plan.`);
       } catch (e) {
