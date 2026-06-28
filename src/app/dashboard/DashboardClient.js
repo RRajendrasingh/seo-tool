@@ -306,11 +306,7 @@ export default function DashboardClient({ user: initialUser }) {
                       <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={(e) => { e.stopPropagation(); router.push(viewUrl); }}
-                          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold transition-all duration-200 border cursor-pointer ${
-                            isAuditPaid || isPaid
-                              ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30 hover:-translate-y-0.5 border-0"
-                              : "bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 shadow-sm"
-                          }`}
+                          className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold transition-all duration-200 border cursor-pointer bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 shadow-sm"
                         >
                           {isAuditPaid || isPaid ? (
                             <>
