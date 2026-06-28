@@ -645,7 +645,7 @@ export default function HomeClient() {
         </div>
 
         {/* Custom Plan CTA Banner */}
-        <div className="mt-12 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 text-left">
+        <div className="mt-12 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 text-left max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 flex-grow w-full md:w-auto">
             {/* Building Outline Icon with rounded circular background */}
             <div className="relative h-14 w-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 flex-shrink-0">
