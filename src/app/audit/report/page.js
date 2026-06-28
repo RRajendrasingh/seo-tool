@@ -1148,27 +1148,26 @@ function ReportContent() {
           {deviceStrategy === "mobile" ? (
             /* Mobile Mockup (High-Fidelity iPhone Portrait frame) */
             <div className="lg:col-span-5 flex items-center justify-center py-3 h-[320px] print:col-span-5 print:py-0 print:h-[280px]">
-              {/* Phone frame — exact 375×667 Chrome DevTools ratio */}
               <div
-                className="relative h-full rounded-[28px] border-[8px] border-zinc-800 bg-black shadow-2xl ring-1 ring-zinc-700/60 overflow-hidden flex flex-col group select-none print:shadow-none print:ring-slate-355"
+                className="relative h-full rounded-[28px] border-[8px] border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-black shadow-2xl ring-1 ring-zinc-200 dark:ring-zinc-700/60 overflow-hidden flex flex-col group select-none print:border-slate-300 print:bg-white print:ring-0"
                 style={{ aspectRatio: '375 / 667' }}
               >
                 {/* Dynamic Island */}
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[30%] h-[4%] bg-black rounded-full z-30" />
 
                 {/* Status Bar */}
-                <div className="h-[8%] w-full bg-black/80 px-3 flex items-center justify-between text-[8px] text-zinc-400 font-semibold z-25 relative shrink-0">
+                <div className="h-[8%] w-full bg-zinc-100 dark:bg-black/80 px-3 flex items-center justify-between text-[8px] text-zinc-800 dark:text-zinc-400 font-semibold z-25 relative shrink-0 print:bg-slate-50 print:text-slate-800">
                   <span>9:41</span>
                   <div className="flex items-center gap-1">
-                    <svg className="h-2 w-2 text-zinc-300" fill="currentColor" viewBox="0 0 24 24"><path d="M2 22h20V2z" /></svg>
-                    <svg className="h-2 w-2 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>
-                    <div className="w-4 h-2 border border-zinc-500 rounded-[2px] p-[1px] flex items-center"><div className="h-full w-3 bg-zinc-300 rounded-[1px]" /></div>
+                    <svg className="h-2 w-2 text-zinc-800 dark:text-zinc-300 print:text-slate-800" fill="currentColor" viewBox="0 0 24 24"><path d="M2 22h20V2z" /></svg>
+                    <svg className="h-2 w-2 text-zinc-800 dark:text-zinc-300 print:text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></svg>
+                    <div className="w-4 h-2 border border-zinc-400 dark:border-zinc-500 rounded-[2px] p-[1px] flex items-center print:border-slate-400"><div className="h-full w-3 bg-zinc-800 dark:bg-zinc-300 rounded-[1px] print:bg-slate-800" /></div>
                   </div>
                 </div>
 
-                {/* Mobile Address Bar (Adds browser spacing) */}
-                <div className="h-[7%] w-full bg-zinc-900 border-b border-zinc-850 px-3 flex items-center justify-center text-[7px] text-zinc-450 font-sans shrink-0">
-                  <div className="bg-zinc-200/50 dark:bg-zinc-950/60 border border-zinc-300 dark:border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-650 dark:text-zinc-400 font-mono flex items-center justify-center gap-1 w-full select-none">
+                {/* Mobile Address Bar */}
+                <div className="h-[7%] w-full bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-850 px-3 flex items-center justify-center shrink-0 print:bg-slate-50 print:border-slate-200">
+                  <div className="bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-900 dark:text-zinc-400 font-mono flex items-center justify-center gap-1 w-full select-none print:border-slate-300 print:text-slate-800">
                     <span className="text-[7px] text-emerald-500">🔒</span>
                     <span className="truncate">{report.url.replace(/^https?:\/\//, '')}</span>
                   </div>
@@ -1195,34 +1194,34 @@ function ReportContent() {
                 </div>
 
                 {/* Home Bar */}
-                <div className="h-[5%] w-full bg-black flex items-center justify-center shrink-0">
-                  <div className="w-[35%] h-1 bg-zinc-600 rounded-full" />
+                <div className="h-[5%] w-full bg-zinc-100 dark:bg-black flex items-center justify-center shrink-0 print:bg-slate-50">
+                  <div className="w-[35%] h-1 bg-zinc-800 dark:bg-zinc-600 rounded-full print:bg-slate-400" />
                 </div>
               </div>
             </div>
           ) : (
             /* Desktop Mockup (Browser landscape frame) */
-            <div className="lg:col-span-5 rounded-3xl border border-zinc-800 bg-zinc-900/10 p-3.5 backdrop-blur-md flex flex-col justify-between relative overflow-hidden group h-[320px] print:col-span-5 print:bg-slate-50 print:border-slate-200 print:h-[280px] print:p-2.5">
+            <div className="lg:col-span-5 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/10 p-3.5 backdrop-blur-md flex flex-col justify-between relative overflow-hidden group h-[320px] print:col-span-5 print:bg-slate-50 print:border-slate-200 print:h-[280px] print:p-2.5">
               {/* Browser Top Window Controls */}
-              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2 mb-2 select-none print:border-slate-200">
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 pb-2 mb-2 select-none print:border-slate-200">
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-rose-500/80 block" />
-                    <span className="w-2 h-2 rounded-full bg-amber-500/80 block" />
-                    <span className="w-2 h-2 rounded-full bg-emerald-500/80 block" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 block" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 block" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 block" />
                   </div>
-                  <div className="hidden sm:flex items-center gap-1.5 pl-2 text-zinc-650 text-[9px] print:hidden">
+                  <div className="hidden sm:flex items-center gap-1.5 pl-2 text-zinc-400 dark:text-zinc-600 text-[9px] print:hidden">
                     <span>←</span>
                     <span>→</span>
                   </div>
                 </div>
 
-                <div className="flex-grow max-w-xs mx-3 bg-zinc-200/50 dark:bg-zinc-950/60 border border-zinc-300 dark:border-zinc-850 px-2.5 py-0.5 rounded-md text-[9px] text-zinc-650 dark:text-zinc-400 font-mono flex items-center justify-between gap-1 select-none print:bg-slate-100 print:border-slate-200">
+                <div className="flex-grow max-w-xs mx-3 bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-850 px-2.5 py-0.5 rounded-md text-[9px] text-zinc-900 dark:text-zinc-400 font-mono flex items-center justify-between gap-1 select-none print:bg-slate-100 print:border-slate-200">
                   <div className="flex items-center gap-1 truncate">
                     <span className="text-[9px] text-emerald-500">🔒</span>
                     <span className="truncate print:text-slate-800">{report.url.replace(/^https?:\/\//, '')}</span>
                   </div>
-                  <span className="text-[9px] text-zinc-650 font-sans cursor-pointer hover:text-zinc-400 print:hidden">↻</span>
+                  <span className="text-[9px] text-zinc-400 font-sans cursor-pointer hover:text-zinc-600 dark:hover:text-zinc-300 print:hidden">↻</span>
                 </div>
 
                 <div className="w-4" />
