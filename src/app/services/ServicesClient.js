@@ -110,7 +110,7 @@ export default function ServicesClient() {
       period: "/once (no account)",
       desc: "Analyze any public page immediately to parse structural HTML and core performance benchmarks.",
       features: [
-        "1 standard ad-hoc SEO crawl",
+        "2 free manual SEO audits",
         "PageSpeed performance check",
         "Critical tags & checklist",
         "Interactive web-view report",
