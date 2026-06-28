@@ -14,6 +14,8 @@ export default function AuditClient({ initialUser = null }) {
   const router = useRouter();
   const initialUrl = searchParams.get("url") || "";
   const initialPlan = searchParams.get("plan") || "";
+  // auditId: opaque DB record ID passed from dashboard to securely load a stored report
+  const auditId = searchParams.get("id") || "";
 
   // Lead capture states
   const [url, setUrl] = useState(initialUrl);
@@ -211,14 +213,55 @@ export default function AuditClient({ initialUser = null }) {
   }, [searchParams]);
 
   useEffect(() => {
+    // Case 1: ?id=LEAD_ID — load stored report from DB by ownership-verified ID
+    if (auditId) {
+      setLeadCaptured(true);
+      (async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/leads/report/${encodeURIComponent(auditId)}`);
+          const data = await res.json();
+          if (res.status === 403) {
+            setError("Access denied: this audit report does not belong to your account.");
+            setLoading(false);
+            return;
+          }
+          if (!res.ok) {
+            setError(data.error || "Failed to load audit report.");
+            setLoading(false);
+            return;
+          }
+          if (data.found && data.report) {
+            // Restore stored snapshot — user sees original audit data
+            setUrl(data.meta?.website || "");
+            setReport(data.report);
+          } else {
+            // No snapshot yet — re-run audit for this URL and save the result
+            const targetUrl = data.meta?.website || "";
+            setUrl(targetUrl);
+            if (targetUrl) {
+              setCurrentLeadId(auditId);
+              await runAudit(targetUrl.startsWith("http") ? targetUrl : "https://" + targetUrl, auditId);
+            } else {
+              setError("Could not determine the website URL for this audit.");
+            }
+          }
+        } catch (err) {
+          setError("Failed to load audit report. Please try again.");
+        } finally {
+          setLoading(false);
+        }
+      })();
+      return;
+    }
+
+    // Case 2: ?url=... — pre-fill URL and check session cache
     if (initialUrl) {
       setUrl(initialUrl);
-      
       let formattedUrl = initialUrl.trim();
       if (!/^https?:\/\//i.test(formattedUrl)) {
         formattedUrl = "https://" + formattedUrl;
       }
-      
       const cachedReport = sessionStorage.getItem(`audit_report_${formattedUrl}`);
       if (cachedReport) {
         try {
@@ -229,7 +272,8 @@ export default function AuditClient({ initialUser = null }) {
         }
       }
     }
-  }, [initialUrl]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auditId, initialUrl]);
 
   useEffect(() => {
     let interval;
@@ -867,6 +911,32 @@ export default function AuditClient({ initialUser = null }) {
         });
       }
 
+      const newReport = {
+        url: formattedUrl,
+        avgScore,
+        grade,
+        engines,
+        scores: { perfScore, seoScore, accessScore, bpScore, validationScore },
+        date: new Date().toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        })
+      };
+
+      // Persist full report JSON + score to the database for this lead record
+      if (activeLeadId && user) {
+        try {
+          await fetch("/api/leads/save-report", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ leadId: activeLeadId, reportJson: newReport, seoScore: avgScore, grade })
+          });
+        } catch (saveErr) {
+          console.error("Failed to persist report snapshot:", saveErr);
+        }
+      }
+
       if (user) {
         // Save to user's dashboard history
         try {
@@ -889,20 +959,13 @@ export default function AuditClient({ initialUser = null }) {
         }
       }
 
-      const newReport = {
-        url: formattedUrl,
-        avgScore,
-        grade,
-        engines,
-        scores: { perfScore, seoScore, accessScore, bpScore, validationScore },
-        date: new Date().toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "numeric"
-        })
-      };
-
       setReport(newReport);
+      if (user && user.subscription_tier === "free") {
+        setUser(prev => prev ? {
+          ...prev,
+          free_audits_run: (prev.free_audits_run || 0) + 1
+        } : null);
+      }
       try {
         sessionStorage.setItem(`audit_report_${formattedUrl}`, JSON.stringify(newReport));
       } catch (e) {
@@ -1274,7 +1337,7 @@ export default function AuditClient({ initialUser = null }) {
               setLeadCaptured(false);
               setUrl("");
             }}
-            className="absolute top-0 left-4 flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-all bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 px-4 py-2 rounded-xl backdrop-blur-md z-10"
+            className="absolute top-0 left-4 flex items-center gap-2 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all bg-zinc-900/50 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-800 px-4 py-2 rounded-xl backdrop-blur-md z-10"
           >
             ← Back
           </button>
@@ -1320,15 +1383,30 @@ export default function AuditClient({ initialUser = null }) {
 
         {/* LEAD CAPTURE / AUDIT RUN FORM */}
         {!leadCaptured && !loading && !report && (
-          <div className={`rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md mx-auto space-y-6 text-left ${
-            user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency") ? "max-w-2xl" : "max-w-lg"
-          }`}>
-            <h3 className="text-lg font-bold text-white">
-              {user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency")
-                ? "Run Technical SEO Audit"
-                : "Enter Details to Run Audit"
-              }
-            </h3>
+          !auditId && user && user.subscription_tier === "free" && user.free_audits_run >= user.free_audits_allowed ? (
+            <div className="max-w-lg mx-auto rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md space-y-6 text-center">
+              <span className="text-4xl block">⚠️</span>
+              <h3 className="text-base font-bold text-white uppercase tracking-wider">Free Audit Limit Reached</h3>
+              <p className="text-xs text-zinc-400 leading-relaxed max-w-sm mx-auto">
+                You have used both of your 2 free registered account audits. Upgrade to our Weekly Plan to get unlimited audits, full core web vitals diagnostic logs, and white-label client PDF exports.
+              </p>
+              <button
+                onClick={() => router.push("/checkout?plan=weekly")}
+                className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                Upgrade to Weekly Plan ($49)
+              </button>
+            </div>
+          ) : (
+            <div className={`rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md mx-auto space-y-6 text-left ${
+              user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency") ? "max-w-2xl" : "max-w-lg"
+            }`}>
+              <h3 className="text-lg font-bold text-white">
+                {user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency")
+                  ? "Run Technical SEO Audit"
+                  : "Enter Details to Run Audit"
+                }
+              </h3>
             
             <form onSubmit={handleLeadSubmit} className="space-y-4">
               {user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency") ? (
@@ -1631,7 +1709,7 @@ export default function AuditClient({ initialUser = null }) {
               )}
             </form>
           </div>
-        )}
+        ))}
 
         {/* Loading Spinner */}
         {loading && (
@@ -1827,7 +1905,7 @@ export default function AuditClient({ initialUser = null }) {
 
                     {/* Mobile Address Bar (Adds browser spacing) */}
                     <div className="h-[7%] w-full bg-zinc-900 border-b border-zinc-850 px-3 flex items-center justify-center text-[7px] text-zinc-450 font-sans shrink-0">
-                      <div className="bg-zinc-950/60 border border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-500 font-mono flex items-center justify-center gap-1 w-full select-none">
+                      <div className="bg-zinc-200/50 dark:bg-zinc-950/60 border border-zinc-300 dark:border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-650 dark:text-zinc-400 font-mono flex items-center justify-center gap-1 w-full select-none">
                         <span className="text-[7px] text-emerald-500">🔒</span>
                         <span className="truncate">{report.url.replace(/^https?:\/\//, '')}</span>
                       </div>
@@ -1876,7 +1954,7 @@ export default function AuditClient({ initialUser = null }) {
                       </div>
                     </div>
 
-                    <div className="flex-grow max-w-xs mx-3 bg-zinc-950/60 border border-zinc-850 px-2.5 py-0.5 rounded-md text-[9px] text-zinc-500 font-mono flex items-center justify-between gap-1 select-none">
+                    <div className="flex-grow max-w-xs mx-3 bg-zinc-200/50 dark:bg-zinc-950/60 border border-zinc-300 dark:border-zinc-850 px-2.5 py-0.5 rounded-md text-[9px] text-zinc-650 dark:text-zinc-400 font-mono flex items-center justify-between gap-1 select-none">
                       <div className="flex items-center gap-1 truncate">
                         <span className="text-[9px] text-emerald-500">🔒</span>
                         <span className="truncate">{report.url.replace(/^https?:\/\//, '')}</span>
@@ -2058,7 +2136,7 @@ export default function AuditClient({ initialUser = null }) {
                   setEmail("");
                   setPhone("");
                 }}
-                className="rounded-xl border border-zinc-850 hover:bg-zinc-900 px-6 py-2.5 text-xs font-semibold text-zinc-400 hover:text-white transition-all cursor-pointer"
+                className="rounded-xl border border-zinc-300 dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-900 px-6 py-2.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all cursor-pointer"
               >
                 ← Audit Another Website
               </button>

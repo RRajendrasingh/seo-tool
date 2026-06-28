@@ -56,6 +56,12 @@ export async function GET() {
       if (tier === "agency") allowedQuota = 5;
     }
     
+    const auditsRunCount = await query(
+      "SELECT COUNT(*) as count FROM leads WHERE email = ?",
+      [decoded.email]
+    );
+    const freeAuditsRun = auditsRunCount[0]?.count || 0;
+    
     return NextResponse.json({ 
       session: {
         id: decoded.id,
@@ -67,7 +73,9 @@ export async function GET() {
         subscription_status: dbDetails.subscription_status || "inactive",
         agency_name: dbDetails.agency_name,
         agency_logo_id: dbDetails.agency_logo_id,
-        allowed_quota: allowedQuota
+        allowed_quota: allowedQuota,
+        free_audits_allowed: 2,
+        free_audits_run: freeAuditsRun
       }
     });
   } catch (err) {

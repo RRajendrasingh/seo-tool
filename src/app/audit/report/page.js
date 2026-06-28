@@ -4,6 +4,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getMockLighthouseResult } from "../../../utils/mockPageSpeed";
+import { getSettings } from "../../../utils/leadsStore";
 
 // Toggle this to true when you want to use mock data for local testing.
 // Can also be controlled via NEXT_PUBLIC_USE_MOCK_DATA="true" in .env.local
@@ -17,7 +18,14 @@ function ReportContent() {
   const urlParam = searchParams.get("url") || "";
 
   // Page States
-  const [isPaid, setIsPaid] = useState(true);
+  const [adminSettings, setAdminSettings] = useState(null);
+  
+  useEffect(() => {
+    setAdminSettings(getSettings());
+  }, []);
+
+  // Page States
+  const [isPaid, setIsPaid] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(true);
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -846,15 +854,15 @@ function ReportContent() {
 
       // Rename document title temporarily for professional PDF filename branding
       const originalTitle = document.title;
-      if (session?.subscription_tier === "agency") {
-        const agencyName = session.agency_name || "Apex Marketing Group";
+      const agencyName = finalAgencyName;
+      if (agencyName) {
         document.title = `${domain} - Technical SEO Audit Report | Prepared by ${agencyName}`;
       } else {
         document.title = `${domain} - Technical SEO Audit Report | SEOIntellect AI`;
       }
-
+ 
       window.print();
-
+ 
       // Restore original title
       setTimeout(() => {
         document.title = originalTitle;
@@ -934,6 +942,25 @@ function ReportContent() {
     });
   });
 
+  const queryAgencyName = searchParams.get("agencyName") || "";
+  const queryAgencyAccent = searchParams.get("agencyAccent") || "";
+  const queryAgencyLogo = searchParams.get("agencyLogo") || "";
+
+  const finalAgencyName = queryAgencyName || adminSettings?.agencyName || session?.agency_name || "";
+  const finalAgencyAccent = queryAgencyAccent || adminSettings?.agencyAccentColor || "indigo";
+  const finalAgencyLogo = queryAgencyLogo || adminSettings?.agencyLogo || "";
+
+  const getAccentColors = (color) => {
+    const map = {
+      indigo: { hex: "#6366f1", rgb: "99, 102, 241" },
+      emerald: { hex: "#10b981", rgb: "16, 185, 129" },
+      violet: { hex: "#8b5cf6", rgb: "139, 92, 246" },
+      rose: { hex: "#f43f5e", rgb: "244, 63, 94" },
+      cyan: { hex: "#06b6d4", rgb: "6, 182, 212" },
+    };
+    return map[color] || map.indigo;
+  };
+
   return (
     <div className="bg-slate-950 text-slate-300 print:text-slate-700 min-h-screen pb-24 print:bg-white print:text-slate-900 print:pb-0 font-sans print:color-adjust-exact">
       
@@ -943,7 +970,7 @@ function ReportContent() {
           @page { size: A4 portrait; margin: 15mm 15mm 15mm 15mm; }
           body { background-color: #ffffff !important; color: #0f172a !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .print:break-inside-avoid { break-inside: avoid !important; page-break-inside: avoid !important; }
+          .print\\:break-inside-avoid { break-inside: avoid !important; page-break-inside: avoid !important; }
           .dark-only { display: none !important; }
           .light-only { display: block !important; }
         }
@@ -952,6 +979,13 @@ function ReportContent() {
       {/* UNIFIED RESPONSIVE HEADER */}
       <div className="max-w-6xl mx-auto items-center sm:items-end justify-between px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row gap-6 sm:gap-0 print:flex print:py-4 print:max-w-none print:px-0 print:w-full">
         <div className="text-center sm:text-left">
+          {finalAgencyLogo ? (
+            <img src={finalAgencyLogo} alt={finalAgencyName || "Agency Logo"} className="h-8 w-auto object-contain mb-3 mx-auto sm:mx-0 max-h-12" />
+          ) : (
+            <div className="text-xs font-black text-indigo-400 print:text-slate-900 mb-3 tracking-widest uppercase">
+              {finalAgencyName || "SEOIntellect AI"}
+            </div>
+          )}
           <div className="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-1 sm:mb-2">Published: {report.date}</div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white print:text-slate-900 mb-1 print:text-slate-900">Executive SEO Performance Dossier</h1>
           <div className="text-xs sm:text-sm text-zinc-400 print:text-slate-600 mt-1 flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
@@ -1128,7 +1162,7 @@ function ReportContent() {
 
                 {/* Mobile Address Bar (Adds browser spacing) */}
                 <div className="h-[7%] w-full bg-zinc-900 border-b border-zinc-850 px-3 flex items-center justify-center text-[7px] text-zinc-450 font-sans shrink-0">
-                  <div className="bg-zinc-950/60 border border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-500 font-mono flex items-center justify-center gap-1 w-full select-none">
+                  <div className="bg-zinc-200/50 dark:bg-zinc-950/60 border border-zinc-300 dark:border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-650 dark:text-zinc-400 font-mono flex items-center justify-center gap-1 w-full select-none">
                     <span className="text-[7px] text-emerald-500">🔒</span>
                     <span className="truncate">{report.url.replace(/^https?:\/\//, '')}</span>
                   </div>
@@ -1177,7 +1211,7 @@ function ReportContent() {
                   </div>
                 </div>
 
-                <div className="flex-grow max-w-xs mx-3 bg-zinc-950/60 border border-zinc-850 px-2.5 py-0.5 rounded-md text-[9px] text-zinc-500 font-mono flex items-center justify-between gap-1 select-none print:bg-slate-100 print:border-slate-200">
+                <div className="flex-grow max-w-xs mx-3 bg-zinc-200/50 dark:bg-zinc-950/60 border border-zinc-300 dark:border-zinc-850 px-2.5 py-0.5 rounded-md text-[9px] text-zinc-650 dark:text-zinc-400 font-mono flex items-center justify-between gap-1 select-none print:bg-slate-100 print:border-slate-200">
                   <div className="flex items-center gap-1 truncate">
                     <span className="text-[9px] text-emerald-500">🔒</span>
                     <span className="truncate print:text-slate-800">{report.url.replace(/^https?:\/\//, '')}</span>
@@ -1212,13 +1246,13 @@ function ReportContent() {
         </div>
 
         {/* AGENCY WHITE-LABEL BRANDING */}
-        {session?.subscription_tier === "agency" && (
+        {(session?.subscription_tier === "agency" || finalAgencyName) && (
           <div className="w-full bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🏢</span>
               <div className="text-left">
                 <div className="font-extrabold text-white print:text-slate-900 uppercase tracking-wider text-[10px]">White-label Client Report</div>
-                <div className="text-zinc-400 print:text-slate-600 text-xs mt-0.5">Prepared by: <span className="font-bold text-indigo-400">{session.agency_name || "Apex Marketing Group"}</span></div>
+                <div className="text-zinc-400 print:text-slate-600 text-xs mt-0.5">Prepared by: <span className="font-bold text-indigo-400">{finalAgencyName || "Apex Marketing Group"}</span></div>
               </div>
             </div>
             <div className="text-right sm:text-right flex flex-col items-center sm:items-end">
@@ -1302,6 +1336,150 @@ function ReportContent() {
           </div>
         </div>
 
+        {/* AEO & GEO CITATION GRADER CARD */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-900/90 to-indigo-950/20 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-6 relative overflow-hidden group text-left geo-card">
+          {/* Subtle glow background */}
+          <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none group-hover:bg-indigo-500/15 transition-all duration-500" />
+          
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10 border-b border-slate-800 pb-4">
+            <div>
+              <span className="inline-flex text-[9px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full mb-1">
+                Generative Engine Optimization (GEO)
+              </span>
+              <h2 className="text-lg font-extrabold text-white">AI Search Readiness & Citation Grader</h2>
+              <p className="text-xs text-zinc-400">Audits page optimizations for citation inclusion inside LLM search responses (ChatGPT, Claude, Perplexity).</p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block">Readiness Score</span>
+                <span className="text-2xl font-black text-white">{getAdjustedEngineScore('aeo-geo')}%</span>
+              </div>
+              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/25">
+                <span className="text-indigo-400 text-xl font-bold font-mono">
+                  {getAdjustedEngineScore('aeo-geo') >= 80 ? 'A' : getAdjustedEngineScore('aeo-geo') >= 60 ? 'B' : 'C'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+            {/* Left Column: Diagnostics Checklist */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">AI Optimization Diagnostics</h3>
+              <div className="space-y-3">
+                {getChecksForStrategy(report.engines['aeo-geo']?.checks || [], deviceStrategy).map((check, idx) => (
+                  <div key={idx} className="flex items-start gap-3 bg-slate-950/40 border border-slate-900 rounded-xl p-3 hover:border-slate-800 transition-colors geo-diagnostic-item">
+                    <div className={`mt-0.5 flex items-center justify-center w-5 h-5 rounded-full shrink-0 ${check.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                      {check.passed ? (
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      ) : (
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-xs font-bold text-slate-200">{check.name}</span>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${check.passed ? "text-emerald-500 bg-emerald-500/5" : "text-rose-500 bg-rose-500/5"}`}>
+                          {check.passed ? "Pass" : "Failed"}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 mt-1 leading-normal">{check.desc}</p>
+                      {!check.passed && (
+                        <div className="mt-2 text-[10px] text-indigo-400 bg-indigo-500/5 px-2.5 py-1.5 rounded border border-indigo-500/10 leading-normal text-left">
+                          <span className="font-bold">Recommendation:</span> {check.fix}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: AI Answer Citation Simulator */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Answer Engine Citation Simulation</h3>
+              <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl overflow-hidden shadow-inner flex flex-col h-full min-h-[300px] geo-chat-container">
+                {/* Chat window top header */}
+                <div className="bg-slate-900/50 border-b border-slate-800/80 px-4 py-3 flex items-center justify-between text-[10px] text-zinc-400 font-mono geo-chat-header">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>perplexity-copilot-v4</span>
+                  </div>
+                  <span className="text-zinc-500">model: search-agent-3.5</span>
+                </div>
+                
+                {/* Chat content area */}
+                <div className="p-4 space-y-4 flex-1">
+                  {/* User query bubble */}
+                  <div className="flex gap-2 items-start justify-end">
+                    <div className="bg-indigo-600/10 border border-indigo-500/20 text-xs text-indigo-200 rounded-2xl px-4 py-2 max-w-[85%] text-left geo-chat-user-bubble">
+                      What services are offered by <span className="font-mono text-cyan-400 font-bold">{report.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span> and is it highly optimized?
+                    </div>
+                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-[10px] text-indigo-400 font-black shrink-0 geo-chat-user-avatar">
+                      U
+                    </div>
+                  </div>
+
+                  {/* AI response bubble */}
+                  <div className="flex gap-2 items-start">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-[10px] text-emerald-400 font-black shrink-0 geo-chat-ai-avatar">
+                      AI
+                    </div>
+                    <div className="space-y-3 max-w-[85%] text-left">
+                      <div className="bg-slate-900/40 border border-slate-800/80 text-xs text-zinc-300 rounded-2xl px-4 py-2.5 leading-relaxed space-y-2 geo-chat-ai-bubble">
+                        {getAdjustedEngineScore('aeo-geo') >= 80 ? (
+                          <>
+                            <p>
+                              Based on search indexing citations, <strong className="text-white">{report.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</strong> is an optimized web platform <a href={report.url} target="_blank" rel="noopener" className="text-emerald-400 font-bold hover:underline select-none">[1]</a>.
+                            </p>
+                            <p>
+                              The site leverages structured data blocks declaring entity configurations and utilizes semantic heading orders which facilitates answer parsing <a href={report.url} target="_blank" rel="noopener" className="text-emerald-400 font-bold hover:underline select-none">[2]</a>. GPTBot and ClaudeBot agents are granted full indexation clearance.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p>
+                              Search engines found <strong className="text-white">{report.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</strong>, but the source displays warning flags for generative indexing <a href={report.url} target="_blank" rel="noopener" className="text-rose-400 font-bold hover:underline select-none">[1]</a>.
+                            </p>
+                            <p>
+                              While crawlable pages are present, it lacks structured entity schema or has search indexing limitations (Robots.txt restrictions or unstructured heading order) that restrict direct factual extraction by search agents <a href={report.url} target="_blank" rel="noopener" className="text-rose-400 font-bold hover:underline select-none">[2]</a>.
+                            </p>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Citation sources bar */}
+                      <div className="flex flex-wrap gap-2 items-center pl-2">
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Sources:</span>
+                        <a href={report.url} target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded px-2 py-0.5 text-[10px] text-zinc-400 hover:text-white transition-colors cursor-pointer select-none geo-chat-source">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="font-mono truncate max-w-[80px]">{report.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}</span>
+                          <span className="text-zinc-650">[1]</span>
+                        </a>
+                        <a href={report.url} target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded px-2 py-0.5 text-[10px] text-zinc-400 hover:text-white transition-colors cursor-pointer select-none geo-chat-source">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="font-mono truncate max-w-[80px]">{report.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}/faq</span>
+                          <span className="text-zinc-650">[2]</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommendation summary alert footer */}
+                <div className="bg-slate-900/40 border-t border-slate-800/80 px-4 py-3 text-[10px] text-indigo-400 leading-normal text-left geo-chat-footer">
+                  {getAdjustedEngineScore('aeo-geo') >= 80 ? (
+                    <span>💡 <strong>Optimization Status: Excellent</strong>. The site is in prime position to be cited for relevant Q&A intent searches.</span>
+                  ) : (
+                    <span>⚠️ <strong>Optimizations needed</strong>: Fix the missing schema markups or robots.txt issues to secure recommendation placement.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
           {/* CRITICAL FIXES */}
@@ -1363,7 +1541,7 @@ function ReportContent() {
                       </div>
                     </button>
                     {openAccordions[key] && (
-                      !isPremium && !["seo-tags", "page-speed"].includes(key) ? (
+                      !isPremium && !["seo-tags", "page-speed", "aeo-geo"].includes(key) ? (
                         <div className="p-4 pt-3 pb-3 bg-slate-950/45 text-center space-y-2 border-t border-slate-800">
                           <span className="text-[10px] text-zinc-400 print:text-slate-600 block font-bold">🔒 Advanced Engine Locked</span>
                           <p className="text-[9px] text-zinc-500 leading-normal">Upgrade to Pro to view payload diagnostics and technical checklist details.</p>
@@ -1405,7 +1583,7 @@ function ReportContent() {
                   <h3 className="text-xs font-bold text-white print:text-slate-900 uppercase tracking-widest">{engine.name} Log</h3>
                   <span className="text-[10px] font-bold text-indigo-400">Category Rating: {adjustedScore}%</span>
                 </div>
-                {!isPremium && !["seo-tags", "page-speed"].includes(key) ? (
+                {!isPremium && !["seo-tags", "page-speed", "aeo-geo"].includes(key) ? (
                   <div className="bg-slate-900 print:bg-slate-50 border border-slate-800 print:border-slate-200 rounded-xl p-8 text-center space-y-3 relative overflow-hidden min-h-[160px] flex flex-col items-center justify-center">
                     <span className="text-xl">🔒</span>
                     <h4 className="font-bold text-xs text-white print:text-slate-900 uppercase tracking-wider">{engine.name} Details Locked</h4>

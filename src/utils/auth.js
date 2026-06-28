@@ -1,7 +1,11 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 
-const SECRET = process.env.JWT_SECRET || "fallback_secret_key_123456789";
+const SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === "production"
+    ? (() => { throw new Error("JWT_SECRET environment variable is required in production"); })()
+    : "fallback_secret_key_123456789"
+);
 
 /**
  * Hashes a plain-text password using bcryptjs with a cost factor of 12.
@@ -66,7 +70,10 @@ export function verifyToken(token) {
     .update(`${headerBase64}.${payloadBase64}`)
     .digest("base64url");
     
-  if (signature !== expectedSignature) {
+  const sigBuf = Buffer.from(signature, "base64url");
+  const expectedSigBuf = Buffer.from(expectedSignature, "base64url");
+  
+  if (sigBuf.length !== expectedSigBuf.length || !crypto.timingSafeEqual(sigBuf, expectedSigBuf)) {
     return null;
   }
   

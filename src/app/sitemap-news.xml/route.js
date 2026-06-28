@@ -6,7 +6,16 @@ export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://seointellect-ai.vercel.app";
   const siteUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 
-  const posts = await getAllPosts();
+  let posts = [];
+  try {
+    posts = await getAllPosts();
+    if (!Array.isArray(posts)) {
+      posts = [];
+    }
+  } catch (e) {
+    console.error("Failed to get posts for news sitemap:", e);
+  }
+
   const urls = [
     { loc: `${siteUrl}/news/`, changefreq: "daily", priority: "0.8" },
     ...posts.map((post) => ({

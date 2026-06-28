@@ -136,13 +136,21 @@ export async function POST(req) {
     cleanWebsite = cleanWebsite.replace(/^(https?:\/\/)?(www\.)?/, "");
     cleanWebsite = cleanWebsite.split("/")[0];
 
-    // Create a Closed Won lead for consistency in local checkout simulation
+    // Create or update a Closed Won lead for consistency in local checkout simulation
     const amountPaid = plan === "multi" ? 59.00 : plan === "weekly" ? 49.00 : plan === "agency" ? 99.00 : 29.00;
-    const leadId = "lead_" + Date.now();
-    await query(
-      "INSERT INTO leads (id, name, email, phone, website, date, seoScore, grade, status, packageRequest, amountPaid, notes) VALUES (?, ?, ?, ?, ?, ?, 0, 'Pending', 'Closed Won', ?, ?, ?)",
-      [leadId, name || "Client", email, "Not Provided", cleanWebsite, new Date().toISOString(), `Premium ${plan}`, amountPaid, `Local checkout simulation`]
-    );
+    const existingLeads = await query("SELECT id FROM leads WHERE email = ? AND website = ?", [email, cleanWebsite]);
+    if (existingLeads && existingLeads.length > 0) {
+      await query(
+        "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ?, notes = ?, date = ? WHERE id = ?",
+        [`Premium ${plan}`, amountPaid, `Local checkout simulation (Updated)`, new Date().toISOString(), existingLeads[0].id]
+      );
+    } else {
+      const leadId = "lead_" + Date.now();
+      await query(
+        "INSERT INTO leads (id, name, email, phone, website, date, seoScore, grade, status, packageRequest, amountPaid, notes) VALUES (?, ?, ?, ?, ?, ?, 0, 'Pending', 'Closed Won', ?, ?, ?)",
+        [leadId, name || "Client", email, "Not Provided", cleanWebsite, new Date().toISOString(), `Premium ${plan}`, amountPaid, `Local checkout simulation`]
+      );
+    }
 
     // Update user sub details or purchases in DB
     if (plan === "weekly" || plan === "agency") {

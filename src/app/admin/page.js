@@ -1352,10 +1352,10 @@ export default function AdminDashboard() {
 
         {/* ==================== TAB 3: SETTINGS PANEL ==================== */}
         {activeTab === "settings" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
+          <div className="max-w-3xl mx-auto space-y-6 text-left w-full">
             
-            {/* Form settings configuration (8 columns) */}
-            <div className="lg:col-span-8 rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
+            {/* Form settings configuration (full width centered) */}
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
               <div className="space-y-1.5">
                 <h2 className="text-lg font-bold text-white">Platform Settings & Integrations</h2>
                 <p className="text-xs text-zinc-550 leading-relaxed">
@@ -1431,7 +1431,7 @@ export default function AdminDashboard() {
                           {webhookTesting ? "Testing..." : "Test"}
                         </button>
                       </div>
-                      <p className="text-[9px] text-zinc-600 leading-relaxed mt-1">
+                      <p className="text-[9px] text-zinc-650 leading-relaxed mt-1">
                         Sends a test payload to Webhook. Suitable for Zapier, Make, Discord Webhooks, or custom REST APIs.
                       </p>
                       {webhookTestResult && (
@@ -1533,7 +1533,7 @@ export default function AdminDashboard() {
                     </p>
                   )}
                   {settingsError && (
-                    <p className="text-xxs text-rose-400 font-medium bg-rose-500/5 border border-rose-500/10 py-2.5 rounded-lg text-center">
+                    <p className="text-xxs text-rose-450 font-medium bg-rose-500/5 border border-rose-500/10 py-2.5 rounded-lg text-center">
                       ⚠️ {settingsError}
                     </p>
                   )}
@@ -1547,8 +1547,6 @@ export default function AdminDashboard() {
 
               </form>
             </div>
-
-
 
           </div>
         )}

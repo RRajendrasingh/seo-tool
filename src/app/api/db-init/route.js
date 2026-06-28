@@ -103,6 +103,12 @@ export async function GET() {
       await query("ALTER TABLE posts ADD COLUMN status VARCHAR(20) DEFAULT 'published'");
     } catch { /* column already exists */ }
 
+    // 4b. Add report_data column to leads (stores full audit JSON snapshot — safe migration)
+    try {
+      await query("ALTER TABLE leads ADD COLUMN report_data LONGTEXT");
+    } catch { /* column already exists */ }
+
+
     // 5. Create rss_seen table for Auto-Draft deduplication
     await query(`
       CREATE TABLE IF NOT EXISTS rss_seen (

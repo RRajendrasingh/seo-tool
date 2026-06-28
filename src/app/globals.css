@@ -545,4 +545,113 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
   color: #334155 !important;
 }
 
+/* ── Blueprint Card Light Mode Contrast & Vision Improvements ── */
+.light .blueprint-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05) !important;
+}
+
+.light .blueprint-card:hover {
+  background-color: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.3) !important; /* Elegant indigo accent border on hover */
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.08), 0 8px 10px -6px rgba(99, 102, 241, 0.08) !important;
+}
+
+/* Watermark step numbers in light mode */
+.light .blueprint-number {
+  color: rgba(15, 23, 42, 0.12) !important; /* Subtle but clear dark slate watermark */
+}
+
+.light .blueprint-card:hover .blueprint-number {
+  color: rgba(79, 70, 229, 0.18) !important; /* Premium indigo tint on hover */
+}
+
+/* Description text visibility improvements */
+.light .blueprint-card .text-slate-500 {
+  color: #475569 !important; /* High contrast dark gray body text */
+  transition: color 0.2s ease;
+}
+
+.light .blueprint-card:hover .text-slate-500 {
+  color: #1e293b !important; /* Darkens slightly on hover for active readability */
+}
+
+/* ── GEO Citation Grader Card Light Mode Color & Contrast Fixes ── */
+.light .geo-card {
+  background-image: none !important; /* Disable the dark linear-gradient */
+  background-color: #ffffff !important; /* Clean premium white card background */
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.04), 0 4px 6px -4px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Diagnostics item list items in light mode */
+.light .geo-diagnostic-item {
+  background-color: #f8fafc !important; /* Soft light gray */
+  border-color: #e2e8f0 !important;
+}
+.light .geo-diagnostic-item:hover {
+  border-color: #cbd5e1 !important;
+}
+
+/* Chat simulator container in light mode */
+.light .geo-chat-container {
+  background-color: #f8fafc !important; /* Chat frame background */
+  border-color: #e2e8f0 !important;
+}
+
+/* Chat top header in light mode */
+.light .geo-chat-header {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+/* User query bubble in light mode */
+.light .geo-chat-user-bubble {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  color: #4f46e5 !important;
+}
+
+/* User avatar in light mode */
+.light .geo-chat-user-avatar {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  color: #4f46e5 !important;
+}
+
+/* AI avatar in light mode */
+.light .geo-chat-ai-avatar {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+  color: #059669 !important;
+}
+
+/* AI response bubble in light mode */
+.light .geo-chat-ai-bubble {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+/* Sources badges in light mode */
+.light .geo-chat-source {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+.light .geo-chat-source:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Chat simulator footer in light mode */
+.light .geo-chat-footer {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #4f46e5 !important;
+}
+
 

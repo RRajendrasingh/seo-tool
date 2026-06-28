@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { citiesDb } from "@/data/cities";
 import GoogleSerpPreview from "./GoogleSerpPreview";
 import InteractiveEstimator from "./InteractiveEstimator";
+import GeoGridSimulator from "./GeoGridSimulator";
 
 // Generates static paths for all cities during build time (Next.js Static Export requirement)
 export async function generateStaticParams() {
@@ -126,11 +127,38 @@ export default async function LocationPage({ params }) {
     }
   };
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": `How long does it take to rank locally in ${city.name}?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Local SEO generally yields results faster than generic global SEO. For low to medium competition terms, you may see positive movements in 4-8 weeks. Highly competitive search terms in ${city.name} typically take 3-6 months of technical optimization and continuous local authority building.`
+        }
+      },
+      {
+        "@type": "Question",
+        "name": `Do you optimize Google Business Profiles for ${city.name} clients?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Yes. Google Business Profile optimization is the cornerstone of local search. We optimize category selection, business descriptions, geo-tagged photos, reviews templates, and locally structured schema maps to boost your proximity signals.`
+        }
+      }
+    ]
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <div className="bg-zinc-950 min-h-screen relative isolate overflow-x-hidden text-left pb-12">
         {/* Dynamic ambient background glow */}
@@ -251,6 +279,11 @@ export default async function LocationPage({ params }) {
         {/* Local SEO Opportunity Calculator */}
         <div className="mx-auto max-w-5xl px-6 py-6 relative z-10">
           <InteractiveEstimator cityName={city.name} />
+        </div>
+
+        {/* Google Map Proximity Geo-Grid Simulator */}
+        <div className="mx-auto max-w-5xl px-6 py-6 relative z-10">
+          <GeoGridSimulator cityName={city.name} />
         </div>
 
         {/* Core Local Strategy Details */}

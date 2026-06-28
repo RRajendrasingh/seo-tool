@@ -133,14 +133,14 @@ export default function Navbar({ initialSession = null }) {
             {session ? (
               <button
                 onClick={handleLogout}
-                className="text-sm font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
               >
                 Sign Out
               </button>
             ) : (
               <Link
                 href="/login"
-                className="text-sm font-semibold text-slate-400 hover:text-white transition-colors"
+                className="text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
               >
                 Sign In
               </Link>
@@ -248,7 +248,11 @@ export default function Navbar({ initialSession = null }) {
                   setIsOpen(false);
                   handleLogout();
                 }}
-                className="flex w-full items-center justify-center rounded-xl border border-slate-700 bg-slate-800/40 py-2 text-base font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+                className={`flex w-full items-center justify-center rounded-xl border py-2 text-base font-semibold transition-colors cursor-pointer ${
+                  theme === "dark"
+                    ? "border-slate-700 bg-slate-800/40 text-slate-300 hover:text-white"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                }`}
               >
                 Sign Out
               </button>

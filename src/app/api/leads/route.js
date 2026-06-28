@@ -33,6 +33,22 @@ export async function POST(request) {
       return NextResponse.json({ error: "Email and website are required" }, { status: 400 });
     }
 
+    // Check if the user is a registered free user and enforce their 2-audit limit
+    const userQuery = await query("SELECT subscription_tier FROM users WHERE email = ?", [leadData.email.trim()]);
+    if (userQuery && userQuery.length > 0) {
+      const tier = userQuery[0].subscription_tier || "free";
+      if (tier === "free") {
+        const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ?", [leadData.email.trim()]);
+        const auditsCount = leadCountResult[0]?.count || 0;
+        if (auditsCount >= 2) {
+          return NextResponse.json(
+            { error: "You have reached the limit of 2 free audits for your account. Please upgrade to run more audits." },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
     // Enforce database limit
     const countResult = await query("SELECT COUNT(*) as count FROM leads");
     const leadCount = countResult[0]?.count || 0;

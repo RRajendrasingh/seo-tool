@@ -57,6 +57,12 @@ export default async function AuditPage() {
           if (tier === "agency") allowedQuota = 5;
         }
 
+        const auditsRunCount = await query(
+          "SELECT COUNT(*) as count FROM leads WHERE email = ?",
+          [decoded.email]
+        );
+        const freeAuditsRun = auditsRunCount[0]?.count || 0;
+
         initialUser = {
           id: decoded.id,
           email: decoded.email,
@@ -67,7 +73,9 @@ export default async function AuditPage() {
           subscription_status: dbDetails.subscription_status || "inactive",
           agency_name: dbDetails.agency_name,
           agency_logo_id: dbDetails.agency_logo_id,
-          allowed_quota: allowedQuota
+          allowed_quota: allowedQuota,
+          free_audits_allowed: 2,
+          free_audits_run: freeAuditsRun
         };
       } catch (err) {
         console.error("DB Error fetching user session:", err);
@@ -75,7 +83,9 @@ export default async function AuditPage() {
         initialUser = {
           ...decoded,
           subscription_tier: "free",
-          allowed_quota: 0
+          allowed_quota: 0,
+          free_audits_allowed: 2,
+          free_audits_run: 0
         };
       }
     }

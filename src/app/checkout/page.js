@@ -260,19 +260,19 @@ function CheckoutContent() {
                   <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
                     Account Information
                   </h3>
-                  <div className="flex items-center gap-3 bg-zinc-900/50 p-4 rounded-xl border border-zinc-850">
-                    <div className="h-10 w-10 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-sm font-bold text-violet-400">
+                  <div className="flex items-center gap-3 bg-zinc-900/50 p-4 rounded-xl border border-zinc-850 overflow-hidden">
+                    <div className="h-10 w-10 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-sm font-bold text-violet-400 flex-shrink-0">
                       {user.name ? user.name[0].toUpperCase() : "U"}
                     </div>
-                    <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-white block font-sans">
+                    <div className="space-y-0.5 min-w-0 flex-1">
+                      <span className="text-xs font-bold text-white block font-sans truncate">
                         {user.name || "Logged In User"}
                       </span>
-                      <span className="text-[10px] text-zinc-400 font-mono block">
+                      <span className="text-[10px] text-zinc-400 font-mono block truncate" title={user.email}>
                         {user.email}
                       </span>
                     </div>
-                    <span className="ml-auto text-[9px] uppercase tracking-wider font-bold bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded border border-violet-500/20">
+                    <span className="ml-auto text-[9px] uppercase tracking-wider font-bold bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded border border-violet-500/20 flex-shrink-0">
                       Active Account
                     </span>
                   </div>

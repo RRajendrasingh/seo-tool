@@ -8,19 +8,8 @@ export default function DashboardClient({ user: initialUser }) {
   const [user, setUser] = useState(initialUser);
 
   // States
-  const [monitors, setMonitors] = useState([]);
-  const [loadingMonitors, setLoadingMonitors] = useState(true);
-  const [newDomain, setNewDomain] = useState("");
-  const [cmsPlatform, setCmsPlatform] = useState("");
-  const [businessNiche, setBusinessNiche] = useState("");
-  const [targetAudience, setTargetAudience] = useState("");
-  const [addError, setAddError] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
-
-  // Selected monitor for history graph
-  const [selectedMonitor, setSelectedMonitor] = useState(null);
-  const [historyData, setHistoryData] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [audits, setAudits] = useState([]);
+  const [loadingAudits, setLoadingAudits] = useState(true);
 
   // Agency branding states
   const [agencyName, setAgencyName] = useState(user.agency_name || "");
@@ -33,7 +22,7 @@ export default function DashboardClient({ user: initialUser }) {
   const [showPortalNotice, setShowPortalNotice] = useState(false);
 
   useEffect(() => {
-    fetchMonitors();
+    fetchAudits();
     fetchLatestSession();
 
     // Check for simulated portal redirect
@@ -44,7 +33,6 @@ export default function DashboardClient({ user: initialUser }) {
       }, 0);
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchLatestSession() {
@@ -63,102 +51,20 @@ export default function DashboardClient({ user: initialUser }) {
     }
   }
 
-  async function fetchHistory(domain) {
-    if (!domain) return;
-    setLoadingHistory(true);
+  async function fetchAudits() {
+    setLoadingAudits(true);
     try {
-      const res = await fetch(`/api/monitors/history?domain=${encodeURIComponent(domain)}`);
+      const res = await fetch("/api/leads/user");
       const data = await res.json();
-      if (data.history) {
-        setHistoryData(data.history);
-      } else {
-        setHistoryData([]);
+      if (data.audits) {
+        setAudits(data.audits);
       }
     } catch (e) {
-      console.error("Failed to load history:", e);
-      setHistoryData([]);
+      console.error("Failed to load user audits:", e);
     } finally {
-      setLoadingHistory(false);
+      setLoadingAudits(false);
     }
   }
-
-  async function fetchMonitors() {
-    setLoadingMonitors(true);
-    try {
-      const res = await fetch("/api/monitors");
-      const data = await res.json();
-      if (data.monitors) {
-        setMonitors(data.monitors);
-        // Default select first monitor if not set yet
-        if (data.monitors.length > 0) {
-          setSelectedMonitor((prev) => {
-            const stillExists = data.monitors.find(m => m.id === prev?.id);
-            const selection = stillExists || data.monitors[0];
-            fetchHistory(selection.domain);
-            return selection;
-          });
-        } else {
-          setSelectedMonitor(null);
-          setHistoryData([]);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to load monitors:", e);
-    } finally {
-      setLoadingMonitors(false);
-    }
-  }
-
-  const handleAddMonitor = async (e) => {
-    e.preventDefault();
-    setAddError("");
-    setIsAdding(true);
-
-    try {
-      const res = await fetch("/api/monitors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          domain: newDomain,
-          cmsPlatform,
-          businessNiche,
-          targetAudience
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to add domain monitor.");
-      }
-
-      setNewDomain("");
-      setCmsPlatform("");
-      setBusinessNiche("");
-      setTargetAudience("");
-      await fetchMonitors();
-    } catch (err) {
-      setAddError(err.message);
-    } finally {
-      setIsAdding(false);
-    }
-  };
-
-  const handleDeleteMonitor = async (id) => {
-    if (!confirm("Are you sure you want to remove this domain monitor?")) return;
-    try {
-      const res = await fetch("/api/monitors", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      });
-      if (res.ok) {
-        await fetchMonitors();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const handleStripePortal = async () => {
     try {
@@ -235,38 +141,7 @@ export default function DashboardClient({ user: initialUser }) {
     }
   };
 
-  const getCoordinates = () => {
-    const dataPoints = historyData.length > 0 ? historyData : [
-      { performance_score: 88, scanned_at: "2026-05-25" },
-      { performance_score: 91, scanned_at: "2026-06-01" },
-      { performance_score: 95, scanned_at: "2026-06-08" },
-      { performance_score: 96, scanned_at: "2026-06-15" }
-    ];
-
-    const N = dataPoints.length;
-    return dataPoints.map((pt, i) => {
-      const score = pt.performance_score || 80;
-      const x = N > 1 ? 50 + i * (300 / (N - 1)) : 200;
-      const y = 140 - ((score / 100) * 110);
-      
-      let dateLabel = "Scan";
-      if (pt.scanned_at) {
-        const dateObj = new Date(pt.scanned_at);
-        const options = { month: 'short', day: '2-digit' };
-        dateLabel = dateObj.toLocaleDateString('en-US', options);
-      }
-
-      return { x, y, score, dateLabel };
-    });
-  };
-
-  const points = getCoordinates();
-  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-  const areaD = points.length > 0 
-    ? `${pathD} L ${points[points.length - 1].x.toFixed(1)} 130 L ${points[0].x.toFixed(1)} 130 Z`
-    : "";
-
-  const isPaid = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || (user.allowed_quota && user.allowed_quota > 0);
+  const isPaid = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || Boolean(user.allowed_quota && user.allowed_quota > 0);
 
   return (
     <div className="bg-slate-950 min-h-screen text-slate-300 transition-colors duration-300">
@@ -318,268 +193,164 @@ export default function DashboardClient({ user: initialUser }) {
 
         {/* Dashboard Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          {/* Left/Main Column: Active Monitors & History (2 cols) */}
+           {/* Left/Main Column: Audit History (2 cols) */}
           <div className="md:col-span-2 space-y-8">
             
-            {/* Domain Monitors Card */}
+            {/* Quota Progress Bar for Free Users */}
+            {user && user.subscription_tier === "free" && (
+              <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Manual Audits Used</span>
+                    <p className="text-xs font-black text-slate-200">
+                      {user.free_audits_run || 0} of {user.free_audits_allowed || 2} reports generated
+                    </p>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    (user.free_audits_run || 0) >= (user.free_audits_allowed || 2)
+                      ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                      : "bg-violet-500/10 text-violet-400 border border-violet-500/20"
+                  }`}>
+                    {(user.free_audits_run || 0) >= (user.free_audits_allowed || 2) ? "Limit Reached" : "Active Quota"}
+                  </span>
+                </div>
+                
+                <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ease-out ${
+                      (user.free_audits_run || 0) >= (user.free_audits_allowed || 2)
+                        ? "bg-gradient-to-r from-rose-500 to-amber-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
+                        : "bg-gradient-to-r from-violet-500 to-cyan-400 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
+                    }`}
+                    style={{ width: `${Math.min(100, ((user.free_audits_run || 0) / (user.free_audits_allowed || 2)) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Audit History Card */}
             <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-6 text-left">
               <div className="flex justify-between items-center pb-3 border-b border-slate-800">
                 <div>
-                  <h2 className="text-sm font-bold text-slate-200">Active Domain Monitors</h2>
+                  <h2 className="text-sm font-bold text-slate-200">Your Audit History</h2>
                   <p className="text-[10px] text-slate-500">
                     Tier: <span className="capitalize font-bold text-violet-400">{user.subscription_tier}</span>
-                    {isPaid && ` (Quota: ${monitors.length} / ${user.allowed_quota || (user.subscription_tier === "agency" ? 5 : 1)})`}
                   </p>
                 </div>
-                {isPaid && (
-                  <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-400 border border-emerald-500/20">
-                    Scans Active
-                  </span>
-                )}
+                <button
+                  onClick={() => router.push("/audit")}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0"
+                >
+                  Run New Audit
+                </button>
               </div>
 
               {/* Loader */}
-              {loadingMonitors ? (
+              {loadingAudits ? (
                 <div className="py-8 text-center text-xxs animate-pulse text-slate-500">
-                  Retrieving monitored records...
+                  Retrieving audited records...
                 </div>
-              ) : monitors.length === 0 ? (
+              ) : audits.length === 0 ? (
                 <div className="py-8 text-center space-y-3 bg-slate-950/20 rounded-2xl border border-dashed border-slate-800 p-6">
-                  <p className="text-xxs text-slate-500">No active domain monitors registered yet.</p>
-                  {!isPaid && (
-                    <button
-                      onClick={() => router.push("/#pricing")}
-                      className="rounded-xl bg-violet-600 px-4 py-2 text-xxs font-bold text-white hover:bg-violet-500 transition-colors"
-                    >
-                      Upgrade to Start Monitoring
-                    </button>
-                  )}
+                  <p className="text-xxs text-slate-500">No audits found in your history.</p>
+                  <button
+                    onClick={() => router.push("/audit")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0"
+                  >
+                    Run Your First Audit
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {monitors.map((mon) => {
-                    const isSelected = selectedMonitor?.id === mon.id;
+                  {audits.map((audit) => {
+                    // Route by opaque DB record ID (not URL) to prevent URL manipulation.
+                    // Server will verify ownership before returning the stored report.
+                    const isAuditPaid = audit.packageRequest && audit.packageRequest !== "Free Audit";
+                    const viewUrl = (isPaid || isAuditPaid)
+                      ? `/audit/report?url=${encodeURIComponent(audit.website)}`
+                      : `/audit?id=${encodeURIComponent(audit.id)}`;
                     return (
-                      <div
-                        key={mon.id}
-                        onClick={() => {
-                          setSelectedMonitor(mon);
-                          fetchHistory(mon.domain);
-                        }}
-                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl card-inner border gap-4 cursor-pointer transition-all ${
-                          isSelected
-                            ? "border-violet-500/50 bg-violet-950/10 shadow-lg"
-                            : "border-slate-800 hover:border-slate-700"
-                        }`}
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap text-left">
-                            <h4 className="text-xs font-bold text-primary truncate max-w-[240px]">{mon.domain}</h4>
-                            <span className="bg-teal-500/10 text-teal-400 border border-teal-500/20 text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
-                              Monitor Project
-                            </span>
-                            {isSelected && (
-                              <span className="bg-violet-500/20 text-violet-300 border border-violet-500/30 text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
-                                Selected
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2 text-[9px] text-slate-500 font-semibold uppercase tracking-wider items-center">
-                            <span>Auto-scan: Monday</span>
-                            <span>•</span>
-                            <span className="text-violet-400 bg-violet-500/5 px-1.5 py-0.5 rounded border border-violet-500/10">{mon.cms_platform || "Custom"}</span>
-                            <span>•</span>
-                            <span className="text-cyan-400 bg-cyan-500/5 px-1.5 py-0.5 rounded border border-cyan-500/10">{mon.business_niche || "Niche"}</span>
-                          </div>
+                    <div
+                      key={audit.id}
+                      onClick={() => router.push(viewUrl)}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl card-inner border border-slate-800 hover:border-slate-700 cursor-pointer transition-all hover:bg-slate-800/10 gap-4"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap text-left">
+                          {/* Globe icon — professional SVG */}
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                          </svg>
+                          <h4 className="text-xs font-bold text-primary truncate max-w-[240px]">{audit.website}</h4>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider border ${
+                            isAuditPaid
+                              ? "bg-violet-500/10 text-violet-400 border-violet-500/20"
+                              : "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                          }`}>
+                            {audit.packageRequest || "Free Audit"}
+                          </span>
                         </div>
-                        
-                        <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => router.push(`/audit/report?url=${encodeURIComponent(mon.domain)}`)}
-                            className="rounded-xl bg-slate-800 hover:bg-slate-700 px-3 py-2 text-[10px] font-bold text-slate-200 transition-colors border border-slate-800 cursor-pointer"
-                          >
-                            View Report
-                          </button>
-                          <button
-                            onClick={() => handleDeleteMonitor(mon.id)}
-                            className="rounded-xl bg-red-950/25 border border-red-500/20 hover:bg-red-950/50 px-3 py-2 text-[10px] font-bold text-red-400 transition-colors cursor-pointer"
-                          >
-                            Remove
-                          </button>
+                        <div className="flex flex-wrap gap-2 text-[9px] text-slate-500 font-semibold uppercase tracking-wider items-center">
+                          <span>Audited: {new Date(audit.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</span>
+                          {audit.seoScore > 0 && (
+                            <>
+                              <span>•</span>
+                              <span className="text-violet-400 bg-violet-500/5 px-1.5 py-0.5 rounded border border-violet-500/10">Score: {audit.seoScore}/100</span>
+                            </>
+                          )}
                         </div>
                       </div>
+                      
+                      <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); router.push(viewUrl); }}
+                          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold transition-all duration-200 border cursor-pointer ${
+                            isAuditPaid || isPaid
+                              ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30 hover:-translate-y-0.5 border-0"
+                              : "bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 shadow-sm"
+                          }`}
+                        >
+                          {isAuditPaid || isPaid ? (
+                            <>
+                              {/* Document icon */}
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                              </svg>
+                              View PDF Report
+                            </>
+                          ) : (
+                            <>
+                              {/* Bar chart / audit icon */}
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                              </svg>
+                              View Audit
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
                     );
                   })}
                 </div>
               )}
-
-              {/* Add Monitor Form (Paid Tiers Only) */}
-              {isPaid && (
-                <form onSubmit={handleAddMonitor} className="pt-4 border-t border-slate-800/60 space-y-4">
-                  <h3 className="text-xs font-bold text-slate-300">Register New Domain Monitor</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Domain URL</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. mysite.com"
-                        value={newDomain}
-                        onChange={(e) => setNewDomain(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 placeholder-slate-700 focus:outline-none focus:border-violet-500"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">CMS Platform</label>
-                      <select
-                        value={cmsPlatform}
-                        onChange={(e) => setCmsPlatform(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-400 focus:outline-none focus:border-violet-500"
-                      >
-                        <option value="">Select Platform</option>
-                        <option value="wordpress">WordPress</option>
-                        <option value="shopify">Shopify</option>
-                        <option value="webflow">Webflow</option>
-                        <option value="nextjs">Next.js</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Business Niche</label>
-                      <select
-                        value={businessNiche}
-                        onChange={(e) => setBusinessNiche(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-400 focus:outline-none focus:border-violet-500"
-                      >
-                        <option value="">Select Niche</option>
-                        <option value="ecommerce">E-commerce</option>
-                        <option value="local">Local Business</option>
-                        <option value="saas">SaaS / B2B</option>
-                        <option value="blog">Blog / Publisher</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Target Location</label>
-                      <select
-                        value={targetAudience}
-                        onChange={(e) => setTargetAudience(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-400 focus:outline-none focus:border-violet-500"
-                      >
-                        <option value="">Select Scope</option>
-                        <option value="local">Local City</option>
-                        <option value="national">National Market</option>
-                        <option value="global">International</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {addError && (
-                    <p className="text-xxs font-semibold text-rose-500">⚠️ {addError}</p>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isAdding}
-                    className="rounded-xl bg-violet-600 px-5 py-2.5 text-xxs font-bold uppercase tracking-wider text-white hover:bg-violet-500 shadow-md transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {isAdding ? "Adding Domain..." : "Register Monitor"}
-                  </button>
-                </form>
-              )}
-            </div>
-
-            {/* Performance Audit Trend History Chart */}
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
-              <h2 className="text-sm font-bold text-slate-200">Historical SEO Trends</h2>
-              <p className="text-xxs text-slate-500 leading-relaxed max-w-lg">
-                Visual index representing automatic audit score curves logged every Monday. (Visualizing active domain: <span className="font-bold text-cyan-400">{selectedMonitor?.domain || "localhost:3000"}</span>).
-              </p>
-
-              {/* Premium Vector Chart Visualizer */}
-              <div className="pt-4 h-48 w-full flex items-center justify-center relative bg-slate-950/35 rounded-2xl border border-slate-900 p-2.5">
-                {loadingHistory && (
-                  <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center rounded-2xl z-10">
-                    <span className="text-xxs font-semibold text-slate-400 animate-pulse">Loading monitor history...</span>
-                  </div>
-                )}
-                <svg viewBox="0 0 400 150" className="w-full h-full">
-                  {/* Grid Lines */}
-                  <line x1="0" y1="20" x2="400" y2="20" stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4" />
-                  <line x1="0" y1="60" x2="400" y2="60" stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4" />
-                  <line x1="0" y1="100" x2="400" y2="100" stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4" />
-
-                  {/* Gradient Area Fill under trend curves */}
-                  <defs>
-                    <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
-                    </linearGradient>
-                  </defs>
-                  
-                  {/* Chart Path */}
-                  {points.length > 0 && (
-                    <>
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke="#818cf8"
-                        strokeWidth="3.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d={areaD}
-                        fill="url(#chartGlow)"
-                      />
-                    </>
-                  )}
-
-                  {/* Dynamic Data Circles, Text values, and Label dates */}
-                  {points.map((p, idx) => (
-                    <g key={idx}>
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r="4.5"
-                        fill="#4f46e5"
-                        stroke="#ffffff"
-                        strokeWidth="1.5"
-                      />
-                      <text
-                        x={p.x}
-                        y={p.y - 12}
-                        textAnchor="middle"
-                        fill={idx === points.length - 1 ? "#818cf8" : "#64748b"}
-                        className={`text-[9px] font-mono font-bold ${idx === points.length - 1 ? "text-[10px] font-black" : ""}`}
-                      >
-                        {p.score}/100
-                      </text>
-                      <text
-                        x={p.x}
-                        y="142"
-                        textAnchor="middle"
-                        fill="#475569"
-                        className="text-[8px] font-bold"
-                      >
-                        {p.dateLabel}
-                      </text>
-                    </g>
-                  ))}
-                </svg>
-              </div>
             </div>
 
           </div>
 
           {/* Right Column: Settings, Customizer, and Alerts (1 col) */}
           <div className="space-y-8">
-            
+
+
+
             {/* White-Label Branding settings panel (Agency License Only) */}
             {user.subscription_tier === "agency" && (
               <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
@@ -660,11 +431,61 @@ export default function DashboardClient({ user: initialUser }) {
 
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 py-2.5 text-xxs font-bold uppercase tracking-wider text-white shadow-md transition-colors cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 w-full py-2.5 text-xs font-bold text-white uppercase tracking-wider shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0"
                   >
                     Save Branding Settings
                   </button>
                 </form>
+              </div>
+            )}
+
+            {/* Lead Capture Embed Widget (Agency License Only) */}
+            {user.subscription_tier === "agency" && (
+              <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
+                <h2 className="text-sm font-bold text-slate-200">Lead Capture Embed Widget</h2>
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  Embed this lead magnet on your agency&apos;s website. Visitors can run instant scans, and their lead details will register directly inside your dashboard.
+                </p>
+                
+                <div className="space-y-3 pt-2">
+                  <label className="block text-[9px] text-slate-500 uppercase tracking-wider font-bold">
+                    Your Copy-Paste Iframe HTML
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      readOnly
+                      rows={5}
+                      value={(() => {
+                        const domain = typeof window !== "undefined" ? window.location.origin : "https://seointellect-ai.vercel.app";
+                        return `<iframe src="${domain}/widget?agencyName=${encodeURIComponent(agencyName || user.agency_name || "Apex Marketing Group")}&logo=${encodeURIComponent(logoPreview || "")}" width="100%" height="320" style="border:none;background:transparent;overflow:hidden;" scrolling="no"></iframe>`;
+                      })()}
+                      onClick={(e) => { e.target.select(); }}
+                      className="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px] text-slate-400 font-mono focus:outline-none focus:border-violet-500 cursor-pointer select-all"
+                    />
+                    <span className="absolute right-2.5 bottom-2 text-[8px] font-bold text-slate-600 uppercase select-none pointer-events-none">
+                      Click to Select All
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">
+                    Live Widget Preview
+                  </h4>
+                  <div className="rounded-xl border border-slate-800/80 bg-slate-950/40 overflow-hidden min-h-[300px] flex items-center justify-center p-2">
+                    <iframe
+                      src={(() => {
+                        const domain = typeof window !== "undefined" ? window.location.origin : "";
+                        if (!domain) return "";
+                        return `/widget?agencyName=${encodeURIComponent(agencyName || user.agency_name || "Apex Marketing Group")}&logo=${encodeURIComponent(logoPreview || "")}`;
+                      })()}
+                      width="100%"
+                      height="320"
+                      style={{ border: "none", background: "transparent" }}
+                      scrolling="no"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
