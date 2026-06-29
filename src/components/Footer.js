@@ -37,7 +37,7 @@ export default function Footer() {
             <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
               SEOIntellect
             </span>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-400">
               Grow your organic traffic with AI-powered SEO audits, high-performance web development, and hyper-targeted local SEO strategies.
             </p>
           </div>
@@ -92,10 +92,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-slate-900/60 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             &copy; {currentYear} SEOIntellect AI. All rights reserved. Made for Global & Local SEO domination.
           </p>
-          <div className="flex space-x-6 text-xs text-slate-500">
+          <div className="flex space-x-6 text-xs text-slate-400">
             <Link href="/privacy/" className="hover:text-slate-300">Privacy Policy</Link>
             <Link href="/terms/" className="hover:text-slate-300">Terms of Service</Link>
             <Link href="/admin/" className="hover:text-slate-300">Admin Panel</Link>

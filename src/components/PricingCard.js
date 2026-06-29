@@ -73,13 +73,13 @@ export default function PricingCard({
           {/* Price */}
           <div className="flex items-baseline text-white">
             <span className="text-3xl font-extrabold tracking-tight">US{price}</span>
-            <span className="ml-1 text-[10px] font-semibold text-zinc-500">{period}</span>
+            <span className="ml-1 text-[10px] font-semibold text-zinc-400">{period}</span>
           </div>
 
           {/* Description */}
           {isExpanded && (
             <div className="pt-2">
-              <p className="text-xs text-zinc-500 leading-relaxed font-medium">
+              <p className="text-xs text-zinc-400 leading-relaxed font-medium">
                 {desc}
               </p>
             </div>

@@ -672,7 +672,7 @@ export default function HomeClient() {
               </svg>
             </div>
             <div className="space-y-1.5 text-center sm:text-left">
-              <h4 className="text-xl font-bold text-white tracking-tight">Need a custom plan?</h4>
+              <h3 className="text-xl font-bold text-white tracking-tight">Need a custom plan?</h3>
               <p className="text-sm text-zinc-400 leading-relaxed font-medium max-w-xl">
                 Haven&apos;t found a plan that covers everything you need? Contact us to discuss a custom plan.
               </p>
@@ -738,7 +738,7 @@ export default function HomeClient() {
                     {test.name.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white">{test.name}</h4>
+                    <h3 className="text-xs font-bold text-white">{test.name}</h3>
                     <span className="text-[10px] text-zinc-500 font-medium block">{test.role}</span>
                   </div>
                 </div>
@@ -819,9 +819,9 @@ export default function HomeClient() {
                   </div>
                   
                   {/* Typography */}
-                  <h4 className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-zinc-300 group-hover:text-white transition-colors duration-500">
+                  <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-zinc-300 group-hover:text-white transition-colors duration-500">
                     {city.name}
-                  </h4>
+                  </h3>
                 </div>
               </Link>
             ))}
