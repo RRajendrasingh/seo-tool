@@ -486,7 +486,7 @@ function CheckoutContent() {
                           : "text-zinc-400 hover:text-white"
                       }`}
                     >
-                      Wallet (Local Test)
+                      QR Scanner (Demo)
                     </button>
                   </div>
                 )}
@@ -597,10 +597,10 @@ function CheckoutContent() {
 
                   <div className="space-y-1">
                     <p className="text-xxs uppercase tracking-wider text-zinc-500 font-bold">
-                      Scan or Tap to Pay (Local Demo)
+                      Scan QR Code to Pay (Demo)
                     </p>
                     <p className="text-[10px] text-zinc-400 max-w-xs leading-relaxed font-sans">
-                      This mobile wallet code is for offline local simulation checks. Click the button below to authorize payment and unlock your report.
+                      Scan this simulated QR code with your mobile banking or payment app. Click the button below to simulate a successful QR scan and unlock your report.
                     </p>
                   </div>
 
@@ -623,7 +623,7 @@ function CheckoutContent() {
                     disabled={timeLeft <= 0}
                     className="w-full mt-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3.5 text-xs font-bold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                   >
-                    Simulate Wallet Verification
+                    Simulate Successful QR Scan
                   </button>
                 </div>
               )}

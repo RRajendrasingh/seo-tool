@@ -289,7 +289,7 @@ export default function AuditClient({ initialUser = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  const runAudit = async (targetUrl, leadId = null) => {
+  async function runAudit(targetUrl, leadId = null) {
     if (!targetUrl) return;
     setError(null);
     setLoading(true);
@@ -981,7 +981,7 @@ export default function AuditClient({ initialUser = null }) {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
