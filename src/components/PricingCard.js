@@ -20,7 +20,7 @@ export default function PricingCard({
     fetch("/api/auth/session")
       .then((res) => res.json())
       .then((data) => {
-        if (data.user) setActivePlan(data.user.subscription_tier);
+        if (data.session) setActivePlan(data.session.subscription_tier);
       })
       .catch(() => {});
   }, []);
