@@ -48,7 +48,7 @@ export async function GET(req) {
 
         // 1. Update Leads Table (CRM integration)
         const leads = await query("SELECT id FROM leads WHERE website = ?", [cleanWebsite]);
-        const amountPaid = plan === "multi" ? 59.00 : plan === "weekly" ? 49.00 : plan === "agency" ? 99.00 : 29.00;
+        const amountPaid = plan === "multi" ? 199.00 : plan === "weekly" ? 29.00 : plan === "agency" ? 99.00 : 9.00;
         if (leads && leads.length > 0) {
           await query(
             "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ?, notes = ? WHERE id = ?",
@@ -137,7 +137,7 @@ export async function POST(req) {
     cleanWebsite = cleanWebsite.split("/")[0];
 
     // Create or update a Closed Won lead for consistency in local checkout simulation
-    const amountPaid = plan === "multi" ? 59.00 : plan === "weekly" ? 49.00 : plan === "agency" ? 99.00 : 29.00;
+    const amountPaid = plan === "multi" ? 199.00 : plan === "weekly" ? 29.00 : plan === "agency" ? 99.00 : 9.00;
     const existingLeads = await query("SELECT id FROM leads WHERE email = ? AND website = ?", [email, cleanWebsite]);
     if (existingLeads && existingLeads.length > 0) {
       await query(

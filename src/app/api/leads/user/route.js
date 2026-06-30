@@ -19,7 +19,7 @@ export async function GET() {
     }
 
     const rows = await query(
-      "SELECT id, website, date, seoScore, grade, packageRequest FROM leads WHERE email = ? ORDER BY date DESC, id DESC",
+      "SELECT id, website, date, seoScore, grade, packageRequest, is_monitored FROM leads WHERE email = ? AND website != 'domain-pending' ORDER BY date DESC, id DESC",
       [decoded.email]
     );
 

@@ -45,13 +45,13 @@ export async function POST(req) {
         
         if (plan === "weekly") {
           newTier = "weekly";
-          newQuota = 1;
+          newQuota = 3;
         } else if (plan === "agency") {
           newTier = "agency";
-          newQuota = 5;
+          newQuota = 25;
         } else if (plan === "multi") {
-          newTier = "free"; // Single purchase, not a sub, but maybe quota changes?
-          newQuota = 3;
+          newTier = "multi"; // Set tier to multi to differentiate
+          newQuota = 100;
         }
 
         // Update the user's subscription tier

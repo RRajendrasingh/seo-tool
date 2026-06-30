@@ -40,30 +40,33 @@ export async function POST(req) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-    let planName = "Premium Executive SEO Audit Report";
+    let planName = "Starter Single Report";
     let planDescription = `Comprehensive performance and SEO analysis checklist for ${url}`;
-    let planAmount = 2900; // Default $29.00
+    let planAmount = 900; // $9.00
     let isSubscription = false;
 
     if (plan === "multi") {
-      planName = "3-Page Multi-Page SEO Pack";
-      planDescription = `Deep audit covering up to 3 core pages on ${url}`;
-      planAmount = 5900;
+      planName = "Enterprise Tracking";
+      planDescription = `High-volume domain tracking and advanced technical crawling for ${url}`;
+      planAmount = 19900; // $199.00
+      isSubscription = true;
     } else if (plan === "weekly") {
-      planName = "Weekly SEO Monitoring Subscription";
-      planDescription = `Background scan every Monday with alerts for ${url}`;
-      planAmount = 4900;
+      planName = "Pro Monitor (Monthly)";
+      planDescription = `Weekly automated background scans with email alerts for ${url}`;
+      planAmount = 2900; // $29.00
       isSubscription = true;
     } else if (plan === "agency") {
-      planName = "White-Label Agency License";
-      planDescription = `Up to 5 monitored domains with custom PDF branding templates for ${url}`;
-      planAmount = 9900;
+      planName = "Agency Sales Plan (Monthly)";
+      planDescription = `Up to 25 monitored domains with white-label PDF templates for ${url}`;
+      planAmount = 9900; // $99.00
       isSubscription = true;
     }
 
     // Create a new checkout session with Stripe
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
+      automatic_payment_methods: {
+        enabled: true,
+      },
       line_items: [
         {
           price_data: {

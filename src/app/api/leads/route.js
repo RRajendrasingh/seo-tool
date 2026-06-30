@@ -40,7 +40,7 @@ export async function POST(request) {
     if (userQuery && userQuery.length > 0) {
       const tier = userQuery[0].subscription_tier;
       allowedQuota = userQuery[0].allowed_quota || 0;
-      if (tier === "weekly" || tier === "agency") {
+      if (tier === "weekly" || tier === "agency" || tier === "multi") {
         isUnlimitedTier = true;
       }
     }

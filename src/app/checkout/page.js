@@ -37,19 +37,19 @@ function CheckoutContent() {
   const [loadingSession, setLoadingSession] = useState(true);
 
   const getPlanPrice = () => {
-    if (selectedPlan === "single") return 29;
-    if (selectedPlan === "multi") return 59;
-    if (selectedPlan === "weekly") return 49;
+    if (selectedPlan === "single") return 9;
+    if (selectedPlan === "multi") return 199;
+    if (selectedPlan === "weekly") return 29;
     if (selectedPlan === "agency") return 99;
-    return 29;
+    return 9;
   };
 
   const getPlanName = () => {
-    if (selectedPlan === "single") return "Single Page PDF Unlock";
-    if (selectedPlan === "multi") return "3-Page Multi-page Pack";
-    if (selectedPlan === "weekly") return "Weekly Monitoring Plan";
-    if (selectedPlan === "agency") return "White-Label Agency License";
-    return "Premium Report";
+    if (selectedPlan === "single") return "Starter Single Report";
+    if (selectedPlan === "multi") return "Enterprise Tracking";
+    if (selectedPlan === "weekly") return "Pro Monitor (Monthly)";
+    if (selectedPlan === "agency") return "Agency Sales Plan (Monthly)";
+    return "Starter Single Report";
   };
 
   const loadingSteps = [
