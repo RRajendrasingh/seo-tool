@@ -931,6 +931,29 @@ function ReportContent() {
     );
   }
 
+  // Render Not Paid state screen
+  if (!isPaid && !checkingPayment) {
+    return (
+      <div className="bg-zinc-950 min-h-screen flex items-center justify-center p-4 text-white print:text-slate-900">
+        <div className="max-w-md w-full border border-zinc-800 bg-zinc-900/40 backdrop-blur-md rounded-2xl p-8 text-center space-y-6">
+          <span className="text-3xl block">🔒</span>
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-white print:text-slate-900">Premium Report Locked</h3>
+            <p className="text-xs text-zinc-400 print:text-slate-600 leading-relaxed">
+              This detailed PDF report is only available for premium accounts or if you have purchased a report pack for this domain.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push(`/audit?url=${encodeURIComponent(urlParam)}`)}
+            className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 py-3 text-xs font-semibold text-white transition-all shadow-md"
+          >
+            Run Free Audit Instead
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Render Report layout
   if (!report) return null;
 

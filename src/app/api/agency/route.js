@@ -49,3 +49,32 @@ export async function POST(req) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
+
+export async function GET() {
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const users = await query("SELECT agency_name, agency_logo_id FROM users WHERE id = ?", [user.id]);
+    if (!users || users.length === 0) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const agencyName = users[0].agency_name || "";
+    const logoId = users[0].agency_logo_id;
+    let logoData = null;
+
+    if (logoId) {
+      const uploads = await query("SELECT data, mimeType FROM uploads WHERE id = ?", [logoId]);
+      if (uploads && uploads.length > 0) {
+        logoData = `data:${uploads[0].mimeType};base64,${uploads[0].data}`;
+      }
+    }
+
+    return NextResponse.json({ agencyName, logoData });
+  } catch (e) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}

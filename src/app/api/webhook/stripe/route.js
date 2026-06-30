@@ -68,10 +68,20 @@ export async function POST(req) {
         const targetUrl = session.metadata?.url;
         if (targetUrl && targetUrl !== "domain-pending") {
           let cleanUrl = targetUrl.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
-          await query(
-            "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ? WHERE email = ? AND website LIKE ?",
-            [packageName, (session.amount_total / 100).toFixed(2), email, `%${cleanUrl}%`]
-          );
+          
+          const existingLead = await query("SELECT id FROM leads WHERE email = ? AND website LIKE ?", [email, `%${cleanUrl}%`]);
+          if (existingLead && existingLead.length > 0) {
+            await query(
+              "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ? WHERE id = ?",
+              [packageName, (session.amount_total / 100).toFixed(2), existingLead[0].id]
+            );
+          } else {
+            const newId = "lead_" + Date.now();
+            await query(
+              "INSERT INTO leads (id, name, email, phone, website, date, seoScore, grade, status, packageRequest, amountPaid, notes) VALUES (?, ?, ?, ?, ?, ?, 0, 'Pending', 'Closed Won', ?, ?, ?)",
+              [newId, session.customer_details?.name || "Customer", email, session.customer_details?.phone || "Not Provided", cleanUrl, new Date().toISOString(), packageName, (session.amount_total / 100).toFixed(2), `Stripe checkout session ${session.id}`]
+            );
+          }
         }
 
         console.log(`Stripe Webhook: Successfully upgraded user ${email} to ${newTier} plan.`);

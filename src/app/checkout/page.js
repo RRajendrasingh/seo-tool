@@ -7,7 +7,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const url = searchParams.get("url") || "";
+  const [url, setUrl] = useState(searchParams.get("url") || "");
   const email = searchParams.get("email") || "";
   const name = searchParams.get("name") || "";
   const phone = searchParams.get("phone") || "";
@@ -85,10 +85,8 @@ function CheckoutContent() {
     if (!user) {
       const currentPath = window.location.pathname + window.location.search;
       router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
-    } else if (!url) {
-      router.push("/audit");
     }
-  }, [url, user, loadingSession, router]);
+  }, [user, loadingSession, router]);
 
   // Wallet countdown effect
   useEffect(() => {
@@ -132,6 +130,10 @@ function CheckoutContent() {
     e.preventDefault();
     if (!user && (!cmsPlatform || !businessNiche || !targetAudience)) {
       setPaymentError("Please fill in the Step 1 Website Profile details first.");
+      return;
+    }
+    if ((selectedPlan === "single" || selectedPlan === "multi") && !url) {
+      setPaymentError("Please enter the target Website URL you want to audit.");
       return;
     }
     setPaymentError(null);
@@ -178,6 +180,10 @@ function CheckoutContent() {
   const handleWalletPay = () => {
     if (!user && (!cmsPlatform || !businessNiche || !targetAudience)) {
       setPaymentError("Please fill in the Step 1 Website Profile details first.");
+      return;
+    }
+    if ((selectedPlan === "single" || selectedPlan === "multi") && !url) {
+      setPaymentError("Please enter the target Website URL you want to audit.");
       return;
     }
     startPaymentSimulation();
@@ -279,6 +285,21 @@ function CheckoutContent() {
                   <p className="text-[10px] text-zinc-400 font-sans leading-relaxed">
                     You are currently logged in. Your purchase will be automatically linked to this account, and subscription settings will activate immediately upon payment verification.
                   </p>
+                  
+                  {/* If user came without a URL and selects a report plan, ask for the URL */}
+                  {(selectedPlan === "single" || selectedPlan === "multi") && !searchParams.get("url") && (
+                    <div className="mt-4 pt-4 border-t border-zinc-800 space-y-2">
+                      <label className="text-[10px] text-zinc-400 font-semibold block">Target Website URL to Audit</label>
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://example.com"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-violet-500"
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -287,6 +308,22 @@ function CheckoutContent() {
                     <h3 className="text-xs uppercase tracking-wider font-bold text-violet-400">
                       Step 1: Tell us about your website
                     </h3>
+                    
+                    {/* Ask for URL if missing for unregistered user too */}
+                    {(selectedPlan === "single" || selectedPlan === "multi") && !searchParams.get("url") && (
+                      <div className="space-y-1 mb-4">
+                        <label className="text-[10px] text-zinc-400 font-semibold block">Target Website URL to Audit</label>
+                        <input
+                          type="url"
+                          required
+                          placeholder="https://example.com"
+                          value={url}
+                          onChange={(e) => setUrl(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-3 text-xs text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-violet-500"
+                        />
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] text-zinc-400 font-semibold block">CMS Platform</label>
@@ -429,32 +466,34 @@ function CheckoutContent() {
                 <h2 className="text-xs uppercase tracking-wider font-bold text-violet-400">
                   {user ? "Payment Method" : "Step 3: Payment Method"}
                 </h2>
-                <div className="flex gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-850 w-full sm:w-auto justify-between sm:justify-start">
-                  <button
-                    onClick={() => setMethod("card")}
-                    className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${
-                      method === "card"
-                        ? "bg-violet-600 text-white shadow-md"
-                        : "text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    Credit Card (Stripe)
-                  </button>
-                  <button
-                    onClick={() => setMethod("wallet")}
-                    className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${
-                      method === "wallet"
-                        ? "bg-violet-600 text-white shadow-md"
-                        : "text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    Wallet (Local Test)
-                  </button>
-                </div>
+                {process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" && (
+                  <div className="flex gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-850 w-full sm:w-auto justify-between sm:justify-start">
+                    <button
+                      onClick={() => setMethod("card")}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${
+                        method === "card"
+                          ? "bg-violet-600 text-white shadow-md"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      Credit Card (Stripe)
+                    </button>
+                    <button
+                      onClick={() => setMethod("wallet")}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${
+                        method === "wallet"
+                          ? "bg-violet-600 text-white shadow-md"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      Wallet (Local Test)
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* STRIPE CREDIT CARD FLOW */}
-              {method === "card" && (
+              {(method === "card" || process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "true") && (
                 <form onSubmit={handleStripePay} className="space-y-4">
                   {/* Visual Card Graphic */}
                   <div className="w-full h-40 rounded-xl bg-gradient-to-br from-violet-850 via-purple-900 to-fuchsia-850 p-5 flex flex-col justify-between shadow-lg relative overflow-hidden border border-violet-500/25">
@@ -536,7 +575,7 @@ function CheckoutContent() {
               )}
 
               {/* MOCK WALLET FLOW */}
-              {method === "wallet" && (
+              {method === "wallet" && process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" && (
                 <div className="space-y-4 flex flex-col items-center">
                   <div className="w-44 h-44 bg-white p-3 rounded-2xl shadow-md border border-zinc-800/20 relative flex items-center justify-center">
                     {/* Simulated payment graphic */}
