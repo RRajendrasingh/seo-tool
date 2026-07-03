@@ -5,6 +5,7 @@ import TrackingScripts from "@/components/TrackingScripts";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/utils/auth";
 import Script from "next/script";
+import FloatingConsultantButton from "@/components/FloatingConsultantButton";
 
 export const metadata = {
   title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
@@ -61,6 +62,7 @@ export default async function RootLayout({ children }) {
           {children}
         </main>
         <Footer />
+        <FloatingConsultantButton session={session} />
         {/* Calendly Widget Script Loaded Asynchronously */}
         <Script src="https://assets.calendly.com/assets/external/widget.js" strategy="lazyOnload" />
       </body>
