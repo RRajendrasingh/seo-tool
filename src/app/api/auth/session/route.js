@@ -18,8 +18,8 @@ export async function GET() {
 
     const { query } = require("@/utils/db");
     const users = await query(
-      "SELECT subscription_tier, subscription_status, agency_name, agency_logo_id FROM users WHERE id = ?",
-      [decoded.id]
+      "SELECT subscription_tier, subscription_status, agency_name, agency_logo_id FROM users WHERE email = ?",
+      [decoded.email]
     );
 
     let dbDetails = {
