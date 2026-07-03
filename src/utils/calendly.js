@@ -6,7 +6,7 @@
  * @param {string} name - Prefilled user name
  */
 export const openCalendly = (email = "", name = "") => {
-  const baseUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/seointellect/30min";
+  const baseUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/rajendrasinghrathore613";
   
   if (typeof window !== "undefined" && window.Calendly) {
     const prefill = {};
