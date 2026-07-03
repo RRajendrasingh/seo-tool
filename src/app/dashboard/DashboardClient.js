@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ScoreChart from "@/components/ScoreChart";
+import { openCalendly } from "@/utils/calendly";
 
 export default function DashboardClient({ user: initialUser }) {
   const router = useRouter();
@@ -567,6 +568,21 @@ export default function DashboardClient({ user: initialUser }) {
                   <span className="text-emerald-400 font-bold">United States</span>
                 </div>
               </div>
+            </div>
+
+            {/* Free Consultant Meeting Card */}
+            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
+              <h3 className="text-xs font-bold text-slate-200">Free 1-on-1 Strategy Call</h3>
+              <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                Book a complimentary session with an elite consultant to map out your SEO, page speed, and AEO optimization roadmap.
+              </p>
+              
+              <button
+                onClick={() => openCalendly(user.email || "", user.name || "")}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 hover:border-violet-500/30 w-full py-2.5 text-xs font-bold text-violet-400 hover:text-violet-300 transition-all duration-200 cursor-pointer"
+              >
+                <span>📅 Schedule Meeting</span>
+              </button>
             </div>
 
             {/* Subscription Card details */}

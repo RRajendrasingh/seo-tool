@@ -2,8 +2,27 @@
 
 import Link from "next/link";
 import PricingCard from "@/components/PricingCard";
+import { useState, useEffect } from "react";
+import { openCalendly } from "@/utils/calendly";
 
 export default function ServicesClient() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    async function fetchSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json();
+        if (data.session) {
+          setUser(data.session);
+        }
+      } catch (err) {
+        console.error("Failed to load user session:", err);
+      }
+    }
+    fetchSession();
+  }, []);
+
   const serviceDetails = [
     {
       id: "seo",
@@ -318,6 +337,33 @@ export default function ServicesClient() {
             >
               Get in touch
             </Link>
+          </div>
+        </div>
+
+        {/* Free Consultation CTA Banner */}
+        <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 text-left max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 flex-grow w-full md:w-auto">
+            {/* Calendar Icon with rounded circular background */}
+            <div className="relative h-14 w-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 flex-shrink-0">
+              <div className="absolute inset-0 rounded-2xl bg-violet-500/5 blur-[2px]" />
+              <svg className="h-8 w-8 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div className="space-y-1.5 text-center sm:text-left">
+              <h4 className="text-xl font-bold text-white tracking-tight">Free 1-on-1 Strategy Call</h4>
+              <p className="text-sm text-zinc-400 leading-relaxed font-medium max-w-xl">
+                Book a complimentary video call with our expert SEO consultant to audit your site performance and plan your organic growth.
+              </p>
+            </div>
+          </div>
+          <div className="flex-shrink-0 w-full md:w-auto">
+            <button
+              onClick={() => openCalendly(user?.email || "", user?.name || "")}
+              className="flex w-full md:w-auto items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-7 py-4 text-xs font-bold text-white shadow-md shadow-violet-500/10 hover:from-violet-500 hover:to-fuchsia-500 hover:scale-[1.01] active:scale-[0.99] transition-all uppercase tracking-wider cursor-pointer border-0"
+            >
+              Book Strategy Call
+            </button>
           </div>
         </div>
 

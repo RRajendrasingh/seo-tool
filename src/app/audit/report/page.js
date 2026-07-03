@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getMockLighthouseResult } from "../../../utils/mockPageSpeed";
 import { getSettings } from "../../../utils/leadsStore";
+import { openCalendly } from "../../../utils/calendly";
 
 // Toggle this to true when you want to use mock data for local testing.
 // Can also be controlled via NEXT_PUBLIC_USE_MOCK_DATA="true" in .env.local
@@ -1687,11 +1688,7 @@ function ReportContent() {
             Let our elite engineers resolve these critical issues and optimize your engine performance to drive immediate SEO readiness scores.
           </p>
           <button 
-            onClick={() => {
-              const subject = encodeURIComponent("Technical SEO Implementation Request");
-              const body = encodeURIComponent(`Hello,\n\nI ran an SEO audit for my site and need help resolving the critical errors. My site is ${urlParam}.\n\nThank you.`);
-              window.location.href = `mailto:support@seointellect.com?subject=${subject}&body=${body}`;
-            }}
+            onClick={() => openCalendly(session?.email || "", session?.name || "")}
             className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg hover:-translate-y-1"
           >
             <span>Book Free Consultation Call</span>

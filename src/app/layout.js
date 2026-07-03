@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import TrackingScripts from "@/components/TrackingScripts";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/utils/auth";
+import Script from "next/script";
 
 export const metadata = {
   title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
@@ -47,17 +48,21 @@ export default async function RootLayout({ children }) {
         <style dangerouslySetInnerHTML={{ __html: `
           @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap');
         `}} />
+        {/* Calendly Stylesheet for Modal Popup */}
+        <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
       </head>
       <body
-        className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300 selection:bg-violet-500/30 selection:text-violet-200 overflow-x-hidden"
+        className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300 selection:bg-violet-500/30 selection:text-violet-200 overflow-x-clip"
         suppressHydrationWarning={true}
       >
         <TrackingScripts />
         <Navbar initialSession={session} />
-        <main className="flex-grow overflow-x-hidden">
+        <main className="flex-grow overflow-x-clip">
           {children}
         </main>
         <Footer />
+        {/* Calendly Widget Script Loaded Asynchronously */}
+        <Script src="https://assets.calendly.com/assets/external/widget.js" strategy="lazyOnload" />
       </body>
     </html>
   );
