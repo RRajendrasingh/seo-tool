@@ -584,17 +584,10 @@ export default function DashboardClient({ user: initialUser }) {
                 <div className="flex justify-between">
                   <span>Rate:</span>
                   <span className="font-bold text-primary">
-                    {user.subscription_tier === "free" ? "$0" : user.subscription_tier === "weekly" ? "$49/month" : "$99/month"}
+                    {user.subscription_tier === "free" ? "$0" : user.subscription_tier === "weekly" ? "$29/month" : user.subscription_tier === "agency" ? "$99/month" : "$199/month"}
                   </span>
                 </div>
               </div>
-
-              <button
-                onClick={handleStripePortal}
-                className="w-full rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-950 text-[10px] font-bold py-2.5 shadow-sm transition-colors cursor-pointer border border-slate-800"
-              >
-                Manage via Stripe
-              </button>
             </div>
 
           </div>
