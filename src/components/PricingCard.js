@@ -119,7 +119,7 @@ export default function PricingCard({
       <div className="px-8 pb-8 space-y-4">
         {isActive ? (
           <div
-            className="flex w-full items-center justify-center rounded-[1.25rem] py-4 text-sm font-bold bg-emerald-600/10 text-emerald-400 border border-emerald-500/30 cursor-default"
+            className="flex w-full items-center justify-center rounded-[1.25rem] py-4 text-sm font-bold bg-emerald-500/10 [.light_&]:bg-emerald-50 text-emerald-400 [.light_&]:text-emerald-700 border border-emerald-500/30 [.light_&]:border-emerald-200 cursor-default"
           >
             <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -141,7 +141,7 @@ export default function PricingCard({
         {hasMoreDetails && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex w-full items-center justify-center text-xs font-semibold text-slate-400 [.light_&]:text-slate-500 hover:text-white [.light_&]:hover:text-slate-900 transition-colors"
+            className="flex w-full items-center justify-center text-xs font-semibold text-slate-400 [.light_&]:text-slate-500 hover:text-foreground transition-colors"
           >
             {isExpanded ? "Hide Details" : "See Details"}
           </button>
