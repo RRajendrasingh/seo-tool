@@ -377,6 +377,20 @@ export default function AuditClient({ initialUser = null }) {
       const rawByteWeight = audits["total-byte-weight"]?.numericValue || 0;
       const pageWeightMB = (rawByteWeight / (1024 * 1024)).toFixed(2);
 
+      let advancedData = null;
+      try {
+        const advRes = await fetch("/api/audit/advanced", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: formattedUrl })
+        });
+        if (advRes.ok) {
+          advancedData = await advRes.json();
+        }
+      } catch (err) {
+        console.error("Advanced audit failed", err);
+      }
+
       const validationChecks = [
         audits["duplicate-id-active"]?.score === 1 || audits["duplicate-id-active"]?.score === null,
         audits["doctype"]?.score === 1 || audits["doctype"]?.score === null,
@@ -895,6 +909,112 @@ export default function AuditClient({ initialUser = null }) {
         }
       };
 
+      if (advancedData && !advancedData.error) {
+        const { social, structure, language, crawlability } = advancedData;
+        
+        engines["social-media"] = {
+          name: "Social Media Readiness",
+          score: (social.ogTags.title ? 50 : 0) + (social.twitterTags.card ? 50 : 0),
+          desc: "Evaluates Open Graph and Twitter card tags for sharing on social networks.",
+          checks: [
+            {
+              name: "Open Graph Tags",
+              passed: !!social.ogTags.title && !!social.ogTags.image,
+              value: social.ogTags.title ? "OG tags configured" : "OG tags missing",
+              desc: "Checks for Facebook/LinkedIn OG meta tags.",
+              severity: "warning",
+              impact: "Medium",
+              snippet: social.ogTags.title ? `<meta property="og:title" content="${social.ogTags.title}">\n<meta property="og:image" content="${social.ogTags.image}">` : "<!-- Missing Open Graph tags -->",
+              fix: "Add Open Graph tags to your document head to control how links appear when shared."
+            },
+            {
+              name: "Twitter Cards",
+              passed: !!social.twitterTags.card,
+              value: social.twitterTags.card ? "Twitter Card active" : "Twitter tags missing",
+              desc: "Checks for Twitter-specific sharing metadata.",
+              severity: "warning",
+              impact: "Low",
+              snippet: social.twitterTags.card ? `<meta name="twitter:card" content="${social.twitterTags.card}">\n<meta name="twitter:title" content="${social.twitterTags.title}">` : "<!-- Missing Twitter Card tags -->",
+              fix: "Add Twitter card tags to ensure rich previews on X/Twitter."
+            }
+          ]
+        };
+
+        engines["advanced-structure"] = {
+          name: "Advanced HTML Structure",
+          score: structure.headingSkipError ? 60 : (structure.missingAlt === 0 ? 100 : 80),
+          desc: "Validates strict heading hierarchy and image alt text presence.",
+          checks: [
+            {
+              name: "Strict Heading Hierarchy",
+              passed: !structure.headingSkipError,
+              value: !structure.headingSkipError ? "Valid hierarchy sequence" : "Skipped heading levels detected",
+              desc: "Ensures H1-H6 tags follow strict sequential order without skipping levels (e.g., H1 -> H3).",
+              severity: "warning",
+              impact: "Medium",
+              snippets: structure.headingElements?.length > 0 ? structure.headingElements : null,
+              fix: "Do not skip heading levels. An H3 should only be nested inside an H2."
+            },
+            {
+              name: "Global Image Alt Attributes",
+              passed: structure.missingAlt === 0,
+              value: structure.missingAlt === 0 ? "All images have alt text" : `${structure.missingAlt} of ${structure.totalImages} images missing alt`,
+              desc: "Checks every image tag on the page for missing alt attributes.",
+              severity: "error",
+              impact: "High",
+              snippets: structure.missingAltElements?.length > 0 ? structure.missingAltElements : null,
+              fix: "Add descriptive alt attributes to all image tags for accessibility and SEO."
+            },
+            {
+              name: "Lazy Loading",
+              passed: structure.missingLazy === 0,
+              value: structure.missingLazy === 0 ? "All images use lazy loading" : `${structure.missingLazy} of ${structure.totalImages} images missing loading="lazy"`,
+              desc: "Checks if images are deferred to load only when they enter the viewport.",
+              severity: "warning",
+              impact: "Medium",
+              snippets: structure.missingLazyElements?.length > 0 ? structure.missingLazyElements : null,
+              fix: "Add loading=\"lazy\" to your image tags to improve page load speed."
+            }
+          ]
+        };
+
+        engines["crawlability-indexing"] = {
+          name: "Crawlability & Indexing",
+          score: (crawlability.hasRobots ? 50 : 0) + (crawlability.hasSitemap ? 50 : 0),
+          desc: "Verifies the existence of critical indexing files at the root level.",
+          checks: [
+            {
+              name: "Robots.txt Availability",
+              passed: crawlability.hasRobots,
+              value: crawlability.hasRobots ? "robots.txt found (200 OK)" : "robots.txt not found (404)",
+              desc: "Checks if a robots.txt file exists at the root domain.",
+              severity: "error",
+              impact: "High",
+              fix: "Create a robots.txt file to guide search engine crawlers."
+            },
+            {
+              name: "XML Sitemap Availability",
+              passed: crawlability.hasSitemap,
+              value: crawlability.hasSitemap ? "sitemap.xml found (200 OK)" : "sitemap.xml not found (404)",
+              desc: "Checks if a sitemap.xml file exists at the root domain.",
+              severity: "error",
+              impact: "High",
+              fix: "Generate an XML sitemap and upload it to the root of your domain."
+            },
+            {
+              name: "Hreflang Language Tags",
+              passed: language.hreflangCount > 0,
+              value: language.hreflangCount > 0 ? `Found ${language.hreflangCount} hreflang tags` : "No hreflang tags found",
+              desc: "Checks for internationalization language tags.",
+              severity: "info",
+              impact: "Low",
+              snippet: language.hreflangCount > 0 ? language.hreflangs.map(h => `<link rel="alternate" hreflang="${h.lang}" href="${h.href}" />`).join('\\n') : "<!-- No hreflang configured -->",
+              fix: "If your site is multi-lingual, add hreflang tags to map languages to URLs."
+            }
+          ]
+        };
+      }
+
       const avgScore = Math.round((perfScore + seoScore + accessScore + bpScore + validationScore) / 5);
       let grade = "F";
       if (avgScore >= 90) grade = "A";
@@ -999,6 +1119,8 @@ export default function AuditClient({ initialUser = null }) {
         setFormError("Please fill out all required fields.");
         return;
       }
+      localStorage.setItem("guest_email", email);
+      localStorage.setItem("guest_name", name);
     }
     
     let leadId = null;
@@ -1249,6 +1371,19 @@ export default function AuditClient({ initialUser = null }) {
                   </div>
                 )}
 
+                {check.snippets && check.snippets.length > 0 && !check.passed && (
+                  <div className="w-full pl-8 mt-1">
+                    <span className="text-[10px] text-zinc-400 font-bold block uppercase tracking-wide text-left">
+                      HTML SNIPPET (EVIDENCE):
+                    </span>
+                    <pre className="mt-1.5 p-3 rounded-lg bg-zinc-950 border border-zinc-850 font-mono text-[9px] text-zinc-300 overflow-x-auto select-all leading-normal text-left space-y-2">
+                      {check.snippets.map((snip, i) => (
+                        <code key={i} className="block">{snip}</code>
+                      ))}
+                    </pre>
+                  </div>
+                )}
+
                 {!check.passed && (
                   <div className="w-full pl-8 border-t border-zinc-800/80 pt-3 text-left">
                     <span className="text-[10px] text-rose-400 font-bold block uppercase tracking-wide">
@@ -1279,7 +1414,7 @@ export default function AuditClient({ initialUser = null }) {
   };
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative isolate overflow-x-hidden">
+    <div className="bg-zinc-950 min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative isolate">
       {/* Background radial glow */}
       <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
@@ -2027,7 +2162,7 @@ export default function AuditClient({ initialUser = null }) {
             {/* Layout with Sidebar Selection & Detailed Outputs */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Sidebar Selector: 7 Engines */}
-              <div className="lg:col-span-4 space-y-4">
+              <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24 z-10">
                 <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1 text-left">
                   Active Auditing Engines
                 </h3>
