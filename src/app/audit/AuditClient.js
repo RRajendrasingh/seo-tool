@@ -1026,7 +1026,7 @@ export default function AuditClient({ initialUser = null }) {
       const isUserLoggedIn = !!user;
       const leadNotes = `Website audit completed successfully. Scores - On-Page SEO: ${seoScore}%, Web Vitals: ${perfScore}%, Payload Code: ${Math.round((perfScore + bpScore) / 2)}%, Mobile/Structure: ${accessScore}%, Server/Security: ${bpScore}%, AEO/GEO: ${Math.round((seoScore + accessScore) / 2)}%, HTML/CSS Quality: ${validationScore}%.`;
       
-      if (!activeLeadId && leadCaptured) {
+      if (!activeLeadId) {
          try {
            const fullNotes = (isUserLoggedIn ? `CMS Platform: ${cmsPlatform}, Business Niche: ${businessNiche}, Target Location: ${targetAudience}. ` : "Guest user SEO audit. ") + leadNotes;
            const newLead = await addLead({
@@ -1261,7 +1261,21 @@ export default function AuditClient({ initialUser = null }) {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setFilterTab(tab.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFilterTab(tab.id);
+                  // Anchor scroll position to prevent browser jumping when list collapses
+                  if (typeof window !== "undefined") {
+                    setTimeout(() => {
+                      const detailsEl = document.getElementById("mobile-detail-pane");
+                      if (detailsEl) {
+                        const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
+                        // Use instant so the user doesn't see the page bounce
+                        window.scrollTo({ top: y, behavior: "instant" });
+                      }
+                    }, 10);
+                  }
+                }}
                 className={`rounded-lg px-3 py-1.5 font-bold transition-all border cursor-pointer ${
                   filterTab === tab.id
                     ? "bg-violet-600/15 border-violet-500/50 text-violet-300"
@@ -2293,7 +2307,7 @@ export default function AuditClient({ initialUser = null }) {
               </div>
 
               {/* Detailed Results Output (Unified for Mobile & Desktop) */}
-              <div id="mobile-detail-pane" className="col-span-1 lg:col-span-8 w-full min-w-0">
+              <div id="mobile-detail-pane" className="col-span-1 lg:col-span-8 w-full min-w-0 min-h-[100vh]">
                 {renderEngineDetails(activeEngine)}
               </div>
             </div>
