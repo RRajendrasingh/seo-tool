@@ -131,7 +131,7 @@ export default function AdminDashboard() {
       const authSession = sessionStorage.getItem("admin_authenticated");
       if (authSession === "true") {
         setIsAuthenticated(true);
-        getAllLeads().then(setLeads).catch(console.error);
+        Promise.resolve(getAllLeads()).then(setLeads).catch(console.error);
         getAllPosts().then(setPosts).catch(console.error); // Fetch posts
         refreshRssSources();
       }
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (passcode === settings.adminPasscode) {
       setIsAuthenticated(true);
-      getAllLeads().then(setLeads).catch(console.error);
+      Promise.resolve(getAllLeads()).then(setLeads).catch(console.error);
       getAllPosts().then(setPosts).catch(console.error); // Fetch posts
       refreshRssSources();
       sessionStorage.setItem("admin_authenticated", "true");
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
 
   // Sync state after modifications
   const refreshLeads = () => {
-    getAllLeads().then(setLeads).catch(console.error);
+    Promise.resolve(getAllLeads()).then(setLeads).catch(console.error);
   };
 
   const refreshPosts = () => {
@@ -493,7 +493,7 @@ export default function AdminDashboard() {
 
   const handleDeleteLead = (id) => {
     if (confirm("Are you sure you want to delete this lead? This action cannot be undone.")) {
-      deleteLead(id).then(() => {
+      Promise.resolve(deleteLead(id)).then(() => {
         refreshLeads();
       }).catch(console.error);
     }
@@ -501,7 +501,7 @@ export default function AdminDashboard() {
 
   const handleResetMockData = () => {
     if (confirm("This will overwrite existing leads with a set of realistic mock data. Proceed?")) {
-      resetToMock().then((fresh) => {
+      Promise.resolve(resetToMock()).then((fresh) => {
         setLeads(fresh);
       }).catch(console.error);
     }
@@ -509,7 +509,7 @@ export default function AdminDashboard() {
 
   const handleClearAllData = () => {
     if (confirm("Are you sure you want to clear ALL leads? This will empty the database.")) {
-      clearAllLeads().then(() => {
+      Promise.resolve(clearAllLeads()).then(() => {
         setLeads([]);
       }).catch(console.error);
     }
