@@ -1022,12 +1022,34 @@ export default function AuditClient({ initialUser = null }) {
       else if (avgScore >= 70) grade = "C";
       else if (avgScore >= 50) grade = "D";
 
-      const activeLeadId = leadId || currentLeadId;
-      if (activeLeadId) {
+      let activeLeadId = leadId || currentLeadId;
+      const isUserLoggedIn = !!user;
+      const leadNotes = `Website audit completed successfully. Scores - On-Page SEO: ${seoScore}%, Web Vitals: ${perfScore}%, Payload Code: ${Math.round((perfScore + bpScore) / 2)}%, Mobile/Structure: ${accessScore}%, Server/Security: ${bpScore}%, AEO/GEO: ${Math.round((seoScore + accessScore) / 2)}%, HTML/CSS Quality: ${validationScore}%.`;
+      
+      if (!activeLeadId && leadCaptured) {
+         try {
+           const fullNotes = (isUserLoggedIn ? `CMS Platform: ${cmsPlatform}, Business Niche: ${businessNiche}, Target Location: ${targetAudience}. ` : "Guest user SEO audit. ") + leadNotes;
+           const newLead = await addLead({
+             name: isUserLoggedIn ? (user.full_name || user.name || "Logged In User") : name,
+             email: isUserLoggedIn ? user.email : email,
+             phone: isUserLoggedIn ? "N/A" : `${countryCode} ${phone}`,
+             website: formattedUrl,
+             status: "New",
+             packageRequest: initialPlan === "premium" ? "Premium Report" : "Free Audit",
+             seoScore: avgScore,
+             grade: grade,
+             notes: fullNotes
+           });
+           activeLeadId = newLead.id;
+           setCurrentLeadId(activeLeadId);
+         } catch(err) {
+            console.error("Failed to save lead after audit:", err);
+         }
+      } else if (activeLeadId) {
         updateLead(activeLeadId, {
           seoScore: avgScore,
           grade: grade,
-          notes: `Website audit completed successfully. Scores - On-Page SEO: ${seoScore}%, Web Vitals: ${perfScore}%, Payload Code: ${Math.round((perfScore + bpScore) / 2)}%, Mobile/Structure: ${accessScore}%, Server/Security: ${bpScore}%, AEO/GEO: ${Math.round((seoScore + accessScore) / 2)}%, HTML/CSS Quality: ${validationScore}%.`,
+          notes: leadNotes,
         });
       }
 
@@ -1124,33 +1146,25 @@ export default function AuditClient({ initialUser = null }) {
       localStorage.setItem("guest_name", name);
     }
     
-    let leadId = null;
+    const targetEmail = isUserLoggedIn ? user.email : email;
     try {
-      const leadNotes = isUserLoggedIn
-        ? `CMS Platform: ${cmsPlatform}, Business Niche: ${businessNiche}, Target Location: ${targetAudience}. (Logged in user SEO audit)`
-        : "Guest user SEO audit";
-
-      const newLead = await addLead({
-        name: isUserLoggedIn ? (user.full_name || user.name || "Logged In User") : name,
-        email: isUserLoggedIn ? user.email : email,
-        phone: isUserLoggedIn ? "N/A" : `${countryCode} ${phone}`,
-        website: url,
-        status: "New",
-        packageRequest: initialPlan === "premium" ? "Premium Report" : "Free Audit",
-        seoScore: 0,
-        grade: "Pending",
-        notes: leadNotes
+      const res = await fetch("/api/leads/check-quota", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail })
       });
-      leadId = newLead.id;
-      setCurrentLeadId(leadId);
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to verify quota");
+      }
     } catch (err) {
-      console.error("Failed to save lead:", err);
-      setFormError(err.message || "Failed to submit. Please check your inputs.");
+      console.error("Quota check failed:", err);
+      setFormError(err.message || "Failed to verify limits. Please check your inputs.");
       return;
     }
 
     setLeadCaptured(true);
-    runAudit(url, leadId);
+    runAudit(url, null);
   };
 
   const getScoreColor = (score) => {
