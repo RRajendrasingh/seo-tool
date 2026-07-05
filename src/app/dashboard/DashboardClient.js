@@ -223,28 +223,28 @@ export default function DashboardClient({ user: initialUser }) {
               <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 space-y-4 text-left">
                 <div className="flex justify-between items-center">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Manual Audits Used</span>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{isPaid ? "Paid Audits Used" : "Free Audits Used"}</span>
                     <p className="text-xs font-black text-slate-200">
-                      {user.free_audits_run || 0} of {isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)} reports generated
+                      {isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)} of {isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)} reports generated
                     </p>
                   </div>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    (user.free_audits_run || 0) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
+                    (isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
                       ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                       : "bg-violet-500/10 text-violet-400 border border-violet-500/20"
                   }`}>
-                    {(user.free_audits_run || 0) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)) ? "Limit Reached" : "Active Quota"}
+                    {(isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)) ? "Limit Reached" : "Active Quota"}
                   </span>
                 </div>
                 
                 <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
                   <div 
                     className={`h-full rounded-full transition-all duration-500 ease-out ${
-                      (user.free_audits_run || 0) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
+                      (isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
                         ? "bg-gradient-to-r from-rose-500 to-amber-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
                         : "bg-gradient-to-r from-violet-500 to-cyan-400 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
                     }`}
-                    style={{ width: `${Math.min(100, ((user.free_audits_run || 0) / (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))) * 100)}%` }}
+                    style={{ width: `${Math.min(100, ((isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) / (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))) * 100)}%` }}
                   />
                 </div>
               </div>

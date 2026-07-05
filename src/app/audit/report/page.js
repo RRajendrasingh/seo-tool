@@ -46,6 +46,7 @@ function ReportContent() {
   };
 
   const [deviceStrategy, setDeviceStrategy] = useState("mobile");
+  const [activeCategory, setActiveCategory] = useState("seo-tags");
   const [screenshotLoaded, setScreenshotLoaded] = useState(false);
 
   useEffect(() => {
@@ -1007,7 +1008,7 @@ function ReportContent() {
       `}} />
 
       {/* UNIFIED RESPONSIVE HEADER */}
-      <div className="max-w-6xl mx-auto items-center sm:items-end justify-between px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row gap-6 sm:gap-0 print:flex print:py-4 print:max-w-none print:px-0 print:w-full">
+      <div className="max-w-7xl w-full mx-auto items-center sm:items-end justify-between px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 flex flex-col sm:flex-row gap-6 sm:gap-0 print:flex print:py-4 print:max-w-none print:px-0 print:w-full">
         <div className="text-center sm:text-left">
           {finalAgencyLogo ? (
             <img src={finalAgencyLogo} alt={finalAgencyName || "Agency Logo"} className="h-8 w-auto object-contain mb-3 mx-auto sm:mx-0 max-h-12" />
@@ -1062,7 +1063,7 @@ function ReportContent() {
           </div>
         </div>
       </div>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8 print:max-w-none print:px-0 print:w-full print:space-y-6">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 space-y-6 sm:space-y-8 print:max-w-none print:px-0 print:w-full print:space-y-6">
         
         {/* Unified Mobile/Desktop Strategy Switcher Tab */}
         <div className="flex justify-between items-center border-b border-zinc-800/60 pb-4 select-none print:hidden">
@@ -1545,117 +1546,137 @@ function ReportContent() {
             </div>
           </div>
 
-          {/* TECHNICAL LOGS ACCORDIONS */}
-          <div className="w-full lg:w-80 space-y-4 print:hidden">
-            <h3 className="text-lg font-bold text-white print:text-slate-900 mb-2">Technical Logs</h3>
-            <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-sm overflow-hidden divide-y divide-slate-800">
-              {Object.entries(report.engines).map(([key, engine]) => {
+
+        </div>
+
+        {/* SEGREGATED CATEGORY AUDIT (Hybrid Layout) */}
+        <div className="mt-12 print:block border-t border-slate-800/80 pt-8">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            
+            {/* MOBILE: Swipeable Pill Tabs (md:hidden) */}
+            <div id="mobile-category-tabs" className="md:hidden sticky top-16 z-40 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/60 mb-6 -mx-4 sm:-mx-8 w-[calc(100%+2rem)] sm:w-[calc(100%+4rem)] print:hidden">
+              <div className="flex overflow-x-auto w-full gap-3 py-4 snap-x no-scrollbar items-center px-4 sm:px-8 scroll-pl-4 sm:scroll-pl-8">
+                {Object.entries(report.engines).map(([key, engine]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setActiveCategory(key);
+                      // Smooth scroll to the top of the details pane
+                      if (typeof window !== "undefined") {
+                        setTimeout(() => {
+                          const detailsEl = document.getElementById("mobile-detail-pane");
+                          if (detailsEl) {
+                            const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
+                            window.scrollTo({ top: y, behavior: "smooth" });
+                          }
+                        }, 50);
+                      }
+                    }}
+                    className={`snap-start shrink-0 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
+                      activeCategory === key 
+                        ? "bg-violet-600 text-white shadow-md border border-violet-500" 
+                        : "bg-slate-900 text-zinc-400 border border-slate-800 hover:text-slate-200"
+                    }`}
+                  >
+                    {engine.name}
+                  </button>
+                ))}
+                {/* Invisible spacer for webkit right padding fix */}
+                <div className="w-1 sm:w-3 shrink-0" />
+              </div>
+            </div>
+
+            {/* DESKTOP: Vertical Sidebar (hidden md:flex) */}
+            <div className="hidden md:flex flex-col w-64 shrink-0 space-y-2 sticky top-24 print:hidden">
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4 px-3">Audit Categories</h3>
+              {Object.entries(report.engines).map(([key, engine]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveCategory(key)}
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-between ${
+                    activeCategory === key 
+                      ? "bg-violet-600/10 text-violet-400 border border-violet-500/30 shadow-inner" 
+                      : "bg-transparent text-zinc-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent"
+                  }`}
+                >
+                  <span>{engine.name}</span>
+                  {activeCategory === key && <span className="text-violet-400">→</span>}
+                </button>
+              ))}
+            </div>
+
+            {/* CONTENT PANE: Only render the activeCategory */}
+            <div id="mobile-detail-pane" className="flex-1 w-full space-y-6">
+              {(() => {
+                const key = activeCategory;
+                const engine = report.engines[key];
+                if (!engine) return null;
                 const adjustedScore = getStrategyScore(key, engine.score, deviceStrategy);
                 const adjustedChecks = getChecksForStrategy(engine.checks, deviceStrategy);
                 return (
-                  <div key={key} className="flex flex-col">
-                    <button 
-                      onClick={() => toggleAccordion(key)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-slate-800/40 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-cyan-400 text-sm">
-                          {key === 'seo-tags' ? '🏷️' : key === 'page-speed' ? '⚡' : key === 'page-weight' ? '⚖️' : key === 'content-hierarchy' ? '📱' : key === 'server-security' ? '🛡️' : '🧠'}
-                        </span>
-                        <span className="text-xs font-bold text-white print:text-slate-900">{engine.name}</span>
+                  <div key={key} className="space-y-4 print:break-inside-avoid animate-fade-in-up">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-end border-b-2 border-slate-800 pb-3 gap-2">
+                      <div>
+                        <h3 className="text-xl font-bold text-white print:text-slate-900">{engine.name} Details</h3>
+                        <p className="text-xs text-zinc-400 mt-1">Detailed check-by-check breakdown of your {engine.name.toLowerCase()} performance.</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${adjustedScore >= 80 ? 'bg-emerald-500' : adjustedScore >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`}></div>
-                        <span className="text-zinc-500 text-[10px] transition-transform duration-200" style={{ transform: openAccordions[key] ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                      <span className="text-sm font-black text-violet-400 bg-violet-500/10 px-3 py-1.5 rounded-lg border border-violet-500/20">Rating: {adjustedScore}%</span>
+                    </div>
+                    
+                    {!isPremium && !["seo-tags", "page-speed", "aeo-geo"].includes(key) ? (
+                      <div className="bg-slate-900 print:bg-slate-50 border border-slate-800 print:border-slate-200 rounded-xl p-8 text-center space-y-3 relative overflow-hidden min-h-[200px] flex flex-col items-center justify-center">
+                        <span className="text-3xl">🔒</span>
+                        <h4 className="font-bold text-sm text-white print:text-slate-900 uppercase tracking-wider">{engine.name} Details Locked</h4>
+                        <p className="text-xs text-zinc-400 print:text-slate-600 max-w-sm leading-relaxed">
+                          Detailed diagnostics for payload weight, render-blocking resources, font configurations, server-response times, and HTML/CSS validation errors are reserved for premium members.
+                        </p>
+                        <button 
+                          onClick={() => router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`)}
+                          className="mt-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-500 hover:from-violet-500 hover:to-indigo-400 px-6 py-3 text-xs font-bold text-white shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                        >
+                          Upgrade to Pro Plan
+                        </button>
                       </div>
-                    </button>
-                    {openAccordions[key] && (
-                      !isPremium && !["seo-tags", "page-speed", "aeo-geo"].includes(key) ? (
-                        <div className="p-4 pt-3 pb-3 bg-slate-950/45 text-center space-y-2 border-t border-slate-800">
-                          <span className="text-[10px] text-zinc-400 print:text-slate-600 block font-bold">🔒 Advanced Engine Locked</span>
-                          <p className="text-[9px] text-zinc-500 leading-normal">Upgrade to Pro to view payload diagnostics and technical checklist details.</p>
-                          <button 
-                            onClick={() => router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`)}
-                            className="mt-1 inline-block text-[9px] text-violet-500 hover:text-violet-400 font-extrabold uppercase tracking-wider hover:underline cursor-pointer"
-                          >
-                            Upgrade to Pro
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="p-4 pt-3 bg-slate-950/40 space-y-2 border-t border-slate-800">
-                          {adjustedChecks.slice(0, 3).map((check, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-xs">
-                              <span className="text-zinc-400 print:text-slate-600 truncate max-w-[140px]">{check.name.replace(/ \(Mobile\)/, '')}</span>
-                              <span className={check.passed ? "text-emerald-400" : "text-rose-400"}>
-                                {check.passed ? "Pass" : "Fail"}
-                              </span>
+                    ) : (
+                      <div className="bg-slate-900 print:bg-white border border-slate-800 print:border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-800/60 shadow-sm">
+                        {adjustedChecks.map((check, idx) => (
+                          <div key={idx} className="group flex flex-col md:flex-row md:items-start justify-between p-5 text-sm hover:bg-slate-800/30 transition-all duration-200 gap-4">
+                            <div className="flex items-start gap-4 w-full md:w-3/5">
+                              <div className={`mt-0.5 flex items-center justify-center w-6 h-6 rounded-full shrink-0 shadow-inner ${check.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                                {check.passed ? (
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                ) : (
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                )}
+                              </div>
+                              <div className="space-y-1">
+                                <span className="font-bold text-slate-200 print:text-slate-700 block group-hover:text-white transition-colors">{check.name}</span>
+                                <p className="text-xs text-zinc-400 leading-relaxed">{check.desc}</p>
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      )
+                            <div className="flex flex-col items-start md:items-end w-full md:w-2/5 pl-10 md:pl-0 gap-2">
+                              <span className={`inline-flex justify-center md:justify-start items-center px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm border w-full ${
+                                check.passed 
+                                  ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20 print:bg-emerald-50 print:text-emerald-700 print:border-emerald-200" 
+                                  : "bg-rose-500/5 text-rose-400 border-rose-500/20 print:bg-rose-50 print:text-rose-700 print:border-rose-200"
+                              }`}>
+                                <span className="truncate">{check.value}</span>
+                              </span>
+                              {!check.passed && check.fix && (
+                                <div className="text-[10px] text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-md p-2 w-full text-left mt-1">
+                                  <strong className="text-indigo-200">Fix:</strong> {check.fix}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 );
-              })}
+              })()}
             </div>
           </div>
-        </div>
-
-        {/* FULL DESKTOP LOGS */}
-        <div className="space-y-6 mt-12 print:block">
-          {Object.entries(report.engines).map(([key, engine]) => {
-            const adjustedScore = getStrategyScore(key, engine.score, deviceStrategy);
-            const adjustedChecks = getChecksForStrategy(engine.checks, deviceStrategy);
-            return (
-              <div key={key} className="space-y-3 print:break-inside-avoid">
-                <div className="flex justify-between items-end border-b-2 border-slate-800 pb-2">
-                  <h3 className="text-xs font-bold text-white print:text-slate-900 uppercase tracking-widest">{engine.name} Log</h3>
-                  <span className="text-[10px] font-bold text-indigo-400">Category Rating: {adjustedScore}%</span>
-                </div>
-                {!isPremium && !["seo-tags", "page-speed", "aeo-geo"].includes(key) ? (
-                  <div className="bg-slate-900 print:bg-slate-50 border border-slate-800 print:border-slate-200 rounded-xl p-8 text-center space-y-3 relative overflow-hidden min-h-[160px] flex flex-col items-center justify-center">
-                    <span className="text-xl">🔒</span>
-                    <h4 className="font-bold text-xs text-white print:text-slate-900 uppercase tracking-wider">{engine.name} Details Locked</h4>
-                    <p className="text-[10px] text-zinc-400 print:text-slate-600 max-w-sm leading-relaxed">
-                      Detailed diagnostics for payload weight, render-blocking resources, font configurations, server-response times, and HTML/CSS validation errors are reserved for premium members.
-                    </p>
-                    <button 
-                      onClick={() => router.push(`/checkout/?url=${encodeURIComponent(urlParam)}`)}
-                      className="mt-2 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-400 hover:from-indigo-400 hover:to-cyan-300 px-4 py-2 text-[9px] font-bold text-white print:text-slate-900 shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer"
-                    >
-                      Upgrade to Pro Plan
-                    </button>
-                  </div>
-                ) : (
-                  <div className="bg-slate-900 print:bg-white border border-slate-800 print:border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-800/60 shadow-sm">
-                    {adjustedChecks.map((check, idx) => (
-                      <div key={idx} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 text-xs hover:bg-slate-800/30 transition-all duration-200 gap-3">
-                        <div className="flex items-center gap-3 w-full sm:w-[55%]">
-                          <div className={`flex items-center justify-center w-6 h-6 rounded-full shrink-0 shadow-inner ${check.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
-                            {check.passed ? (
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                            ) : (
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                            )}
-                          </div>
-                          <span className="font-bold text-slate-300 print:text-slate-700 truncate group-hover:text-white transition-colors">{check.name}</span>
-                        </div>
-                        <div className="flex justify-end w-full sm:w-[45%] pl-9 sm:pl-0">
-                          <span className={`inline-flex justify-center items-center px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow-sm border truncate w-full sm:w-44 ${
-                            check.passed 
-                              ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20 print:bg-emerald-50 print:text-emerald-700 print:border-emerald-200" 
-                              : "bg-rose-500/5 text-rose-400 border-rose-500/20 print:bg-rose-50 print:text-rose-700 print:border-rose-200"
-                          }`}>
-                            <span className="truncate">{check.value}</span>
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </div>
 
         {/* CTA BANNERS */}

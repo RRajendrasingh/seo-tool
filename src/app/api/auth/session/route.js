@@ -59,11 +59,17 @@ export async function GET() {
       if (tier === "multi") allowedQuota = 100;
     }
     
-    const auditsRunCount = await query(
-      "SELECT COUNT(*) as count FROM leads WHERE email = ? AND website != 'domain-pending'",
+    const freeAuditsCount = await query(
+      "SELECT COUNT(*) as count FROM leads WHERE email = ? AND website != 'domain-pending' AND packageRequest = 'Free Audit'",
       [decoded.email]
     );
-    const freeAuditsRun = auditsRunCount[0]?.count || 0;
+    const freeAuditsRun = freeAuditsCount[0]?.count || 0;
+    
+    const paidAuditsCount = await query(
+      "SELECT COUNT(*) as count FROM leads WHERE email = ? AND website != 'domain-pending' AND packageRequest = 'Paid Audit'",
+      [decoded.email]
+    );
+    const paidAuditsRun = paidAuditsCount[0]?.count || 0;
     
     return NextResponse.json({ 
       session: {
@@ -78,7 +84,8 @@ export async function GET() {
         agency_logo_id: dbDetails.agency_logo_id,
         allowed_quota: allowedQuota,
         free_audits_allowed: 2,
-        free_audits_run: freeAuditsRun
+        free_audits_run: freeAuditsRun,
+        paid_audits_run: paidAuditsRun
       }
     });
   } catch (err) {

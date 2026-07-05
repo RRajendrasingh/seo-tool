@@ -44,24 +44,33 @@ export default async function AuditPage() {
         if (purchasedSubs && purchasedSubs.length > 0) {
           for (const row of purchasedSubs) {
             if (row.packageRequest === "Premium weekly") {
-              allowedQuota += row.count * 1;
+              allowedQuota += row.count * 3;
             } else if (row.packageRequest === "Premium agency") {
-              allowedQuota += row.count * 5;
+              allowedQuota += row.count * 25;
+            } else if (row.packageRequest === "Premium multi") {
+              allowedQuota += row.count * 100;
             }
           }
         }
 
         if (allowedQuota === 0) {
           const tier = dbDetails.subscription_tier || "free";
-          if (tier === "weekly") allowedQuota = 1;
-          if (tier === "agency") allowedQuota = 5;
+          if (tier === "weekly") allowedQuota = 3;
+          if (tier === "agency") allowedQuota = 25;
+          if (tier === "multi") allowedQuota = 100;
         }
 
-        const auditsRunCount = await query(
-          "SELECT COUNT(*) as count FROM leads WHERE email = ?",
+        const freeAuditsCount = await query(
+          "SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Free Audit'",
           [decoded.email]
         );
-        const freeAuditsRun = auditsRunCount[0]?.count || 0;
+        const freeAuditsRun = freeAuditsCount[0]?.count || 0;
+
+        const paidAuditsCount = await query(
+          "SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Paid Audit'",
+          [decoded.email]
+        );
+        const paidAuditsRun = paidAuditsCount[0]?.count || 0;
 
         initialUser = {
           id: decoded.id,
@@ -75,7 +84,8 @@ export default async function AuditPage() {
           agency_logo_id: dbDetails.agency_logo_id,
           allowed_quota: allowedQuota,
           free_audits_allowed: 2,
-          free_audits_run: freeAuditsRun
+          free_audits_run: freeAuditsRun,
+          paid_audits_run: paidAuditsRun
         };
       } catch (err) {
         console.error("DB Error fetching user session:", err);

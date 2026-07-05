@@ -67,7 +67,9 @@ export async function GET() {
         readTime VARCHAR(50) NOT NULL,
         author VARCHAR(100) NOT NULL,
         featuredImage LONGTEXT,
-        featured BOOLEAN DEFAULT FALSE
+        featured BOOLEAN DEFAULT FALSE,
+        status VARCHAR(20) DEFAULT 'published',
+        source_name VARCHAR(255)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
@@ -108,6 +110,10 @@ export async function GET() {
       await query("ALTER TABLE leads ADD COLUMN report_data LONGTEXT");
     } catch { /* column already exists */ }
 
+    // 4c. Add source_name column to posts (safe migration)
+    try {
+      await query("ALTER TABLE posts ADD COLUMN source_name VARCHAR(255)");
+    } catch { /* column already exists */ }
 
     // 5. Create rss_seen table for Auto-Draft deduplication
     await query(`

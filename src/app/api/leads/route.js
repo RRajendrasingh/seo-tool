@@ -33,25 +33,35 @@ export async function POST(request) {
       return NextResponse.json({ error: "Email and website are required" }, { status: 400 });
     }
 
-    // Check if the user is a registered paid user. If not (free or unregistered), enforce their 2-audit limit + any purchased allowed_quota
-    let isUnlimitedTier = false;
+    // Separate quota logic for Free vs Paid Audits
+    let isPaidTier = false;
     let allowedQuota = 0;
     const userQuery = await query("SELECT subscription_tier, allowed_quota FROM users WHERE email = ?", [leadData.email.trim()]);
     if (userQuery && userQuery.length > 0) {
       const tier = userQuery[0].subscription_tier;
       allowedQuota = userQuery[0].allowed_quota || 0;
       if (tier === "weekly" || tier === "agency" || tier === "multi") {
-        isUnlimitedTier = true;
+        isPaidTier = true;
       }
     }
 
-    if (!isUnlimitedTier) {
-      const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ?", [leadData.email.trim()]);
-      const auditsCount = leadCountResult[0]?.count || 0;
-      const totalAllowed = 2 + allowedQuota;
-      if (auditsCount >= totalAllowed) {
+    if (isPaidTier) {
+      // Paid user: Enforce their specific allowedQuota, ignoring free audits
+      const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Paid Audit'", [leadData.email.trim()]);
+      const paidAuditsCount = leadCountResult[0]?.count || 0;
+      if (paidAuditsCount >= allowedQuota) {
         return NextResponse.json(
-          { error: `You have reached your limit of ${totalAllowed} audits for your email. Please upgrade to run more audits.` },
+          { error: `You have reached your limit of ${allowedQuota} paid audits for your plan.` },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Free user: Enforce 2 free audits, ignoring any paid audits they might have had before
+      const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Free Audit'", [leadData.email.trim()]);
+      const freeAuditsCount = leadCountResult[0]?.count || 0;
+      if (freeAuditsCount >= 2) {
+        return NextResponse.json(
+          { error: `You have reached your limit of 2 free audits for your email. Please upgrade to run more audits.` },
           { status: 403 }
         );
       }
@@ -77,7 +87,8 @@ export async function POST(request) {
     const seoScore = leadData.seoScore || 0;
     const grade = leadData.grade || "Pending";
     const status = leadData.status || "New";
-    const packageRequest = leadData.packageRequest || "Free Audit";
+    // Mark the audit as Free or Paid to keep quotas separate
+    const packageRequest = leadData.packageRequest || (isPaidTier ? "Paid Audit" : "Free Audit");
     const amountPaid = leadData.amountPaid || 0.00;
     const notes = leadData.notes || "";
 

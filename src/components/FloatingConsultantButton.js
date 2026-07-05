@@ -7,7 +7,7 @@ import { openCalendly } from "@/utils/calendly";
 export default function FloatingConsultantButton({ session }) {
   const [user, setUser] = useState(session);
   const [mounted, setMounted] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
 
   // Questionnaire modal states
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +19,10 @@ export default function FloatingConsultantButton({ session }) {
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      setIsMinimized(false);
+    }
+    
     if (session) {
       setName(session.name || session.user?.name || "");
       setEmail(session.email || session.user?.email || "");
@@ -121,14 +125,14 @@ export default function FloatingConsultantButton({ session }) {
 
   return (
     <>
-      {/* DESKTOP VIEW: Full Chat-style card (visible on md screens and up) */}
+      {/* DESKTOP & MOBILE VIEW: Full Chat-style card (visible when not minimized) */}
       {!isMinimized && (
-        <div className="hidden md:block fixed bottom-6 right-6 z-50 w-[260px] print:hidden select-none animate-fade-in-up group">
+        <div className="fixed z-50 print:hidden select-none animate-fade-in-up group bottom-4 right-4 w-[280px] md:bottom-6 md:right-6 md:w-[260px]">
           {/* Animated Glow Aura */}
-          <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-50 [.light_&]:opacity-70 blur-md group-hover:opacity-100 [.light_&]:group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+          <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-50 [.light_&]:hidden blur-md group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
           
           {/* Gradient Border Wrapper */}
-          <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl">
+          <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl [.light_&]:bg-none [.light_&]:bg-violet-200">
             <div className="relative h-full w-full rounded-[15px] bg-slate-950/95 [.light_&]:bg-white/95 backdrop-blur-xl p-3.5">
               
               {/* Header Title */}
@@ -156,11 +160,7 @@ export default function FloatingConsultantButton({ session }) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  {/* Green status dot */}
-                  <span className="absolute bottom-0 right-0 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-450 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 border border-slate-950"></span>
-                  </span>
+                  {/* Green status dot removed per user request */}
                 </div>
 
                 <div className="space-y-0.5 text-left flex-grow">
@@ -211,39 +211,36 @@ export default function FloatingConsultantButton({ session }) {
         </div>
       )}
 
-      {/* COMPACT BUBBLE (Mobile by default, OR Desktop when minimized) */}
+      {/* COMPACT PILL (Mobile or Desktop when minimized) */}
       <div
         onClick={(e) => {
-          if (typeof window !== "undefined" && window.innerWidth >= 768 && isMinimized) {
-            e.stopPropagation();
-            setIsMinimized(false);
-          } else {
-            handleOpenForm(e);
-          }
+          e.stopPropagation();
+          setIsMinimized(false);
         }}
-        className={`fixed bottom-6 right-6 z-50 print:hidden select-none group hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer ${
-          isMinimized ? "flex" : "flex md:hidden"
+        className={`fixed bottom-6 right-4 sm:right-6 z-50 print:hidden select-none group hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer ${
+          isMinimized ? "flex" : "hidden"
         }`}
       >
         {/* Animated Glow Aura */}
-        <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-60 [.light_&]:opacity-80 blur-md group-hover:opacity-100 transition duration-1000 animate-pulse"></div>
+        <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-60 [.light_&]:hidden blur-md group-hover:opacity-100 transition duration-1000 animate-pulse"></div>
         
         {/* Gradient Border Wrapper */}
-        <div className="relative h-14 w-14 rounded-full p-[2px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-xl">
-          <div className="relative h-full w-full rounded-full bg-slate-950/90 [.light_&]:bg-white/95 backdrop-blur-md flex items-center justify-center">
+        <div className="relative h-12 rounded-full p-[1.5px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-xl [.light_&]:bg-none [.light_&]:bg-violet-600 [.light_&]:shadow-violet-600/30">
+          <div className="relative h-full w-full rounded-full bg-slate-950/90 [.light_&]:bg-violet-600 backdrop-blur-md flex items-center gap-2 pl-1.5 pr-4">
             
-            {/* Google Meet Logo */}
-            <svg viewBox="0 0 24 24" className="w-7 h-7">
-              {/* Blue Camera Body */}
-              <rect x="3" y="6" width="11" height="12" rx="2" fill="#0080ff" />
-              {/* Green Camera lens */}
-              <path d="M14 10.5l5.5-4v11l-5.5-4v-3z" fill="#00e060" />
-            </svg>
+            {/* Avatar Profile (Video Camera) */}
+            <div className="relative h-8 w-8 rounded-full flex items-center justify-center bg-white/5 [.light_&]:bg-white/20 shrink-0">
+              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 -ml-0.5">
+                {/* Blue Camera Body */}
+                <rect x="3" y="6" width="11" height="12" rx="2" fill="#0080ff" />
+                {/* Green Camera lens */}
+                <path d="M14 10.5l5.5-4v11l-5.5-4v-3z" fill="#00e060" />
+              </svg>
+            </div>
             
-            {/* Status dot in the corner */}
-            <span className="absolute top-0 right-0 flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-450 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950 [.light_&]:border-white"></span>
+            {/* CTA Text */}
+            <span className="text-[11px] font-extrabold text-white whitespace-nowrap tracking-wide">
+              Talk to Expert
             </span>
             
           </div>
@@ -259,10 +256,10 @@ export default function FloatingConsultantButton({ session }) {
           <div className="min-h-full flex items-center justify-center p-4 sm:p-6 w-full">
             <div className="relative w-full max-w-md group animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
               {/* Animated Glow Aura behind Modal */}
-              <div className="absolute -inset-0.5 rounded-[1.75rem] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-40 [.light_&]:opacity-60 blur-xl group-hover:opacity-60 transition duration-1000 animate-pulse"></div>
+              <div className="absolute -inset-0.5 rounded-[1.75rem] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-40 [.light_&]:hidden blur-xl group-hover:opacity-60 transition duration-1000 animate-pulse"></div>
               
               {/* Gradient Border Wrapper */}
-              <div className="relative rounded-3xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl">
+              <div className="relative rounded-3xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl [.light_&]:bg-none [.light_&]:bg-slate-200">
                 <div className="relative h-full w-full rounded-[23px] bg-slate-950/95 [.light_&]:bg-white/95 backdrop-blur-2xl p-5 sm:p-8">
                   
                   {/* Close Button */}

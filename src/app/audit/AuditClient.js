@@ -1080,10 +1080,11 @@ export default function AuditClient({ initialUser = null }) {
       }
 
       setReport(newReport);
-      if (user && user.subscription_tier === "free") {
+      if (user) {
         setUser(prev => prev ? {
           ...prev,
-          free_audits_run: (prev.free_audits_run || 0) + 1
+          free_audits_run: user?.subscription_tier === "free" ? ((prev.free_audits_run || 0) + 1) : prev.free_audits_run,
+          paid_audits_run: user?.subscription_tier !== "free" ? ((prev.paid_audits_run || 0) + 1) : prev.paid_audits_run
         } : null);
       }
       try {
@@ -1523,13 +1524,27 @@ export default function AuditClient({ initialUser = null }) {
               <span className="text-4xl block">⚠️</span>
               <h3 className="text-base font-bold text-white uppercase tracking-wider">Free Audit Limit Reached</h3>
               <p className="text-xs text-zinc-400 leading-relaxed max-w-sm mx-auto">
-                You have used both of your 2 free registered account audits. Upgrade to our Weekly Plan to get unlimited audits, full core web vitals diagnostic logs, and white-label client PDF exports.
+                You have used both of your 2 free registered account audits. Upgrade to our Pro Monitor Plan to unlock 3 premium monthly audits, automated tracking, and white-label client PDF exports.
               </p>
               <button
                 onClick={() => router.push("/checkout?plan=weekly")}
                 className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
-                Upgrade to Weekly Plan ($49)
+                Upgrade to Pro Monitor ($29/mo)
+              </button>
+            </div>
+          ) : !auditId && user && user.subscription_tier !== "free" && user.paid_audits_run >= user.allowed_quota ? (
+            <div className="max-w-lg mx-auto rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md space-y-6 text-center">
+              <span className="text-4xl block">⚠️</span>
+              <h3 className="text-base font-bold text-white uppercase tracking-wider">Paid Audit Limit Reached</h3>
+              <p className="text-xs text-zinc-400 leading-relaxed max-w-sm mx-auto">
+                You have used all {user.allowed_quota} of your premium paid audits. To run more audits for additional clients, please upgrade your agency plan.
+              </p>
+              <button
+                onClick={() => router.push("/checkout?plan=agency")}
+                className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                View Agency Plans
               </button>
             </div>
           ) : (
@@ -2159,47 +2174,69 @@ export default function AuditClient({ initialUser = null }) {
               );
             })()}
 
+            {/* MOBILE: Swipeable Pill Tabs (lg:hidden) */}
+            <div id="mobile-category-tabs" className="lg:hidden sticky top-16 z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/60 mb-6 -mx-4 sm:-mx-6 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)]">
+              <div className="flex overflow-x-auto w-full gap-3 py-4 snap-x no-scrollbar items-center px-4 sm:px-6 scroll-pl-4 sm:scroll-pl-6">
+                {Object.entries(report.engines).map(([id, rawEng]) => {
+                  const isSelected = activeEngine === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => {
+                        setActiveEngine(id);
+                        setFilterTab("all");
+                        // Smooth scroll to the top of the details pane, offset by sticky header + tabs
+                        if (typeof window !== "undefined") {
+                          setTimeout(() => {
+                            const detailsEl = document.getElementById("mobile-detail-pane");
+                            if (detailsEl) {
+                              // 64px (main nav) + 72px (tabs) + margin = ~145px
+                              const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
+                              window.scrollTo({ top: y, behavior: "smooth" });
+                            }
+                          }, 50);
+                        }
+                      }}
+                      className={`snap-start shrink-0 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
+                        isSelected 
+                          ? "bg-violet-600 text-white shadow-md border border-violet-500" 
+                          : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-zinc-200"
+                      }`}
+                    >
+                      {rawEng.name}
+                    </button>
+                  );
+                })}
+                {/* Invisible spacer to prevent right-edge padding collapse in webkit */}
+                <div className="w-1 sm:w-3 shrink-0" />
+              </div>
+            </div>
+
             {/* Layout with Sidebar Selection & Detailed Outputs */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Sidebar Selector: 7 Engines */}
-              <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24 z-10">
+              
+              {/* DESKTOP: Sidebar Selector (hidden lg:block) */}
+              <div className="hidden lg:block lg:col-span-4 space-y-4 lg:sticky lg:top-24 z-10">
                 <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1 text-left">
                   Active Auditing Engines
                 </h3>
-                <div className="space-y-4 lg:space-y-3">
+                <div className="space-y-3">
                   {Object.entries(report.engines).map(([id, rawEng]) => {
                     const isSelected = activeEngine === id;
                     const adjustedScore = getStrategyScore(id, rawEng.score, deviceStrategy);
-                    const eng = {
-                      ...rawEng,
-                      score: adjustedScore
-                    };
+                    const eng = { ...rawEng, score: adjustedScore };
+                    
                     return (
-                      <div key={id} id={`engine-accordion-${id}`} className="w-full scroll-mt-24">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // On mobile, allow toggling the accordion closed
-                            if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                              if (activeEngine === id) {
-                                setActiveEngine(null); // Close it
-                                return;
-                              }
-                            }
-                            
-                            setActiveEngine(id);
-                            setFilterTab("all");
-
-                            // Smooth scroll the accordion to the top of the viewport on mobile
-                            if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                              setTimeout(() => {
-                                document.getElementById(`engine-accordion-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                              }, 250); // wait for previous accordion to collapse
-                            }
-                          }}
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => {
+                          setActiveEngine(id);
+                          setFilterTab("all");
+                        }}
                         className={`w-full text-left rounded-2xl border p-4.5 transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer ${
                           isSelected
-                            ? "bg-zinc-900 border-violet-500/50 shadow-md shadow-violet-500/2"
+                            ? "bg-zinc-900 border-violet-500/50 shadow-md shadow-violet-500/20"
                             : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700"
                         }`}
                       >
@@ -2236,28 +2273,16 @@ export default function AuditClient({ initialUser = null }) {
                           <span className="absolute text-[10px] font-black text-white">{eng.score}</span>
                         </div>
                       </button>
-                      
-                      {/* Mobile Accordion Details */}
-                      <div 
-                        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-                          isSelected 
-                            ? 'max-h-[5000px] opacity-100 mt-4 mb-8' 
-                            : 'max-h-0 opacity-0 mt-0 mb-0'
-                        }`}
-                      >
-                        {isSelected && renderEngineDetails(id)}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Detailed Results Output (Unified for Mobile & Desktop) */}
+              <div id="mobile-detail-pane" className="col-span-1 lg:col-span-8 w-full min-w-0">
+                {renderEngineDetails(activeEngine)}
               </div>
             </div>
-
-            {/* Detailed Results Output (Desktop Only) */}
-            <div className="hidden lg:block lg:col-span-8">
-              {renderEngineDetails(activeEngine)}
-            </div>
-          </div>
 
           {/* Back Button */}
             <div className="pt-6 text-center">
