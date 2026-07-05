@@ -19,9 +19,8 @@ export default function FloatingConsultantButton({ session }) {
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== "undefined" && window.innerWidth >= 768) {
-      setIsMinimized(false);
-    }
+    // Widget defaults to minimized (isMinimized = true) for all screens
+    // No auto-expand logic here anymore per user request.
     
     if (session) {
       setName(session.name || session.user?.name || "");
@@ -142,7 +141,7 @@ export default function FloatingConsultantButton({ session }) {
                 </h4>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsMinimized(true); }}
-                  className="text-zinc-500 hover:text-white [.light_&]:text-slate-400 [.light_&]:hover:text-slate-900 transition-colors cursor-pointer border-0 bg-transparent"
+                  className="text-slate-400 hover:text-slate-900 dark:text-zinc-500 dark:hover:text-white transition-colors cursor-pointer border-0 bg-transparent"
                   aria-label="Minimize"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -217,33 +216,34 @@ export default function FloatingConsultantButton({ session }) {
           e.stopPropagation();
           setIsMinimized(false);
         }}
-        className={`fixed bottom-6 right-4 sm:right-6 z-50 print:hidden select-none group hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer ${
+        className={`fixed bottom-6 right-4 sm:right-6 z-50 print:hidden select-none group transition-all duration-300 cursor-pointer flex-col items-end gap-2.5 ${
           isMinimized ? "flex" : "hidden"
         }`}
       >
-        {/* Animated Glow Aura */}
-        <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-60 [.light_&]:hidden blur-md group-hover:opacity-100 transition duration-1000 animate-pulse"></div>
-        
-        {/* Gradient Border Wrapper */}
-        <div className="relative h-12 rounded-full p-[1.5px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-xl [.light_&]:bg-none [.light_&]:bg-violet-600 [.light_&]:shadow-violet-600/30">
-          <div className="relative h-full w-full rounded-full bg-slate-950/90 [.light_&]:bg-violet-600 backdrop-blur-md flex items-center gap-2 pl-1.5 pr-4">
-            
-            {/* Avatar Profile (Video Camera) */}
-            <div className="relative h-8 w-8 rounded-full flex items-center justify-center bg-white/5 [.light_&]:bg-white/20 shrink-0">
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 -ml-0.5">
-                {/* Blue Camera Body */}
-                <rect x="3" y="6" width="11" height="12" rx="2" fill="#0080ff" />
-                {/* Green Camera lens */}
-                <path d="M14 10.5l5.5-4v11l-5.5-4v-3z" fill="#00e060" />
-              </svg>
-            </div>
-            
-            {/* CTA Text */}
-            <span className="text-[11px] font-extrabold text-white whitespace-nowrap tracking-wide">
-              Talk to Expert
+        {/* Tooltip Bubble */}
+        <div className="relative mr-4 sm:mr-5 animate-bounce" style={{ animationDuration: '2.5s' }}>
+          <div className="bg-violet-500 dark:bg-[#1a1625] border-none dark:border-solid dark:border dark:border-violet-500/50 rounded-xl px-3 py-2 shadow-lg shadow-violet-500/30 dark:shadow-violet-500/10">
+            <span className="text-xs font-bold text-white dark:text-violet-300 leading-tight block drop-shadow-sm">
+              Limited slots<br/>available.
             </span>
-            
           </div>
+          {/* Tooltip Arrow pointing exactly at the icon */}
+          <div className="absolute -bottom-[5px] right-[18px] w-2.5 h-2.5 bg-violet-500 dark:bg-[#1a1625] border-none dark:border-solid dark:border-b dark:border-r dark:border-violet-500/50 transform rotate-45"></div>
+        </div>
+
+        {/* Pill Button */}
+        <div className="relative h-[52px] rounded-[26px] border-2 border-transparent dark:border-violet-500 shadow-[0_0_15px_rgba(124,58,237,0.3)] dark:shadow-[0_0_15px_rgba(139,92,246,0.4)] bg-violet-600 dark:bg-[#161320] hover:bg-violet-500 dark:hover:bg-[#1a1625] transition-colors flex items-center px-5 gap-3.5 hover:scale-105 active:scale-95 group">
+          
+          {/* Text on the Left */}
+          <span className="text-[12.5px] font-bold text-white dark:text-slate-100 tracking-wide leading-[1.1] text-right">
+            Free video<br/>consultancy
+          </span>
+          
+          {/* Video Icon on the Right */}
+          <svg className="w-5 h-5 text-white dark:text-violet-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          
         </div>
       </div>
 

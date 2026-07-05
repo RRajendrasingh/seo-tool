@@ -226,12 +226,6 @@ function ReportContent() {
 
     async function verifyPayment() {
       try {
-        if (session?.subscription_tier === "weekly" || session?.subscription_tier === "agency") {
-          setIsPaid(true);
-          setCheckingPayment(false);
-          return;
-        }
-
         if (session?.email) {
           const res = await fetch("/api/leads/user");
           if (res.ok) {

@@ -835,8 +835,8 @@ export default function AdminDashboard() {
                 onClick={() => { setActiveTab(tab.id); if (tab.id === "drafts") refreshDrafts(); }}
                 className={`pb-4 px-4 sm:px-6 text-xs sm:text-sm font-semibold transition-all relative whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "text-violet-400 font-bold"
-                    : "text-zinc-400 hover:text-white"
+                    ? "text-violet-600 dark:text-violet-400 font-bold"
+                    : "text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
                 }`}
               >
                 <span className="mr-1.5">{tab.icon}</span>
