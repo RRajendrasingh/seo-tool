@@ -1548,6 +1548,32 @@ export default function AdminDashboard() {
               </form>
             </div>
 
+            {/* Section C: Data Management */}
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
+              <div className="space-y-1.5">
+                <h2 className="text-lg font-bold text-white">Data Management & Testing</h2>
+                <p className="text-xs text-zinc-550 leading-relaxed">
+                  Clear your local storage cache or reset the dashboard to use mock data for testing purposes.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-zinc-850/60">
+                <button
+                  type="button"
+                  onClick={handleClearAllData}
+                  className="flex-1 rounded-xl bg-zinc-800 py-3 text-xs font-semibold text-rose-400 border border-zinc-700 hover:bg-zinc-700 hover:text-rose-300 transition-all cursor-pointer shadow-sm text-center"
+                >
+                  Clear All Data
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetMockData}
+                  className="flex-1 rounded-xl bg-zinc-800 py-3 text-xs font-semibold text-zinc-300 border border-zinc-700 hover:bg-zinc-700 hover:text-white transition-all cursor-pointer shadow-sm text-center"
+                >
+                  Reset to Mock Leads
+                </button>
+              </div>
+            </div>
+
           </div>
         )}
 
