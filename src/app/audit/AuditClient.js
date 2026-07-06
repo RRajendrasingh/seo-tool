@@ -82,9 +82,10 @@ export default function AuditClient({ initialUser = null }) {
     return () => observer.disconnect();
   }, [report]);
 
-  // Scroll LHS sidebar to ensure active engine button is visible
+  // Scroll LHS sidebar & mobile tabs to ensure active engine button is visible
   useEffect(() => {
     if (typeof window !== "undefined" && activeEngine) {
+      // 1. Desktop LHS Sidebar
       const containerEl = document.getElementById("lhs-sidebar-engines");
       const btnEl = document.getElementById(`sidebar-engine-btn-${activeEngine}`);
       if (containerEl && btnEl) {
@@ -93,6 +94,20 @@ export default function AuditClient({ initialUser = null }) {
         if (btnRect.top < containerRect.top || btnRect.bottom > containerRect.bottom) {
           containerEl.scrollTo({
             top: btnEl.offsetTop - containerEl.offsetTop - 20,
+            behavior: "smooth"
+          });
+        }
+      }
+
+      // 2. Mobile Horizontal Tabs
+      const mobileContainerEl = document.getElementById("mobile-tabs-container");
+      const mobileBtnEl = document.getElementById(`mobile-tab-btn-${activeEngine}`);
+      if (mobileContainerEl && mobileBtnEl) {
+        const mobileContainerRect = mobileContainerEl.getBoundingClientRect();
+        const mobileBtnRect = mobileBtnEl.getBoundingClientRect();
+        if (mobileBtnRect.left < mobileContainerRect.left || mobileBtnRect.right > mobileContainerRect.right) {
+          mobileContainerEl.scrollTo({
+            left: mobileBtnEl.offsetLeft - mobileContainerEl.offsetLeft - 20,
             behavior: "smooth"
           });
         }
@@ -2249,12 +2264,13 @@ export default function AuditClient({ initialUser = null }) {
 
             {/* MOBILE: Swipeable Pill Tabs (lg:hidden) */}
             <div id="mobile-category-tabs" className="lg:hidden sticky top-16 z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/60 mb-6 -mx-4 sm:-mx-6 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)]">
-              <div className="flex overflow-x-auto w-full gap-3 py-4 snap-x no-scrollbar items-center px-4 sm:px-6 scroll-pl-4 sm:scroll-pl-6">
+              <div id="mobile-tabs-container" className="flex overflow-x-auto w-full gap-3 py-4 snap-x no-scrollbar items-center px-4 sm:px-6 scroll-pl-4 sm:scroll-pl-6">
                 {Object.entries(report.engines).map(([id, rawEng]) => {
                   const isSelected = activeEngine === id;
                   return (
                     <button
                       key={id}
+                      id={`mobile-tab-btn-${id}`}
                       onClick={() => {
                         setActiveEngine(id);
                         // Smooth scroll to the section
