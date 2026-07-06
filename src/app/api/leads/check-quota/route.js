@@ -17,6 +17,11 @@ export async function POST(request) {
       allowedQuota = userQuery[0].allowed_quota || 0;
       if (tier === "weekly" || tier === "agency" || tier === "multi") {
         isPaidTier = true;
+        if (allowedQuota === 0) {
+          if (tier === "weekly") allowedQuota = 3;
+          if (tier === "agency") allowedQuota = 25;
+          if (tier === "multi") allowedQuota = 100;
+        }
       }
     }
 
