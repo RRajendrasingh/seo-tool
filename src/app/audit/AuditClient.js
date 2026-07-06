@@ -82,6 +82,24 @@ export default function AuditClient({ initialUser = null }) {
     return () => observer.disconnect();
   }, [report]);
 
+  // Scroll LHS sidebar to ensure active engine button is visible
+  useEffect(() => {
+    if (typeof window !== "undefined" && activeEngine) {
+      const containerEl = document.getElementById("lhs-sidebar-engines");
+      const btnEl = document.getElementById(`sidebar-engine-btn-${activeEngine}`);
+      if (containerEl && btnEl) {
+        const containerRect = containerEl.getBoundingClientRect();
+        const btnRect = btnEl.getBoundingClientRect();
+        if (btnRect.top < containerRect.top || btnRect.bottom > containerRect.bottom) {
+          containerEl.scrollTo({
+            top: btnEl.offsetTop - containerEl.offsetTop - 20,
+            behavior: "smooth"
+          });
+        }
+      }
+    }
+  }, [activeEngine]);
+
   const isPremium = user?.subscription_tier === "weekly" || user?.subscription_tier === "agency" || (user?.allowed_quota && user?.allowed_quota > 0) || (typeof window !== "undefined" && (() => {
     try {
       const token = localStorage.getItem(`premium_token_${url}`);
@@ -2273,7 +2291,7 @@ export default function AuditClient({ initialUser = null }) {
                   Active Auditing Engines
                 </h3>
                 {/* Scrollable list */}
-                <div className="space-y-3 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 custom-scrollbar">
+                <div id="lhs-sidebar-engines" className="space-y-3 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 custom-scrollbar">
                   {Object.entries(report.engines).map(([id, rawEng]) => {
                     const isSelected = activeEngine === id;
                     const adjustedScore = getStrategyScore(id, rawEng.score, deviceStrategy);
@@ -2282,6 +2300,7 @@ export default function AuditClient({ initialUser = null }) {
                     return (
                       <button
                         key={id}
+                        id={`sidebar-engine-btn-${id}`}
                         type="button"
                         onClick={() => {
                           setActiveEngine(id);
