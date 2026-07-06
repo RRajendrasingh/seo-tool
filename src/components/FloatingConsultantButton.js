@@ -266,8 +266,8 @@ export default function FloatingConsultantButton({ session }) {
               <div className="absolute -inset-0.5 rounded-[1.75rem] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-40 [.light_&]:hidden blur-xl group-hover:opacity-60 transition duration-1000 animate-pulse"></div>
               
               {/* Gradient Border Wrapper */}
-              <div className="relative rounded-3xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl [.light_&]:bg-none [.light_&]:bg-slate-200 max-h-[95vh] flex flex-col">
-                <div className="relative h-full w-full overflow-y-auto rounded-[23px] bg-slate-950/95 [.light_&]:bg-white/95 backdrop-blur-2xl p-5 sm:p-6">
+              <div className="relative rounded-3xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl [.light_&]:bg-none [.light_&]:bg-slate-200 flex flex-col">
+                <div className="relative h-full w-full rounded-[23px] bg-slate-950/95 [.light_&]:bg-white/95 backdrop-blur-2xl p-4 sm:p-5">
                   
                   {/* Close Button */}
                   <button
@@ -278,7 +278,7 @@ export default function FloatingConsultantButton({ session }) {
                   </button>
 
                   {/* Modal Header */}
-                  <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 pb-3 sm:pb-4 border-b border-zinc-800/60 [.light_&]:border-slate-200/80 pr-6">
+                  <div className="flex items-start gap-3 mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-zinc-800/60 [.light_&]:border-slate-200/80 pr-6">
                     <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-violet-600/20 to-fuchsia-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-inner shadow-violet-500/20 flex-shrink-0">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -295,17 +295,17 @@ export default function FloatingConsultantButton({ session }) {
                     </div>
                   </div>
 
-                  <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-5">
+                  <form onSubmit={handleFormSubmit} className="space-y-3 sm:space-y-4">
                     {/* Preset Options */}
                     <div>
                       <label className="text-[10px] sm:text-[11px] uppercase tracking-widest font-extrabold text-zinc-500 block mb-2 sm:mb-3 [.light_&]:text-slate-400">
                         Select Your Main Goal:
                       </label>
-                      <div className="flex flex-col gap-2 sm:gap-2.5">
+                      <div className="flex flex-col gap-1.5 sm:gap-2">
                         {[
-                        { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>, text: "How to rank my website higher on Google" },
-                        { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>, text: "Creating a new website for my business" },
-                        { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>, text: "Improving my site speed & conversions" }
+                        { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>, text: "How to rank my website higher on Google" },
+                        { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>, text: "Creating a new website for my business" },
+                        { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>, text: "Improving my site speed & conversions" }
                       ].map((option) => {
                           const isSelected = query === option.text;
                           return (
@@ -313,7 +313,7 @@ export default function FloatingConsultantButton({ session }) {
                               type="button"
                               key={option.text}
                               onClick={() => setQuery(option.text)}
-                              className={`w-full text-left py-2.5 px-3 sm:py-3.5 sm:px-4 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer border ${
+                              className={`w-full text-left py-2 px-3 text-[11px] sm:text-[13px] font-bold rounded-xl transition-all cursor-pointer border ${
                                 isSelected 
                                   ? "bg-violet-600/10 border-violet-500 text-violet-300 shadow-[0_0_15px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/50 [.light_&]:bg-violet-50 [.light_&]:text-violet-700 [.light_&]:border-violet-500" 
                                   : "bg-slate-900/40 border-white/5 text-zinc-300 hover:bg-slate-800/60 hover:border-white/10 [.light_&]:bg-slate-50 [.light_&]:border-slate-200/80 [.light_&]:text-slate-700 [.light_&]:hover:border-slate-300"
@@ -344,8 +344,8 @@ export default function FloatingConsultantButton({ session }) {
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}
                           placeholder="E.g., I want to rank my local bakery website in New York..."
-                          rows={2}
-                          className="w-full bg-slate-900/40 border border-white/5 rounded-2xl p-3 sm:p-4 pr-12 text-xs sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-slate-900/60 transition-all resize-none [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-900 [.light_&]:placeholder-slate-400 [.light_&]:focus:bg-white shadow-inner"
+                          rows={1}
+                          className="w-full bg-slate-900/40 border border-white/5 rounded-2xl p-2.5 sm:p-3 pr-12 text-[11px] sm:text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-slate-900/60 transition-all resize-none [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-900 [.light_&]:placeholder-slate-400 [.light_&]:focus:bg-white shadow-inner"
                         />
                         {/* Voice input mic button */}
                         <button
@@ -377,7 +377,7 @@ export default function FloatingConsultantButton({ session }) {
                           onChange={(e) => setName(e.target.value)}
                           placeholder="John Doe"
                           required
-                          className="w-full bg-slate-900/40 border border-white/5 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-slate-900/60 transition-all shadow-inner [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-900 [.light_&]:placeholder-slate-400 [.light_&]:focus:bg-white"
+                          className="w-full bg-slate-900/40 border border-white/5 rounded-xl px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-slate-900/60 transition-all shadow-inner [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-900 [.light_&]:placeholder-slate-400 [.light_&]:focus:bg-white"
                         />
                       </div>
                       <div>
@@ -390,7 +390,7 @@ export default function FloatingConsultantButton({ session }) {
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="you@email.com"
                           required
-                          className="w-full bg-slate-900/40 border border-white/5 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-slate-900/60 transition-all shadow-inner [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-900 [.light_&]:placeholder-slate-400 [.light_&]:focus:bg-white"
+                          className="w-full bg-slate-900/40 border border-white/5 rounded-xl px-3 py-2 sm:py-2.5 text-[11px] sm:text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-slate-900/60 transition-all shadow-inner [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-900 [.light_&]:placeholder-slate-400 [.light_&]:focus:bg-white"
                         />
                       </div>
                     </div>
@@ -400,10 +400,10 @@ export default function FloatingConsultantButton({ session }) {
                     )}
 
                     {/* Submit */}
-                    <div className="pt-1 sm:pt-3">
+                    <div className="pt-0.5 sm:pt-1">
                       <button
                         type="submit"
-                        className="w-full py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 hover:opacity-90 text-white font-extrabold text-[11px] sm:text-sm uppercase tracking-widest transition-all duration-300 border-0 cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] active:scale-[0.98]"
+                        className="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 hover:opacity-90 text-white font-extrabold text-[11px] sm:text-[12px] uppercase tracking-widest transition-all duration-300 border-0 cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] active:scale-[0.98]"
                       >
                         <span className="flex items-center justify-center gap-2.5">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 sm:w-4.5 sm:h-4.5">
