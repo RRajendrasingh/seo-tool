@@ -654,4 +654,17 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
   color: #4f46e5 !important;
 }
 
-
+/* Custom Thin Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 92, 246, 0.2);
+  border-radius: 10px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 92, 246, 0.5);
+}

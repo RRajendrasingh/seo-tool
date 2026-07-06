@@ -1,5 +1,37 @@
 import puppeteer from "puppeteer";
 
+async function callGemini(systemInstruction, userPrompt) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Gemini API key is unconfigured.");
+  }
+  
+  // Try gemini-2.5-flash first, fallback to gemini-1.5-flash
+  const models = ["gemini-2.5-flash", "gemini-1.5-flash"];
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          systemInstruction: { parts: [{ text: systemInstruction }] }
+        })
+      });
+      
+      const data = await res.json();
+      if (res.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
+      }
+      console.warn(`Gemini model ${model} failed:`, data.error?.message || "unknown error");
+    } catch (e) {
+      console.warn(`Failed to connect to ${model}:`, e.message);
+    }
+  }
+  throw new Error("All Gemini API models failed.");
+}
+
 export async function POST(req) {
   try {
     const { message, history = [] } = await req.json();
@@ -64,26 +96,39 @@ export async function POST(req) {
       }
     }
 
-    // Construct the AI response response based on the Puppeteer crawl
-    let aiResponse = "";
+    // Construct prompt for Gemini
+    const systemInstruction = "You are Sarah, a highly experienced and professional AI SEO Consultant. You are helping the user optimize their website. You can answer general SEO questions, analyze websites, and offer specific technical recommendations. Keep your answers concise, clear, and structured in Markdown.";
+    
+    let userPrompt = message;
     if (auditData) {
-      aiResponse = `🔍 **I visited ${url} using my Puppeteer browser and analyzed its SEO structure.** Here is my report:\n\n` +
-        `*   **Meta Title:** "${auditData.title}" (${auditData.title.length} characters)\n` +
-        `    ${auditData.title.length > 60 ? "⚠️ Title is too long (keep under 60 chars for Google)." : "✅ Length is optimal."}\n` +
-        `*   **Meta Description:** "${auditData.description}"\n` +
-        `    ${auditData.description === "Missing Meta Description" ? "❌ Critical error: Missing description." : auditData.description.length > 160 ? "⚠️ Description is too long (keep under 160 chars)." : "✅ Description looks good."}\n` +
-        `*   **Heading Tags (H1):** ${auditData.h1s.length > 0 ? auditData.h1s.map(h => `"${h}"`).join(", ") : "❌ Missing H1 tag!"}\n` +
-        `    ${auditData.h1s.length > 1 ? "⚠️ Alert: Multiple H1 tags found. Stick to a single H1 tag for optimal crawler indexation." : ""}\n` +
-        `*   **Image Optimization:** Found **${auditData.totalImages} images**, and **${auditData.missingAlts} are missing alt text**.\n` +
-        `    ${auditData.missingAlts > 0 ? `💡 Recommendation: Add descriptive alt attributes to the ${auditData.missingAlts} un-optimized images to build keyword relevance.` : "✅ All images optimized."}\n\n` +
-        `What would you like me to rewrite or fix for you next?`;
-    } else {
-      // General advice or query
-      const lower = message.toLowerCase();
-      if (lower.includes("hello") || lower.includes("hi")) {
-        aiResponse = "Hi! I'm Sarah, your AI SEO Assistant. Give me a website link (like `example.com`), and I will launch Puppeteer to load it and run a real-time crawl analysis for you!";
+      userPrompt = `Website Audited: ${url}
+Title: "${auditData.title}" (${auditData.title.length} characters)
+Description: "${auditData.description}"
+H1 Headings: ${JSON.stringify(auditData.h1s)}
+Total Images: ${auditData.totalImages}, Missing Alt text: ${auditData.missingAlts}
+
+User query: "${message}"
+
+Analyze the audited website data above and respond directly to the user's query with actionable recommendations. Include specific call-outs for any critical errors (like missing descriptions or multiple/missing H1 tags). Keep the response engaging, conversational, and highly structured in Markdown.`;
+    }
+
+    let aiResponse = "";
+    try {
+      aiResponse = await callGemini(systemInstruction, userPrompt);
+    } catch (err) {
+      console.error("Gemini call failed, falling back:", err.message);
+      // Static fallback if API fails
+      if (auditData) {
+        aiResponse = `🔍 **I visited ${url} using my Puppeteer browser.** Here is my report:\n\n` +
+          `*   **Meta Title:** "${auditData.title}" (${auditData.title.length} characters)\n` +
+          `    ${auditData.title.length > 60 ? "⚠️ Title is too long (keep under 60 chars)." : "✅ Length is optimal."}\n` +
+          `*   **Meta Description:** "${auditData.description}"\n` +
+          `    ${auditData.description === "Missing Meta Description" ? "❌ Critical error: Missing description." : "✅ Description looks good."}\n` +
+          `*   **Heading Tags (H1):** ${auditData.h1s.length > 0 ? auditData.h1s.map(h => `"${h}"`).join(", ") : "❌ Missing H1 tag!"}\n` +
+          `*   **Image alt attributes:** Found ${auditData.totalImages} images (${auditData.missingAlts} missing alt text).\n\n` +
+          `What would you like me to optimize next?`;
       } else {
-        aiResponse = "I can analyze any website for SEO. Just send me a message containing a website URL (e.g., `mysite.com`) and I will crawl the site and run an audit.";
+        aiResponse = "I can analyze any website. Send a message containing a website URL (e.g. `mysite.com`) and I will crawl the site and run an audit.";
       }
     }
 

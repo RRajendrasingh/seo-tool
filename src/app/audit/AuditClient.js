@@ -2272,7 +2272,8 @@ export default function AuditClient({ initialUser = null }) {
                 <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1 text-left">
                   Active Auditing Engines
                 </h3>
-                <div className="space-y-3">
+                {/* Scrollable list */}
+                <div className="space-y-3 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 custom-scrollbar">
                   {Object.entries(report.engines).map(([id, rawEng]) => {
                     const isSelected = activeEngine === id;
                     const adjustedScore = getStrategyScore(id, rawEng.score, deviceStrategy);
@@ -2292,14 +2293,17 @@ export default function AuditClient({ initialUser = null }) {
                             }
                           }
                         }}
-                        className={`w-full text-left rounded-2xl border p-4.5 transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer ${
+                        className={`w-full relative overflow-hidden text-left rounded-2xl border p-4.5 transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer ${
                           isSelected
-                            ? "bg-zinc-900 border-violet-500/50 shadow-md shadow-violet-500/20"
-                            : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700"
+                            ? "bg-violet-900/20 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/50 scale-[1.02]"
+                            : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/60"
                         }`}
                       >
-                        <div className="space-y-1 min-w-0">
-                          <h4 className="text-xs font-bold text-white">{eng.name}</h4>
+                        {isSelected && (
+                          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.8)]" />
+                        )}
+                        <div className={`space-y-1 min-w-0 ${isSelected ? 'pl-2' : ''} transition-all`}>
+                          <h4 className={`text-xs font-bold ${isSelected ? 'text-violet-300' : 'text-white'}`}>{eng.name}</h4>
                           <p className="text-xxs text-zinc-500 line-clamp-1 leading-relaxed">
                             {eng.desc}
                           </p>
