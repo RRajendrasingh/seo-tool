@@ -294,7 +294,7 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                     // Server will verify ownership before returning the stored report.
                     const isAuditPaid = audit.packageRequest && audit.packageRequest !== "Free Audit";
                     const viewUrl = (isPaid || isAuditPaid)
-                      ? `/audit/report?url=${encodeURIComponent(audit.website)}`
+                      ? `/audit/report?id=${encodeURIComponent(audit.id)}`
                       : `/audit?id=${encodeURIComponent(audit.id)}`;
                     return (
                     <div key={audit.id} className="flex flex-col rounded-2xl card-inner border border-slate-800 hover:border-slate-700 transition-all gap-4 overflow-hidden">

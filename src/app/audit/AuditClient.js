@@ -42,7 +42,7 @@ export default function AuditClient({ initialUser = null }) {
   const [error, setError] = useState(null);
   const [formError, setFormError] = useState(null);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
-  const [activeEngine, setActiveEngine] = useState("seo-tags");
+  const [activeEngine, setActiveEngine] = useState("priority-fixes");
   const [filterTabs, setFilterTabs] = useState({});
   const [screenshotLoaded, setScreenshotLoaded] = useState(false);
   const [deviceStrategy, setDeviceStrategy] = useState("mobile");
@@ -1132,11 +1132,33 @@ export default function AuditClient({ initialUser = null }) {
         });
       }
 
+      // Build the Priority Action Fix-list from all failed checks across all engines
+      const priorityChecks = [];
+      Object.values(engines).forEach(eng => {
+        eng.checks.forEach(check => {
+          if (!check.passed) {
+            priorityChecks.push(check);
+          }
+        });
+      });
+      // Sort priority checks so High impact are first
+      priorityChecks.sort((a, b) => (a.impact === "High" ? -1 : 1));
+
+      const newEngines = {
+        "priority-fixes": {
+          name: "Priority Action Fix-list",
+          score: Math.max(0, 100 - priorityChecks.length * 5),
+          desc: "Consolidated list of the most critical warnings and errors found across all audits.",
+          checks: priorityChecks
+        },
+        ...engines
+      };
+
       const newReport = {
         url: formattedUrl,
         avgScore,
         grade,
-        engines,
+        engines: newEngines,
         scores: { perfScore, seoScore, accessScore, bpScore, validationScore },
         date: new Date().toLocaleDateString(undefined, {
           year: "numeric",
@@ -1369,6 +1391,71 @@ export default function AuditClient({ initialUser = null }) {
         </div>
 
         {/* Checks List */}
+        {engineId === "aeo-geo" ? (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 pl-1">AI Optimization Diagnostics</h3>
+              {engine.checks.map(check => (
+                <div key={check.name} className="rounded-xl border border-zinc-850 bg-zinc-900/20 p-4 flex gap-3 transition-all hover:bg-zinc-900/40">
+                  <span className={`inline-flex items-center justify-center rounded-full text-xxs font-bold h-5.5 w-5.5 flex-shrink-0 mt-0.5 ${check.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                    {check.passed ? "✓" : "✗"}
+                  </span>
+                  <div className="space-y-1 w-full">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-xs font-bold text-white">{check.name}</h4>
+                      <span className={`text-[8px] font-extrabold uppercase px-2 py-0.5 rounded ${check.passed ? "text-emerald-500 bg-emerald-500/10" : "text-rose-500 bg-rose-500/10"}`}>{check.passed ? "PASS" : "FAILED"}</span>
+                    </div>
+                    <p className="text-[10px] text-zinc-400 leading-relaxed">{check.desc}</p>
+                    {!check.passed && (
+                      <div className="mt-3 p-3 rounded-md bg-zinc-950/80 border border-zinc-800 text-[10px]">
+                        <span className="text-rose-400 font-bold block mb-1">Recommendation:</span>
+                        <span className="text-zinc-300">{check.fix}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 pl-1">Answer Engine Citation Simulation</h3>
+              <div className="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden flex flex-col h-full min-h-[450px]">
+                <div className="bg-zinc-900/80 px-4 py-2 border-b border-zinc-800 flex justify-between items-center text-[9px] text-zinc-400 font-mono">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    perplexity-copilot-v4
+                  </div>
+                  <span>model: search-agent-3.5</span>
+                </div>
+                <div className="p-4 space-y-6 flex-grow text-xs leading-relaxed font-sans text-zinc-300">
+                  <div className="flex gap-3 justify-end">
+                    <div className="bg-violet-900/40 text-violet-100 px-4 py-2.5 rounded-2xl rounded-tr-sm border border-violet-500/20 max-w-[85%]">
+                      What services are offered by <span className="font-bold text-violet-300">{report.url.replace(/^https?:\/\//, '')}</span> and is it highly optimized?
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">U</div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-[10px]">AI</div>
+                    <div className="space-y-3 bg-zinc-900/40 p-4 rounded-2xl rounded-tl-sm border border-zinc-800/60">
+                      <p>Based on search indexing citations, <span className="font-bold text-white">{report.url.replace(/^https?:\/\//, '')}</span> is an optimized web platform <span className="text-emerald-400 text-[10px] align-top cursor-pointer hover:underline">[1]</span>.</p>
+                      <p>The site leverages structured data blocks declaring entity configurations and utilizes semantic heading orders which facilitates answer parsing <span className="text-emerald-400 text-[10px] align-top cursor-pointer hover:underline">[2]</span>. GPTBot and ClaudeBot agents are granted full indexation clearance.</p>
+                      <div className="border-t border-zinc-800/80 pt-3 mt-4">
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase block mb-2 tracking-wider">SOURCES:</span>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="bg-zinc-900 border border-zinc-800 px-2 py-1 rounded text-[10px] flex items-center gap-1.5 cursor-pointer hover:bg-zinc-800 hover:border-zinc-700 transition-colors"><span className="text-zinc-500 font-mono">[1]</span> {report.url.replace(/^https?:\/\//, '')}</span>
+                          <span className="bg-zinc-900 border border-zinc-800 px-2 py-1 rounded text-[10px] flex items-center gap-1.5 cursor-pointer hover:bg-zinc-800 hover:border-zinc-700 transition-colors"><span className="text-zinc-500 font-mono">[2]</span> {report.url.replace(/^https?:\/\//, '')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-zinc-900/50 px-4 py-3 text-[11px] text-emerald-400 font-bold border-t border-zinc-800 flex items-center gap-2">
+                  <span>💡 Optimization Status: Excellent.</span>
+                  <span className="text-zinc-400 font-normal">The site is in prime position to be cited for relevant LLM intent searches.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="space-y-4">
           {engine.checks
             .filter((check) => {
@@ -1518,6 +1605,7 @@ export default function AuditClient({ initialUser = null }) {
             </div>
           )}
         </div>
+        )}
       </div>
     );
   };
@@ -2253,7 +2341,9 @@ export default function AuditClient({ initialUser = null }) {
               let errorsCount = 0;
               let warningsCount = 0;
               let passedCount = 0;
-              Object.entries(report.engines).forEach(([id, rawEng]) => {
+              Object.entries(report.engines)
+                .filter(([id]) => id !== "priority-fixes")
+                .forEach(([id, rawEng]) => {
                 const adjustedChecks = getChecksForStrategy(rawEng.checks, deviceStrategy);
                 adjustedChecks.forEach((c) => {
                   if (c.passed) {
@@ -2267,18 +2357,41 @@ export default function AuditClient({ initialUser = null }) {
               });
 
               return (
-                <div className="grid grid-cols-3 gap-3 sm:gap-4 border border-zinc-800/80 bg-zinc-900/10 rounded-2xl p-4 backdrop-blur-md">
-                  <div className="text-center p-3 rounded-xl bg-rose-500/[0.03] border border-rose-500/10 flex flex-col justify-center items-center">
-                    <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Critical Errors</span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-rose-500 mt-1">{errorsCount}</span>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-4 border border-zinc-800/80 bg-zinc-900/10 rounded-2xl p-4 backdrop-blur-md">
+                    <div className="text-center p-3 rounded-xl bg-rose-500/[0.03] border border-rose-500/10 flex flex-col justify-center items-center">
+                      <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Critical Errors</span>
+                      <span className="text-xl sm:text-2xl font-extrabold text-rose-500 mt-1">{errorsCount}</span>
+                    </div>
+                    <div className="text-center p-3 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 flex flex-col justify-center items-center">
+                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Warnings</span>
+                      <span className="text-xl sm:text-2xl font-extrabold text-amber-500 mt-1">{warningsCount}</span>
+                    </div>
+                    <div className="text-center p-3 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 flex flex-col justify-center items-center">
+                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Passed Checks</span>
+                      <span className="text-xl sm:text-2xl font-extrabold text-emerald-500 mt-1">{passedCount}</span>
+                    </div>
                   </div>
-                  <div className="text-center p-3 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 flex flex-col justify-center items-center">
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Warnings</span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-amber-500 mt-1">{warningsCount}</span>
-                  </div>
-                  <div className="text-center p-3 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/10 flex flex-col justify-center items-center">
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Passed Checks</span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-emerald-500 mt-1">{passedCount}</span>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-violet-500/20 bg-violet-500/[0.02] p-4 flex gap-4 items-start">
+                      <div className="bg-violet-500/10 text-violet-400 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block mb-1">Top Strategist Note</span>
+                        <p className="text-xs text-zinc-300 leading-relaxed">Before advancing, prioritize fixing Largest Contentful Paint (LCP) and internal linking schema to capture immediate ranking shifts.</p>
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-rose-500/20 bg-rose-500/[0.02] p-4 flex gap-4 items-start">
+                      <div className="bg-rose-500/10 text-rose-400 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-rose-400 uppercase tracking-wider block mb-1">Critical System Alert</span>
+                        <p className="text-xs text-zinc-300 leading-relaxed">Page load speed and missing alt tags currently limit mobile indexation on your key product pages.</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

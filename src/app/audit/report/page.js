@@ -17,6 +17,7 @@ function ReportContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const urlParam = searchParams.get("url") || "";
+  const idParam = searchParams.get("id") || "";
 
   // Page States
   const [adminSettings, setAdminSettings] = useState(null);
@@ -34,6 +35,7 @@ function ReportContent() {
   const [error, setError] = useState(null);
   const [session, setSession] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
+  const [existingLeadId, setExistingLeadId] = useState(null);
 
   // Accordion state for new UI
   const [openAccordions, setOpenAccordions] = useState({});
@@ -216,13 +218,44 @@ function ReportContent() {
   // 1. Verify Payment on Mount (Secure Server-Side Check)
   useEffect(() => {
     if (loadingSession) return;
-    if (!urlParam) {
+    if (!urlParam && !idParam) {
       router.push("/audit");
       return;
     }
 
     async function verifyPayment() {
       try {
+        // If idParam exists, load the report directly from the database!
+        if (idParam) {
+          const res = await fetch(`/api/leads/report/${encodeURIComponent(idParam)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.found && data.report) {
+              setReport(data.report);
+              setIsPaid(true);
+              setCheckingPayment(false);
+              return;
+            } else if (data.meta) {
+              // Metadata is found (meaning the lead is in the database), but report_data is empty.
+              // We will run the audit on-the-fly for this existing lead and save it.
+              setExistingLeadId(idParam);
+              setIsPaid(true);
+              
+              const targetUrl = data.meta.website;
+              if (targetUrl) {
+                runAudit(targetUrl);
+                setCheckingPayment(false);
+                return;
+              }
+            }
+          } else {
+            // Unauthorized or locked
+            setIsPaid(false);
+            setCheckingPayment(false);
+            return;
+          }
+        }
+
         const cleanUrlParam = urlParam.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
         
         // Check for local storage guest token first
@@ -274,15 +307,15 @@ function ReportContent() {
     }
     
     verifyPayment();
-  }, [urlParam, router, loadingSession, session]);
+  }, [urlParam, idParam, router, loadingSession, session]);
 
   // 1b. Trigger Audit run when payment is verified or session tier is active
   useEffect(() => {
-    if (isPaid && !report && !loading && !error && urlParam) {
+    if (isPaid && !report && !loading && !error && urlParam && !idParam) {
       runAudit(urlParam);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaid, report, loading, error, urlParam]);
+  }, [isPaid, report, loading, error, urlParam, idParam]);
 
   // Loading animation loop
   useEffect(() => {
@@ -836,7 +869,7 @@ function ReportContent() {
       else if (avgScore >= 70) grade = "C";
       else if (avgScore >= 50) grade = "D";
 
-      setReport({
+      const compiledReport = {
         url: formattedUrl,
         avgScore,
         grade,
@@ -847,7 +880,26 @@ function ReportContent() {
           month: "long",
           day: "numeric"
         })
-      });
+      };
+
+      setReport(compiledReport);
+
+      if (existingLeadId) {
+        try {
+          await fetch("/api/leads/save-report", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              leadId: existingLeadId, 
+              reportJson: compiledReport, 
+              seoScore: avgScore, 
+              grade 
+            })
+          });
+        } catch (saveErr) {
+          console.error("Failed to save report data back to lead:", saveErr);
+        }
+      }
     } catch (err) {
       console.error(err);
       if (err.message === "429_QUOTA_EXCEEDED") {
