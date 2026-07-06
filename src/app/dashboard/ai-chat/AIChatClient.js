@@ -123,23 +123,27 @@ export default function AIChatClient({ user }) {
   };
 
   return (
-    <div className="bg-slate-950 min-h-screen text-slate-300 flex flex-col font-sans transition-colors duration-300">
+    <div className="bg-zinc-950 min-h-screen text-zinc-300 flex flex-col font-sans transition-colors duration-300 relative isolate overflow-hidden">
+      {/* Background Glows */}
+      <div className="absolute top-0 left-1/4 -z-10 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-violet-600/10 blur-[120px] opacity-70 pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 -z-10 h-[600px] w-[600px] translate-x-1/3 rounded-full bg-cyan-600/10 blur-[150px] opacity-60 pointer-events-none" />
       {/* Header bar */}
-      <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push("/dashboard")}
-            className="h-8 px-3 rounded-xl bg-slate-900 hover:bg-slate-850 text-xxs font-bold text-slate-400 hover:text-white transition-all border border-slate-800 cursor-pointer"
+            className="h-8 px-3 rounded-xl bg-zinc-900/60 hover:bg-zinc-800 text-xxs font-bold text-zinc-400 hover:text-white transition-all border border-zinc-800/80 shadow-inner cursor-pointer"
           >
             ← Back to Dashboard
           </button>
-          <div className="h-1.5 w-1.5 rounded-full bg-slate-800" />
-          <h1 className="text-xs font-bold text-slate-200 uppercase tracking-widest">
+          <div className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
+          <h1 className="text-xs font-black text-zinc-200 uppercase tracking-widest flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
             AI Crawl Consultant
           </h1>
         </div>
 
-        <div className="flex items-center gap-3 p-1.5 rounded-2xl border border-slate-900 bg-slate-900/10">
+        <div className="flex items-center gap-3 p-1.5 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 shadow-inner">
           <div className="h-7 w-7 rounded-xl bg-violet-600/10 border border-violet-500/20 flex items-center justify-center text-xs overflow-hidden shrink-0">
             {user.picture?.startsWith("http") ? (
               <img src={user.picture} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -148,18 +152,18 @@ export default function AIChatClient({ user }) {
             )}
           </div>
           <div className="text-left hidden sm:block pr-2">
-            <span className="text-[7.5px] uppercase tracking-wider font-extrabold text-slate-500 block leading-none">Crawl Account</span>
+            <span className="text-[7.5px] uppercase tracking-wider font-extrabold text-zinc-500 block leading-none">Crawl Account</span>
             <p className="text-[9px] font-bold text-primary truncate max-w-[120px] leading-tight">{user.email}</p>
           </div>
         </div>
       </header>
 
       {/* Main chat window container */}
-      <div className="flex-grow max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col md:flex-row gap-6 overflow-hidden">
+      <div className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col md:flex-row gap-6 lg:gap-10 overflow-hidden">
         
         {/* Left Column: Sarah profile and suggestions */}
-        <div className="w-full md:w-64 flex-shrink-0 space-y-6">
-          <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-5 text-left space-y-4">
+        <div className="w-full md:w-72 lg:w-80 flex-shrink-0 space-y-6 flex flex-col h-full">
+          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-5 lg:p-6 text-left space-y-4 shadow-xl backdrop-blur-md">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="h-11 w-11 rounded-full border-2 border-emerald-500/80 flex items-center justify-center bg-violet-600/10 text-xl shadow-[0_0_10px_rgba(16,185,129,0.3)] overflow-hidden">
@@ -167,43 +171,43 @@ export default function AIChatClient({ user }) {
                 </div>
                 <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-450 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950"></span>
-                </span>
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-white leading-none">Sarah</h3>
-                <span className="text-[8px] uppercase font-black tracking-wider text-zinc-500 block mt-1">SEO Consultant</span>
-              </div>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-zinc-950"></span>
+              </span>
             </div>
-
-            <p className="text-[10px] text-slate-400 leading-relaxed">
-              I can crawl websites directly using Puppeteer. Just type a message containing a URL, and I will perform an analysis of its titles, descriptions, missing images, and metadata!
-            </p>
-
-            <div className="border-t border-slate-850 pt-3">
-              <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Capabilities:</span>
-              <ul className="text-[9.5px] text-slate-400 space-y-1.5 list-disc pl-3">
-                <li>Puppeteer browser crawler</li>
-                <li>H1 heading tags audit</li>
-                <li>Meta tag optimizations</li>
-                <li>Image ALT attribute reports</li>
-              </ul>
+            <div>
+              <h3 className="text-sm font-bold text-white leading-none">Sarah</h3>
+              <span className="text-[9px] uppercase font-black tracking-wider text-zinc-500 block mt-1.5">SEO Consultant</span>
             </div>
           </div>
 
-          <div className="hidden md:block bg-slate-900/20 border border-slate-850 rounded-3xl p-4 text-left">
-            <span className="text-[8px] uppercase tracking-widest font-black text-slate-500 block mb-2">Helpful Tip</span>
-            <p className="text-[9.5px] text-slate-500 leading-normal">
-              Type `crawling speedcheck www.mysite.com` to analyze page structures, or query standard SEO tips.
-            </p>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            I can crawl websites directly using Puppeteer. Just type a message containing a URL, and I will perform an analysis of its titles, descriptions, missing images, and metadata!
+          </p>
+
+          <div className="border-t border-zinc-800/80 pt-4">
+            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider block mb-2.5">Capabilities:</span>
+            <ul className="text-[10px] text-zinc-400 space-y-2 list-disc pl-3">
+              <li>Puppeteer browser crawler</li>
+              <li>H1 heading tags audit</li>
+              <li>Meta tag optimizations</li>
+              <li>Image ALT attribute reports</li>
+            </ul>
           </div>
         </div>
 
+        <div className="hidden md:block bg-zinc-900/20 border border-zinc-800/60 rounded-3xl p-5 text-left shadow-inner mt-auto mb-6">
+          <span className="text-[9px] uppercase tracking-widest font-black text-violet-500 block mb-2">Helpful Tip</span>
+          <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">
+            Type `crawling speedcheck www.mysite.com` to analyze page structures, or query standard SEO tips.
+          </p>
+        </div>
+        </div>
+
         {/* Right Column: Chat messages interface */}
-        <div className="flex-grow flex flex-col bg-slate-900/20 border border-slate-800 rounded-3xl overflow-hidden h-[calc(100vh-140px)] shadow-xl relative">
+        <div className="flex-grow flex flex-col bg-zinc-900/30 border border-zinc-800/80 rounded-[2rem] overflow-hidden h-[calc(100vh-140px)] shadow-2xl relative backdrop-blur-md">
           
           {/* Scrollable messages box */}
-          <div className="flex-grow overflow-y-auto p-4 sm:p-5 space-y-4 max-h-[calc(100vh-230px)]">
+          <div className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5 max-h-[calc(100vh-230px)] custom-scrollbar">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -220,19 +224,19 @@ export default function AIChatClient({ user }) {
                 </div>
                 <div>
                   <div
-                    className={`rounded-2xl p-3 text-xs leading-relaxed ${
+                    className={`rounded-2xl p-4 text-[13px] leading-relaxed shadow-sm ${
                       msg.sender === "user"
-                        ? "bg-blue-600 text-white rounded-tr-none text-left"
-                        : "bg-slate-950 text-slate-300 rounded-tl-none border border-slate-800"
+                        ? "bg-violet-600 text-white rounded-tr-sm text-left shadow-[0_4px_15px_rgba(124,58,237,0.2)]"
+                        : "bg-zinc-900/80 text-zinc-300 rounded-tl-sm border border-zinc-800/80 shadow-inner"
                     }`}
                   >
                     {msg.text.split("\n").map((line, idx) => (
-                      <p key={idx} className={line.trim() ? "mb-1.5 last:mb-0" : "h-2"}>
+                      <p key={idx} className={line.trim() ? "mb-2 last:mb-0" : "h-2"}>
                         {line}
                       </p>
                     ))}
                   </div>
-                  <span className="text-[8px] text-slate-550 block mt-1 px-1">
+                  <span className={`text-[9px] font-black tracking-wider text-zinc-500 block mt-1.5 px-1 ${msg.sender === "user" ? "text-right" : "text-left"}`}>
                     {msg.time}
                   </span>
                 </div>
@@ -246,7 +250,7 @@ export default function AIChatClient({ user }) {
                   👩‍💼
                 </div>
                 <div className="space-y-1.5">
-                  <div className="bg-slate-950 border border-slate-800 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-400 flex items-center gap-2">
+                  <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl rounded-tl-sm p-4 text-[13px] text-zinc-400 flex items-center gap-3 shadow-inner">
                     <span className="animate-spin text-lg">⚙️</span>
                     <span>Sarah is launching Puppeteer to inspect the website...</span>
                   </div>
@@ -258,7 +262,7 @@ export default function AIChatClient({ user }) {
           </div>
 
           {/* Quick-select Chip Suggestions */}
-          <div className="px-4 py-2 border-t border-slate-900 bg-slate-950/20 flex flex-wrap gap-2 text-left">
+          <div className="px-6 py-3 border-t border-zinc-800/60 bg-zinc-950/40 flex flex-wrap gap-2 text-left backdrop-blur-md">
             {[
               "Audit example.com",
               "How do H1 tags help SEO?",
@@ -267,7 +271,7 @@ export default function AIChatClient({ user }) {
               <button
                 key={chip}
                 onClick={() => handleChipClick(chip)}
-                className="py-1 px-2.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-750 text-[9.5px] font-bold text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
+                className="py-1.5 px-3 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-violet-500/50 text-[10px] font-bold text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer shadow-sm hover:shadow-[0_0_10px_rgba(139,92,246,0.1)]"
               >
                 {chip}
               </button>
@@ -275,8 +279,8 @@ export default function AIChatClient({ user }) {
           </div>
 
           {/* Input field area */}
-          <div className="p-4 border-t border-slate-900 bg-slate-950/40 relative">
-            <form onSubmit={handleSendMessage} className="flex gap-2">
+          <div className="p-4 sm:p-6 border-t border-zinc-800/80 bg-zinc-900/40 relative backdrop-blur-xl">
+            <form onSubmit={handleSendMessage} className="flex gap-3">
               <div className="relative flex-grow">
                 <input
                   type="text"
@@ -284,7 +288,7 @@ export default function AIChatClient({ user }) {
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder={isListening ? "Listening..." : "Message Sarah or enter a URL (e.g., mysite.com)..."}
                   disabled={loading}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 pr-10 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500 disabled:opacity-50"
+                  className="w-full bg-zinc-950 border border-zinc-800/80 rounded-2xl py-4 px-5 pr-12 text-[13px] text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 shadow-inner disabled:opacity-50 transition-all"
                 />
                 
                 {/* Speech Dictation Mic button */}
@@ -292,10 +296,10 @@ export default function AIChatClient({ user }) {
                   type="button"
                   onClick={startVoiceDictation}
                   disabled={loading}
-                  className={`absolute right-2.5 top-2.5 h-7.5 w-7.5 rounded-full flex items-center justify-center border-0 transition-all cursor-pointer ${
+                  className={`absolute right-3 top-3 h-8 w-8 rounded-full flex items-center justify-center border-0 transition-all cursor-pointer ${
                     isListening 
-                      ? "bg-red-500/20 text-red-500 animate-pulse" 
-                      : "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white"
+                      ? "bg-red-500/20 text-red-500 animate-pulse ring-2 ring-red-500/50" 
+                      : "bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800/80"
                   }`}
                   title="Speak message"
                 >
@@ -306,7 +310,7 @@ export default function AIChatClient({ user }) {
               <button
                 type="submit"
                 disabled={loading || !inputText.trim()}
-                className="px-5 py-3 rounded-xl bg-blue-650 hover:bg-blue-500 disabled:bg-slate-900 disabled:text-slate-600 text-white font-extrabold text-xs uppercase tracking-widest transition-all duration-200 border-0 cursor-pointer shadow-md disabled:shadow-none active:scale-98 shrink-0"
+                className="px-6 py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 hover:opacity-90 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-600 text-white font-black text-xs uppercase tracking-widest transition-all duration-300 border-0 cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] disabled:shadow-none active:scale-[0.98] shrink-0"
               >
                 Send
               </button>

@@ -185,9 +185,6 @@ function ReportContent() {
         const data = await res.json();
         if (data.session) {
           setSession(data.session);
-          if (data.session.subscription_tier === "weekly" || data.session.subscription_tier === "agency") {
-            setIsPaid(true);
-          }
         }
       } catch (err) {
         console.error("Failed to load user session on report page:", err);
@@ -226,19 +223,48 @@ function ReportContent() {
 
     async function verifyPayment() {
       try {
+        const cleanUrlParam = urlParam.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
+        
+        // Check for local storage guest token first
+        let guestPaid = false;
+        if (typeof window !== "undefined") {
+          const localTokenStr = localStorage.getItem(`premium_token_${cleanUrlParam}`) || localStorage.getItem(`premium_token_${urlParam}`);
+          if (localTokenStr) {
+            try {
+              const localToken = JSON.parse(localTokenStr);
+              if (localToken.paid) {
+                guestPaid = true;
+                setIsPaid(true);
+              }
+            } catch (e) {
+              console.error("Failed to parse guest token:", e);
+            }
+          }
+        }
+
         if (session?.email) {
+          // If they are on a subscription tier and the audit website is in their user history, they can view it.
           const res = await fetch("/api/leads/user");
           if (res.ok) {
             const data = await res.json();
-            const cleanUrlParam = urlParam.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
-            const matchingLead = data.audits?.find(a => 
-              a.website.toLowerCase().includes(cleanUrlParam)
-            );
+            const matchingLead = data.audits?.find(a => {
+              const cleanLeadSite = a.website.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
+              return cleanLeadSite === cleanUrlParam;
+            });
             
-            if (matchingLead && matchingLead.packageRequest && matchingLead.packageRequest !== "Free Audit") {
+            if (matchingLead) {
               setIsPaid(true);
+            } else {
+              // Not in user history! Redirect to /audit entry form to enforce quota & persistence.
+              if (!guestPaid) {
+                router.push(`/audit?url=${encodeURIComponent(urlParam)}`);
+                return;
+              }
             }
           }
+        } else if (!guestPaid) {
+          // No user session and not guest paid either, lock the report.
+          setIsPaid(false);
         }
       } catch (e) {
         console.error("Failed to verify premium status securely", e);
@@ -986,6 +1012,32 @@ function ReportContent() {
     return map[color] || map.indigo;
   };
 
+  // --- PDF Print Layout Aggregation ---
+  let totalErrors = 0;
+  let totalWarnings = 0;
+  let totalPassed = 0;
+  const allCriticalErrors = [];
+
+  if (report?.engines) {
+    Object.values(report.engines).forEach(rawEng => {
+      const adjustedChecks = getChecksForStrategy(rawEng.checks, deviceStrategy);
+      adjustedChecks.forEach(check => {
+        if (check.passed) {
+          totalPassed++;
+        } else {
+          if (check.severity === "error") {
+            totalErrors++;
+            allCriticalErrors.push({ ...check, engineName: rawEng.name });
+          } else {
+            totalWarnings++;
+          }
+        }
+      });
+    });
+  }
+
+  const topPriorities = allCriticalErrors.slice(0, 3);
+
   return (
     <div className="bg-slate-950 text-slate-300 print:text-slate-700 min-h-screen pb-24 print:bg-white print:text-slate-900 print:pb-0 font-sans print:color-adjust-exact">
       
@@ -1285,6 +1337,54 @@ function ReportContent() {
             </div>
           </div>
         )}
+
+        {/* PRINT ONLY: PAGE 1 BREAK */}
+        <div className="hidden print:block print:break-after-page"></div>
+
+        {/* PRINT ONLY: ISSUE PRIORITIZATION MATRIX (PAGE 2) */}
+        <div className="hidden print:block print:w-full print:mb-8 print:break-after-page">
+          <div className="mb-6">
+            <h2 className="text-2xl font-extrabold text-slate-900 border-b border-slate-300 pb-2 mb-2">Audit Health Overview</h2>
+            <p className="text-sm text-slate-600">A high-level summary of your website's technical and on-page performance.</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+              <div className="text-4xl font-black text-red-600 mb-2">{totalErrors}</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-red-800">Critical Errors</div>
+            </div>
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 text-center">
+              <div className="text-4xl font-black text-orange-600 mb-2">{totalWarnings}</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-orange-800">Warnings</div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
+              <div className="text-4xl font-black text-blue-600 mb-2">{totalPassed}</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-blue-800">Checks Passed</div>
+            </div>
+          </div>
+
+          {topPriorities.length > 0 && (
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span className="text-red-500">🔥</span> Top Priorities to Fix First
+              </h3>
+              <div className="space-y-4">
+                {topPriorities.map((tp, idx) => (
+                  <div key={idx} className="flex gap-4 items-start border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-sm">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900">{tp.name} <span className="text-[10px] font-normal text-slate-500 uppercase ml-2 px-2 py-0.5 bg-slate-100 rounded-full">{tp.engineName}</span></h4>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">{tp.desc}</p>
+                      <p className="text-xs font-semibold text-slate-800 mt-2"><span className="text-emerald-600">Fix:</span> {tp.fix}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* SUMMARY BLOCKS */}
         <div>
@@ -1634,7 +1734,7 @@ function ReportContent() {
                     ) : (
                       <div className="bg-slate-900 print:bg-white border border-slate-800 print:border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-800/60 shadow-sm">
                         {adjustedChecks.map((check, idx) => (
-                          <div key={idx} className="group flex flex-col md:flex-row md:items-start justify-between p-5 text-sm hover:bg-slate-800/30 transition-all duration-200 gap-4">
+                          <div key={idx} className="group flex flex-col md:flex-row md:items-start justify-between p-5 text-sm hover:bg-slate-800/30 transition-all duration-200 gap-4 print:break-inside-avoid">
                             <div className="flex items-start gap-4 w-full md:w-3/5">
                               <div className={`mt-0.5 flex items-center justify-center w-6 h-6 rounded-full shrink-0 shadow-inner ${check.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
                                 {check.passed ? (
