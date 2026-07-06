@@ -266,8 +266,8 @@ export default function FloatingConsultantButton({ session }) {
               <div className="absolute -inset-0.5 rounded-[1.75rem] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 opacity-40 [.light_&]:hidden blur-xl group-hover:opacity-60 transition duration-1000 animate-pulse"></div>
               
               {/* Gradient Border Wrapper */}
-              <div className="relative rounded-3xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl [.light_&]:bg-none [.light_&]:bg-slate-200">
-                <div className="relative h-full w-full rounded-[23px] bg-slate-950/95 [.light_&]:bg-white/95 backdrop-blur-2xl p-5 sm:p-8">
+              <div className="relative rounded-3xl p-[1px] bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 shadow-2xl [.light_&]:bg-none [.light_&]:bg-slate-200 max-h-[95vh] flex flex-col">
+                <div className="relative h-full w-full overflow-y-auto rounded-[23px] bg-slate-950/95 [.light_&]:bg-white/95 backdrop-blur-2xl p-5 sm:p-6">
                   
                   {/* Close Button */}
                   <button
@@ -278,7 +278,7 @@ export default function FloatingConsultantButton({ session }) {
                   </button>
 
                   {/* Modal Header */}
-                  <div className="flex items-start gap-3 sm:gap-4 mb-5 sm:mb-6 pb-4 sm:pb-5 border-b border-zinc-800/60 [.light_&]:border-slate-200/80 pr-6">
+                  <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5 pb-3 sm:pb-4 border-b border-zinc-800/60 [.light_&]:border-slate-200/80 pr-6">
                     <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-violet-600/20 to-fuchsia-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-inner shadow-violet-500/20 flex-shrink-0">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
