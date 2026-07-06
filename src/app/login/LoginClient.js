@@ -455,7 +455,7 @@ export default function LoginClient() {
                     setErrorMessage("");
                     setSuccessMessage("");
                   }}
-                  className="text-xxs text-slate-400 hover:text-white transition-colors underline cursor-pointer"
+                  className="text-xxs text-slate-400 hover:opacity-75 transition-opacity underline cursor-pointer"
                 >
                   Already have an account? Log In
                 </button>
@@ -508,7 +508,7 @@ export default function LoginClient() {
                     setErrorMessage("");
                     setSuccessMessage("");
                   }}
-                  className="text-xxs text-slate-400 hover:text-white transition-colors underline cursor-pointer"
+                  className="text-xxs text-slate-400 hover:opacity-75 transition-opacity underline cursor-pointer"
                 >
                   Don&apos;t have an account? Sign Up
                 </button>
@@ -589,7 +589,7 @@ export default function LoginClient() {
               <button
                 disabled={googleVerifying}
                 onClick={() => setShowGooglePopup(false)}
-                className="text-[10px] text-slate-400 hover:text-white transition-colors underline disabled:opacity-30 cursor-pointer"
+                className="text-[10px] text-slate-400 hover:opacity-75 transition-opacity underline disabled:opacity-30 cursor-pointer"
               >
                 Cancel
               </button>

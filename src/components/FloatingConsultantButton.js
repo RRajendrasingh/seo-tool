@@ -216,35 +216,42 @@ export default function FloatingConsultantButton({ session }) {
           e.stopPropagation();
           setIsMinimized(false);
         }}
-        className={`fixed bottom-6 right-4 sm:right-6 z-50 print:hidden select-none group transition-all duration-300 cursor-pointer flex-col items-end gap-2.5 ${
+        className={`fixed bottom-6 right-4 sm:right-6 z-50 print:hidden select-none group transition-all duration-300 flex-col items-end gap-2.5 ${
           isMinimized ? "flex" : "hidden"
         }`}
       >
-        {/* Tooltip Bubble */}
-        <div className="relative mr-4 sm:mr-5 animate-bounce" style={{ animationDuration: '2.5s' }}>
-          <div className="bg-violet-500 dark:bg-[#1a1625] border-none dark:border-solid dark:border dark:border-violet-500/50 rounded-xl px-3 py-2 shadow-lg shadow-violet-500/30 dark:shadow-violet-500/10">
-            <span className="text-xs font-bold text-white dark:text-violet-300 leading-tight block drop-shadow-sm">
-              Limited slots<br/>available.
-            </span>
-          </div>
-          {/* Tooltip Arrow pointing exactly at the icon */}
-          <div className="absolute -bottom-[5px] right-[18px] w-2.5 h-2.5 bg-violet-500 dark:bg-[#1a1625] border-none dark:border-solid dark:border-b dark:border-r dark:border-violet-500/50 transform rotate-45"></div>
-        </div>
+        {!isOpen && (
+          <div
+            onClick={(e) => { e.stopPropagation(); setIsOpen(true); }}
+            className="flex flex-col items-end gap-2"
+          >
+            {/* Tooltip Bubble */}
+            <div className="relative mr-4 sm:mr-5 animate-bounce" style={{ animationDuration: '2.5s' }}>
+              <div className="bg-[#1a1625] border-none rounded-xl px-3 py-2 shadow-lg shadow-violet-500/10">
+                <span className="text-xs font-bold leading-tight block drop-shadow-sm text-zinc-50">
+                  Limited slots<br/>available.
+                </span>
+              </div>
+              {/* Tooltip Arrow pointing exactly at the icon */}
+              <div className="absolute -bottom-[5px] right-[18px] w-2.5 h-2.5 bg-[#1a1625] border-none transform rotate-45"></div>
+            </div>
 
-        {/* Pill Button */}
-        <div className="relative h-[52px] rounded-[26px] border-2 border-transparent dark:border-violet-500 shadow-[0_0_15px_rgba(124,58,237,0.3)] dark:shadow-[0_0_15px_rgba(139,92,246,0.4)] bg-violet-600 dark:bg-[#161320] hover:bg-violet-500 dark:hover:bg-[#1a1625] transition-colors flex items-center px-5 gap-3.5 hover:scale-105 active:scale-95 group">
-          
-          {/* Text on the Left */}
-          <span className="text-[12.5px] font-bold text-white dark:text-slate-100 tracking-wide leading-[1.1] text-right">
-            Free video<br/>consultancy
-          </span>
-          
-          {/* Video Icon on the Right */}
-          <svg className="w-5 h-5 text-white dark:text-violet-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-          
-        </div>
+            {/* Pill Button */}
+            <div className="relative h-[52px] rounded-[26px] border-2 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.4)] bg-[#161320] hover:bg-[#1a1625] transition-colors flex items-center px-5 gap-3.5 hover:scale-105 active:scale-95 group">
+              
+              {/* Text on the Left */}
+              <span className="text-[12.5px] font-bold tracking-wide leading-[1.1] text-right text-zinc-50">
+                Free video<br/>consultancy
+              </span>
+              
+              {/* Video Icon on the Right */}
+              <svg className="w-5 h-5 shrink-0 text-zinc-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              
+            </div>
+          </div>
+        )}
       </div>
 
       {/* PREQUESTIONNAIRE MODAL DIALOG */}

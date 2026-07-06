@@ -15,7 +15,7 @@ test.describe('SEO Tool User Behavior Tests', () => {
   test('should load the homepage and check main content elements', async ({ page }) => {
     // Check if the main heading is visible
     await expect(page.locator('h1')).toContainText('Dominate Google & AI Search Engines with');
-    
+
     // Check if the "Launch SEO Auditor" button is visible and redirects to /audit/
     const auditorLink = page.getByRole('link', { name: 'Launch SEO Auditor' });
     await expect(auditorLink).toBeVisible();
@@ -58,7 +58,7 @@ test.describe('SEO Tool User Behavior Tests', () => {
 
     // Verify user is redirected to the /audit route with the correct query parameters
     await page.waitForURL(/.*\/audit\/\?url=.*/);
-    
+
     // Assert that the URL contains the encoded target URL
     const currentUrl = page.url();
     expect(currentUrl).toContain('https%3A%2F%2Fexample.com');
@@ -71,7 +71,7 @@ test.describe('SEO Tool User Behavior Tests', () => {
 
     // Sibling CSS selector to get the immediately following answer drawer div
     const faqContainer = page.locator('button:has-text("What is AEO and GEO optimization?") + div');
-    
+
     // Initially, it should have the collapsed class (max-h-0)
     await expect(faqContainer).toHaveClass(/max-h-0/);
 

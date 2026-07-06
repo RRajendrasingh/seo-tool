@@ -43,7 +43,7 @@ export default function AuditClient({ initialUser = null }) {
   const [formError, setFormError] = useState(null);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [activeEngine, setActiveEngine] = useState("seo-tags");
-  const [filterTab, setFilterTab] = useState("all");
+  const [filterTabs, setFilterTabs] = useState({});
   const [screenshotLoaded, setScreenshotLoaded] = useState(false);
   const [deviceStrategy, setDeviceStrategy] = useState("mobile");
   const [showPayModal, setShowPayModal] = useState(false);
@@ -57,6 +57,30 @@ export default function AuditClient({ initialUser = null }) {
   useEffect(() => {
     setScreenshotLoaded(false);
   }, [deviceStrategy]);
+
+  // Scrollspy to highlight active category in sidebar as user scrolls
+  useEffect(() => {
+    if (!report || !report.engines) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace("engine-section-", "");
+            setActiveEngine(id);
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -70% 0px" } // Triggers when the top of the section enters the top 20-30% of the viewport
+    );
+
+    Object.keys(report.engines).forEach((id) => {
+      const el = document.getElementById(`engine-section-${id}`);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [report]);
 
   const isPremium = user?.subscription_tier === "weekly" || user?.subscription_tier === "agency" || (user?.allowed_quota && user?.allowed_quota > 0) || (typeof window !== "undefined" && (() => {
     try {
@@ -1187,6 +1211,7 @@ export default function AuditClient({ initialUser = null }) {
       score: adjustedScore,
       checks: adjustedChecks
     };
+    const currentFilter = filterTabs[engineId] || "all";
 
     const isGatedKey = !["seo-tags", "page-speed"].includes(engineId);
     if (!isPremium && isGatedKey) {
@@ -1263,11 +1288,11 @@ export default function AuditClient({ initialUser = null }) {
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
-                  setFilterTab(tab.id);
+                  setFilterTabs(prev => ({ ...prev, [engineId]: tab.id }));
                   // Anchor scroll position to prevent browser jumping when list collapses
                   if (typeof window !== "undefined") {
                     setTimeout(() => {
-                      const detailsEl = document.getElementById("mobile-detail-pane");
+                      const detailsEl = document.getElementById(`engine-section-${engineId}`);
                       if (detailsEl) {
                         const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
                         // Use instant so the user doesn't see the page bounce
@@ -1277,7 +1302,7 @@ export default function AuditClient({ initialUser = null }) {
                   }
                 }}
                 className={`rounded-lg px-3 py-1.5 font-bold transition-all border cursor-pointer ${
-                  filterTab === tab.id
+                  currentFilter === tab.id
                     ? "bg-violet-600/15 border-violet-500/50 text-violet-300"
                     : "bg-zinc-950 border-zinc-850 text-zinc-500 hover:text-zinc-300 hover:border-zinc-800"
                 }`}
@@ -1292,10 +1317,10 @@ export default function AuditClient({ initialUser = null }) {
         <div className="space-y-4">
           {engine.checks
             .filter((check) => {
-              if (filterTab === "all") return true;
-              if (filterTab === "errors") return !check.passed && check.severity === "error";
-              if (filterTab === "warnings") return !check.passed && check.severity === "warning";
-              if (filterTab === "passed") return check.passed;
+              if (currentFilter === "all") return true;
+              if (currentFilter === "errors") return !check.passed && check.severity === "error";
+              if (currentFilter === "warnings") return !check.passed && check.severity === "warning";
+              if (currentFilter === "passed") return check.passed;
               return true;
             })
             .map((check) => (
@@ -1427,10 +1452,10 @@ export default function AuditClient({ initialUser = null }) {
             ))}
           
           {engine.checks.filter((check) => {
-            if (filterTab === "all") return true;
-            if (filterTab === "errors") return !check.passed && check.severity === "error";
-            if (filterTab === "warnings") return !check.passed && check.severity === "warning";
-            if (filterTab === "passed") return check.passed;
+            if (currentFilter === "all") return true;
+            if (currentFilter === "errors") return !check.passed && check.severity === "error";
+            if (currentFilter === "warnings") return !check.passed && check.severity === "warning";
+            if (currentFilter === "passed") return check.passed;
             return true;
           }).length === 0 && (
             <div className="rounded-xl border border-zinc-850 p-8 text-center text-zinc-550 text-xs">
@@ -2212,17 +2237,14 @@ export default function AuditClient({ initialUser = null }) {
                       key={id}
                       onClick={() => {
                         setActiveEngine(id);
-                        setFilterTab("all");
-                        // Smooth scroll to the top of the details pane, offset by sticky header + tabs
+                        // Smooth scroll to the section
                         if (typeof window !== "undefined") {
-                          setTimeout(() => {
-                            const detailsEl = document.getElementById("mobile-detail-pane");
-                            if (detailsEl) {
-                              // 64px (main nav) + 72px (tabs) + margin = ~145px
-                              const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
-                              window.scrollTo({ top: y, behavior: "smooth" });
-                            }
-                          }, 50);
+                          const detailsEl = document.getElementById(`engine-section-${id}`);
+                          if (detailsEl) {
+                            // 64px (main nav) + 72px (tabs) + margin = ~145px
+                            const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
+                            window.scrollTo({ top: y, behavior: "smooth" });
+                          }
                         }
                       }}
                       className={`snap-start shrink-0 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
@@ -2260,7 +2282,13 @@ export default function AuditClient({ initialUser = null }) {
                         type="button"
                         onClick={() => {
                           setActiveEngine(id);
-                          setFilterTab("all");
+                          if (typeof window !== "undefined") {
+                            const detailsEl = document.getElementById(`engine-section-${id}`);
+                            if (detailsEl) {
+                              const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
+                              window.scrollTo({ top: y, behavior: "smooth" });
+                            }
+                          }
                         }}
                         className={`w-full text-left rounded-2xl border p-4.5 transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer ${
                           isSelected
@@ -2307,8 +2335,12 @@ export default function AuditClient({ initialUser = null }) {
               </div>
 
               {/* Detailed Results Output (Unified for Mobile & Desktop) */}
-              <div id="mobile-detail-pane" className="col-span-1 lg:col-span-8 w-full min-w-0 min-h-[100vh]">
-                {renderEngineDetails(activeEngine)}
+              <div id="mobile-detail-pane" className="col-span-1 lg:col-span-8 w-full min-w-0 flex flex-col gap-12 pb-32">
+                {Object.keys(report.engines).map((id) => (
+                  <div key={id} id={`engine-section-${id}`} className="scroll-mt-[150px]">
+                    {renderEngineDetails(id)}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -2334,21 +2366,21 @@ export default function AuditClient({ initialUser = null }) {
 
         {/* PAYMENT UPGRADE MODAL GATE */}
         {showPayModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs">
-            <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 space-y-6 relative shadow-2xl animate-scale-up text-left">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 [.light_&]:bg-black/60 p-4 sm:p-6 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-5 space-y-5 relative shadow-2xl animate-scale-up text-left max-h-[85vh] overflow-y-auto">
               <button
                 onClick={() => setShowPayModal(false)}
-                className="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer"
+                className="absolute top-3 right-3 text-zinc-500 hover:text-white cursor-pointer p-1"
               >
                 ✕
               </button>
 
-              <div className="text-center space-y-2">
-                <span className="rounded-full bg-violet-500/10 px-3 py-1 text-xxs font-bold text-violet-300">
+              <div className="text-center space-y-1.5">
+                <span className="rounded-full bg-violet-500/10 px-3 py-1 text-xxs font-bold text-violet-300 [.light_&]:bg-violet-100 [.light_&]:text-violet-700">
                   Premium Audit Report
                 </span>
-                <h3 className="text-lg font-bold text-white">Unlock Multi-Engine PDF Report</h3>
-                <p className="text-xxs text-zinc-400 max-w-xs mx-auto">
+                <h3 className="text-lg font-bold text-white mt-2">Unlock Multi-Engine PDF Report</h3>
+                <p className="text-xxs text-zinc-400 max-w-xs mx-auto leading-relaxed">
                   Unlock the full downloadable PDF compiling Google Core Web Vitals charts, tag structural scores, and OpenAI-generated localized checklists.
                 </p>
               </div>
@@ -2358,28 +2390,28 @@ export default function AuditClient({ initialUser = null }) {
                   Total Investment
                 </span>
                 <div className="text-3xl font-extrabold text-white mt-1">$29.00</div>
-                <p className="text-xxs text-zinc-650 mt-0.5">One-time payment. Lifetime access to this report.</p>
+                <p className="text-xxs text-zinc-500 mt-0.5">One-time payment. Lifetime access to this report.</p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <button
                   onClick={() => {
                     router.push(`/checkout/?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
                     setShowPayModal(false);
                   }}
-                  className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-lg shadow-violet-500/15 hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer"
+                  className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-lg shadow-violet-500/25 hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer"
                 >
                   Pay with Credit Card (Stripe)
                 </button>
                 <button
                   onClick={() => setShowPayModal(false)}
-                  className="flex w-full items-center justify-center rounded-xl border border-zinc-700 py-3 text-xs font-semibold text-zinc-400 hover:bg-zinc-900 transition-all cursor-pointer"
+                  className="flex w-full items-center justify-center rounded-xl border border-zinc-700 bg-transparent [.light_&]:bg-white py-3 text-xs font-semibold text-zinc-400 hover:bg-zinc-900 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
               </div>
 
-              <div className="flex justify-center items-center gap-3 text-zinc-600 text-xxs pt-1">
+              <div className="flex justify-center items-center gap-3 text-zinc-600 text-[10px] pt-1">
                 <span>🛡️ SSL Secured</span>
                 <span>•</span>
                 <span>Instant PDF Download</span>
