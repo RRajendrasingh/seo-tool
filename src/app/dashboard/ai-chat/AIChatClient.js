@@ -128,32 +128,37 @@ export default function AIChatClient({ user }) {
       <div className="absolute top-0 left-1/4 -z-10 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-violet-600/10 blur-[120px] opacity-70 pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 -z-10 h-[600px] w-[600px] translate-x-1/3 rounded-full bg-cyan-600/10 blur-[150px] opacity-60 pointer-events-none" />
       {/* Header bar */}
-      <header className="border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="h-8 px-3 rounded-xl bg-zinc-900/60 hover:bg-zinc-800 text-xxs font-bold text-zinc-400 hover:text-white transition-all border border-zinc-800/80 shadow-inner cursor-pointer"
-          >
-            ← Back to Dashboard
-          </button>
-          <div className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
-          <h1 className="text-xs font-black text-zinc-200 uppercase tracking-widest flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
-            AI Crawl Consultant
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-3 p-1.5 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 shadow-inner">
-          <div className="h-7 w-7 rounded-xl bg-violet-600/10 border border-violet-500/20 flex items-center justify-center text-xs overflow-hidden shrink-0">
-            {user.picture?.startsWith("http") ? (
-              <img src={user.picture} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            ) : (
-              user.picture || "👤"
-            )}
+      <header className="border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-30 w-full">
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="h-8 sm:h-9 px-3 sm:px-4 rounded-xl bg-zinc-900/60 hover:bg-zinc-800 text-[10px] sm:text-xs font-bold text-zinc-400 hover:text-white transition-all border border-zinc-800/80 shadow-inner cursor-pointer flex items-center justify-center gap-2"
+            >
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Dashboard
+            </button>
+            <div className="h-1.5 w-1.5 rounded-full bg-zinc-700 hidden sm:block" />
+            <h1 className="text-[10px] sm:text-xs font-black text-zinc-200 uppercase tracking-widest flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
+              AI Crawl Consultant
+            </h1>
           </div>
-          <div className="text-left hidden sm:block pr-2">
-            <span className="text-[7.5px] uppercase tracking-wider font-extrabold text-zinc-500 block leading-none">Crawl Account</span>
-            <p className="text-[9px] font-bold text-primary truncate max-w-[120px] leading-tight">{user.email}</p>
+
+          <div className="flex items-center gap-3 p-1.5 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 shadow-inner">
+            <div className="h-7 sm:h-8 w-7 sm:w-8 rounded-xl bg-violet-600/10 border border-violet-500/20 flex items-center justify-center text-xs overflow-hidden shrink-0">
+              {user.picture?.startsWith("http") ? (
+                <img src={user.picture} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                user.picture || "👤"
+              )}
+            </div>
+            <div className="text-left hidden md:block pr-3 pl-1">
+              <span className="text-[7.5px] uppercase tracking-wider font-extrabold text-zinc-500 block leading-none">Crawl Account</span>
+              <p className="text-[10px] font-bold text-white truncate max-w-[140px] leading-tight mt-0.5">{user.email}</p>
+            </div>
           </div>
         </div>
       </header>

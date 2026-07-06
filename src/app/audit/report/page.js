@@ -1345,7 +1345,7 @@ function ReportContent() {
         <div className="hidden print:block print:w-full print:mb-8 print:break-after-page">
           <div className="mb-6">
             <h2 className="text-2xl font-extrabold text-slate-900 border-b border-slate-300 pb-2 mb-2">Audit Health Overview</h2>
-            <p className="text-sm text-slate-600">A high-level summary of your website's technical and on-page performance.</p>
+            <p className="text-sm text-slate-600">A high-level summary of your website&apos;s technical and on-page performance.</p>
           </div>
 
           <div className="grid grid-cols-3 gap-6 mb-8">
