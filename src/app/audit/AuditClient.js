@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getMockLighthouseResult } from "../../utils/mockPageSpeed";
 import { addLead, updateLead } from "@/utils/leadsStore";
@@ -57,6 +57,27 @@ export default function AuditClient({ initialUser = null }) {
   useEffect(() => {
     setScreenshotLoaded(false);
   }, [deviceStrategy]);
+  // Scroll tracking to prevent jumpy sidebar
+  const isProgrammaticScroll = useRef(false);
+  const scrollTimeout = useRef(null);
+
+  const handleEngineClick = (id) => {
+    isProgrammaticScroll.current = true;
+    setActiveEngine(id);
+    
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, 1000);
+    
+    if (typeof window !== "undefined") {
+      const detailsEl = document.getElementById(`engine-section-${id}`);
+      if (detailsEl) {
+        const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }
+  };
 
   // Scrollspy to highlight active category in sidebar as user scrolls
   useEffect(() => {
@@ -64,6 +85,7 @@ export default function AuditClient({ initialUser = null }) {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isProgrammaticScroll.current) return;
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const id = entry.target.id.replace("engine-section-", "");
@@ -2271,18 +2293,7 @@ export default function AuditClient({ initialUser = null }) {
                     <button
                       key={id}
                       id={`mobile-tab-btn-${id}`}
-                      onClick={() => {
-                        setActiveEngine(id);
-                        // Smooth scroll to the section
-                        if (typeof window !== "undefined") {
-                          const detailsEl = document.getElementById(`engine-section-${id}`);
-                          if (detailsEl) {
-                            // 64px (main nav) + 72px (tabs) + margin = ~145px
-                            const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
-                            window.scrollTo({ top: y, behavior: "smooth" });
-                          }
-                        }
-                      }}
+                      onClick={() => handleEngineClick(id)}
                       className={`snap-start shrink-0 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
                         isSelected 
                           ? "bg-violet-600 text-white shadow-md border border-violet-500" 
@@ -2318,16 +2329,7 @@ export default function AuditClient({ initialUser = null }) {
                         key={id}
                         id={`sidebar-engine-btn-${id}`}
                         type="button"
-                        onClick={() => {
-                          setActiveEngine(id);
-                          if (typeof window !== "undefined") {
-                            const detailsEl = document.getElementById(`engine-section-${id}`);
-                            if (detailsEl) {
-                              const y = detailsEl.getBoundingClientRect().top + window.scrollY - 145;
-                              window.scrollTo({ top: y, behavior: "smooth" });
-                            }
-                          }
-                        }}
+                        onClick={() => handleEngineClick(id)}
                         className={`w-full relative overflow-hidden text-left rounded-2xl border p-4.5 transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer ${
                           isSelected
                             ? "bg-violet-900/20 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/50 scale-[1.02]"
