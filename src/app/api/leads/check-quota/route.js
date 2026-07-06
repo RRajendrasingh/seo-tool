@@ -26,6 +26,11 @@ export async function POST(request) {
     }
 
     if (isPaidTier) {
+      if (tier === "agency" || tier === "multi") {
+        // Agency and Multi have unlimited manual audits
+        return NextResponse.json({ success: true, isPaidTier });
+      }
+
       const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Paid Audit' AND status != 'Failed'", [email.trim()]);
       const paidAuditsCount = leadCountResult[0]?.count || 0;
       if (paidAuditsCount >= allowedQuota) {

@@ -32,13 +32,13 @@ export default function LocationsDirectory({ citiesDb }) {
   const totalResults = filteredCities.length;
 
   return (
-    <div className="bg-zinc-950 min-h-screen relative isolate py-12 overflow-x-hidden">
+    <main className="bg-zinc-950 min-h-screen relative isolate py-12 overflow-x-hidden">
       {/* Decorative Grid Pattern */}
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-50" />
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
-        <div className="mx-auto max-w-3xl text-center space-y-6">
+        <header className="mx-auto max-w-3xl text-center space-y-6">
           <div className="inline-flex items-center gap-x-2 rounded-full border border-violet-500/30 bg-violet-500/5 px-4 py-1 text-xs font-semibold text-violet-300">
             <span>USA Local SEO Network</span>
           </div>
@@ -53,10 +53,10 @@ export default function LocationsDirectory({ citiesDb }) {
           <p className="text-base leading-7 text-zinc-400 max-w-2xl mx-auto">
             We pre-render high-performance SEO landing pages for key business hubs across the United States. Browse our active markets below.
           </p>
-        </div>
+        </header>
 
         {/* Stats Row */}
-        <div className="mx-auto max-w-4xl mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <section aria-label="Directory Statistics" className="mx-auto max-w-4xl mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           {[
             { label: "Active Markets", val: `${citiesArray.length} Cities` },
             { label: "Target Country", val: "United States" },
@@ -72,10 +72,10 @@ export default function LocationsDirectory({ citiesDb }) {
               </span>
             </div>
           ))}
-        </div>
+        </section>
 
         {/* Filter and Search Bar Container */}
-        <div className="directory-search-container mx-auto max-w-4xl mt-12 p-6 rounded-3xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-md space-y-6">
+        <section aria-label="Search and Filter" className="directory-search-container mx-auto max-w-4xl mt-12 p-6 rounded-3xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-md space-y-6">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             {/* Search Input */}
             <div className="relative w-full group">
@@ -108,10 +108,10 @@ export default function LocationsDirectory({ citiesDb }) {
               Showing {totalResults} of {citiesArray.length} locations
             </span>
           </div>
-        </div>
+        </section>
 
         {/* Directory Listing */}
-        <div className="mx-auto max-w-6xl mt-16 space-y-16">
+        <section aria-label="Locations Grid" className="mx-auto max-w-6xl mt-16 space-y-16">
           {countries.map((country) => {
             const citiesInCountry = groupedCities[country] || [];
             if (citiesInCountry.length === 0) return null;
@@ -121,13 +121,11 @@ export default function LocationsDirectory({ citiesDb }) {
                 {/* Section Title */}
                 <div className="flex items-center gap-4 border-b border-zinc-900 pb-4">
                   {countryFlags[country] ? (
-                    <img 
-                      src={`https://flagcdn.com/${countryFlags[country]}.svg`}
-                      alt={`${country} Flag`} 
-                      className="w-10 h-auto rounded-sm shadow-sm border border-slate-200/50"
-                    />
+                    <span className="text-4xl shadow-sm leading-none" role="img" aria-label={`${country} Flag`}>
+                      {country === "United States" ? "🇺🇸" : "🌐"}
+                    </span>
                   ) : (
-                    <span className="text-3xl">🌐</span>
+                    <span className="text-4xl shadow-sm leading-none">🌐</span>
                   )}
                   <div>
                     <h2 className="text-xl font-bold text-white">{country}</h2>
@@ -180,8 +178,8 @@ export default function LocationsDirectory({ citiesDb }) {
               </p>
             </div>
           )}
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

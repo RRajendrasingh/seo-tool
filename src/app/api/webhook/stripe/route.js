@@ -40,25 +40,28 @@ export async function POST(req) {
     
     if (email) {
       try {
-        let newTier = "free";
-        let newQuota = 1;
-        
         if (plan === "weekly") {
-          newTier = "weekly";
-          newQuota = 3;
+          await query(
+            "UPDATE users SET subscription_tier = 'weekly', allowed_quota = 3, stripe_customer_id = ? WHERE email = ?",
+            [customerId, email]
+          );
         } else if (plan === "agency") {
-          newTier = "agency";
-          newQuota = 25;
+          await query(
+            "UPDATE users SET subscription_tier = 'agency', allowed_quota = 25, stripe_customer_id = ? WHERE email = ?",
+            [customerId, email]
+          );
         } else if (plan === "multi") {
-          newTier = "multi"; // Set tier to multi to differentiate
-          newQuota = 100;
+          await query(
+            "UPDATE users SET subscription_tier = 'multi', allowed_quota = 100, stripe_customer_id = ? WHERE email = ?",
+            [customerId, email]
+          );
+        } else {
+          // single report
+          await query(
+            "UPDATE users SET allowed_quota = allowed_quota + 1, stripe_customer_id = COALESCE(stripe_customer_id, ?) WHERE email = ?",
+            [customerId, email]
+          );
         }
-
-        // Update the user's subscription tier
-        await query(
-          "UPDATE users SET subscription_tier = ?, allowed_quota = ?, stripe_customer_id = ? WHERE email = ?",
-          [newTier, newQuota, customerId, email]
-        );
         
         // Securely update the specific lead's status to "Closed Won"
         let packageName = "Premium Report";

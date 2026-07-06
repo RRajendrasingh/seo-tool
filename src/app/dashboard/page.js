@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyToken } from "@/utils/auth";
+import { query } from "@/utils/db";
 import DashboardClient from "./DashboardClient";
 import { Suspense } from "react";
 
@@ -22,6 +23,20 @@ export default async function DashboardPage() {
   if (!user) {
     redirect("/login");
   }
+
+  // Fetch audits server-side to eliminate client-side useEffect loaders
+  let initialAudits = [];
+  try {
+    const rows = await query(
+      "SELECT id, website, date, seoScore, grade, packageRequest, is_monitored FROM leads WHERE email = ? AND website != 'domain-pending' ORDER BY date DESC, id DESC",
+      [user.email]
+    );
+    if (rows) {
+      initialAudits = rows;
+    }
+  } catch (error) {
+    console.error("Dashboard Server Fetch Failed:", error);
+  }
   
   return (
     <Suspense fallback={
@@ -29,7 +44,7 @@ export default async function DashboardPage() {
         <div className="animate-pulse text-zinc-400 font-medium text-xs">Accessing Secure Vault...</div>
       </div>
     }>
-      <DashboardClient user={user} />
+      <DashboardClient user={user} initialAudits={initialAudits} />
     </Suspense>
   );
 }

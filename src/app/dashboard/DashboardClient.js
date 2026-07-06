@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import ScoreChart from "@/components/ScoreChart";
 import { openCalendly } from "@/utils/calendly";
 
-export default function DashboardClient({ user: initialUser }) {
+export default function DashboardClient({ user: initialUser, initialAudits = [] }) {
   const router = useRouter();
   const [user, setUser] = useState(initialUser);
 
   // States
-  const [audits, setAudits] = useState([]);
-  const [loadingAudits, setLoadingAudits] = useState(true);
+  const [audits, setAudits] = useState(initialAudits);
+  const [loadingAudits, setLoadingAudits] = useState(false);
 
   // Agency branding states
   const [agencyName, setAgencyName] = useState(user.agency_name || "");
@@ -24,7 +25,6 @@ export default function DashboardClient({ user: initialUser }) {
   const [showPortalNotice, setShowPortalNotice] = useState(false);
 
   useEffect(() => {
-    fetchAudits();
     fetchLatestSession();
 
     // Check for simulated portal redirect
@@ -50,21 +50,6 @@ export default function DashboardClient({ user: initialUser }) {
       }
     } catch (e) {
       console.error(e);
-    }
-  }
-
-  async function fetchAudits() {
-    setLoadingAudits(true);
-    try {
-      const res = await fetch("/api/leads/user");
-      const data = await res.json();
-      if (data.audits) {
-        setAudits(data.audits);
-      }
-    } catch (e) {
-      console.error("Failed to load user audits:", e);
-    } finally {
-      setLoadingAudits(false);
     }
   }
 
@@ -187,7 +172,7 @@ export default function DashboardClient({ user: initialUser }) {
         )}
 
         {/* Welcome Section */}
-        <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+        <header className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
           <div className="space-y-2 text-left">
             <h1 className="text-xl sm:text-2xl font-black text-slate-200 flex items-center gap-2.5">
               <span>Welcome back, {user.name}!</span>
@@ -199,9 +184,9 @@ export default function DashboardClient({ user: initialUser }) {
           </div>
           
           <div className="flex items-center gap-3 card-inner p-4 rounded-2xl border self-start sm:self-auto animate-scale-up">
-            <div className="h-10 w-10 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg overflow-hidden shrink-0">
+            <div className="relative h-10 w-10 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg overflow-hidden shrink-0">
               {user.picture?.startsWith("http") ? (
-                <img src={user.picture} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <Image src={user.picture} alt="Avatar" fill sizes="40px" className="object-cover" unoptimized referrerPolicy="no-referrer" />
               ) : (
                 user.picture || "👤"
               )}
@@ -211,12 +196,12 @@ export default function DashboardClient({ user: initialUser }) {
               <p className="text-[10px] font-bold text-primary truncate max-w-[150px]">{user.email}</p>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Dashboard Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
            {/* Left/Main Column: Audit History (2 cols) */}
-          <div className="md:col-span-2 space-y-8">
+          <section aria-label="Dashboard metrics and history" className="md:col-span-2 space-y-8">
             
             {/* Quota Progress Bar for All Users */}
             {user && (
@@ -225,26 +210,38 @@ export default function DashboardClient({ user: initialUser }) {
                   <div className="space-y-0.5">
                     <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{isPaid ? "Paid Audits Used" : "Free Audits Used"}</span>
                     <p className="text-xs font-black text-slate-200">
-                      {isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)} of {isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)} reports generated
+                      {isPaid ? (
+                        (user.subscription_tier === 'agency' || user.subscription_tier === 'multi') 
+                          ? "Unlimited PDF Exports Available" 
+                          : `${user.paid_audits_run || 0} of ${user.allowed_quota || 1} reports generated`
+                      ) : (
+                        `${user.free_audits_run || 0} of ${user.free_audits_allowed || 2} reports generated`
+                      )}
                     </p>
                   </div>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    (isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
+                    (isPaid && (user.subscription_tier === 'agency' || user.subscription_tier === 'multi'))
+                      ? "bg-violet-500/10 text-violet-400 border border-violet-500/20"
+                      : (isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
                       ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                       : "bg-violet-500/10 text-violet-400 border border-violet-500/20"
                   }`}>
-                    {(isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)) ? "Limit Reached" : "Active Quota"}
+                    {(isPaid && (user.subscription_tier === 'agency' || user.subscription_tier === 'multi'))
+                      ? "Active Quota"
+                      : (isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2)) ? "Limit Reached" : "Active Quota"}
                   </span>
                 </div>
                 
                 <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
                   <div 
                     className={`h-full rounded-full transition-all duration-500 ease-out ${
-                      (isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
+                      (isPaid && (user.subscription_tier === 'agency' || user.subscription_tier === 'multi'))
+                        ? "bg-gradient-to-r from-violet-500 to-cyan-400 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
+                        : (isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) >= (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))
                         ? "bg-gradient-to-r from-rose-500 to-amber-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
                         : "bg-gradient-to-r from-violet-500 to-cyan-400 shadow-[0_0_10px_rgba(139,92,246,0.3)]"
                     }`}
-                    style={{ width: `${Math.min(100, ((isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) / (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))) * 100)}%` }}
+                    style={{ width: (isPaid && (user.subscription_tier === 'agency' || user.subscription_tier === 'multi')) ? '100%' : `${Math.min(100, ((isPaid ? (user.paid_audits_run || 0) : (user.free_audits_run || 0)) / (isPaid ? (user.allowed_quota || 1) : (user.free_audits_allowed || 2))) * 100)}%` }}
                   />
                 </div>
               </div>
@@ -252,19 +249,27 @@ export default function DashboardClient({ user: initialUser }) {
 
             {/* Audit History Card */}
             <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-6 text-left">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+              <div className="flex flex-wrap justify-between items-center pb-3 border-b border-slate-800 gap-4">
                 <div>
                   <h2 className="text-sm font-bold text-slate-200">Your Audit History</h2>
                   <p className="text-[10px] text-slate-500">
                     Tier: <span className="capitalize font-bold text-violet-400">{user.subscription_tier}</span>
                   </p>
                 </div>
-                <button
-                  onClick={() => router.push("/audit")}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0"
-                >
-                  Run New Audit
-                </button>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={() => router.push("/dashboard/ai-chat")}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-4 py-2 text-xs font-bold text-slate-200 transition-all cursor-pointer"
+                  >
+                    💬 AI SEO Chat
+                  </button>
+                  <button
+                    onClick={() => router.push("/audit")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0"
+                  >
+                    Run New Audit
+                  </button>
+                </div>
               </div>
 
               {/* Loader */}
@@ -376,10 +381,10 @@ export default function DashboardClient({ user: initialUser }) {
               )}
             </div>
 
-          </div>
+          </section>
 
           {/* Right Column: Settings, Customizer, and Alerts (1 col) */}
-          <div className="space-y-8">
+          <aside aria-label="Settings and account limits" className="space-y-8">
 
 
 
@@ -408,7 +413,7 @@ export default function DashboardClient({ user: initialUser }) {
                     
                     {logoPreview && (
                       <div className="h-16 w-full border border-slate-800 bg-slate-950 rounded-xl p-2 flex items-center justify-center relative group overflow-hidden">
-                        <img src={logoPreview} alt="Agency logo preview" className="h-full object-contain" />
+                        <Image src={logoPreview} alt="Agency logo preview" fill sizes="100vw" className="object-contain p-2" unoptimized />
                         <button
                           type="button"
                           onClick={() => {
@@ -443,11 +448,13 @@ export default function DashboardClient({ user: initialUser }) {
                   <div className="mt-2 border border-slate-800/80 rounded-2xl bg-slate-950/50 p-4 space-y-3">
                     <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Live PDF Report Header Mockup</h3>
                     <div className="bg-white text-slate-900 rounded-xl p-3 border border-slate-200 flex items-center justify-between shadow-sm min-h-[56px] transition-all">
-                      {logoPreview ? (
-                        <img src={logoPreview} alt="Agency logo preview" className="max-h-8 max-w-[100px] object-contain" />
-                      ) : (
-                        <span className="text-[9px] text-slate-400 italic font-mono">No Logo Uploaded</span>
-                      )}
+                      <div className="relative max-h-8 w-[100px] h-8 flex items-center justify-start shrink-0">
+                        {logoPreview ? (
+                          <Image src={logoPreview} alt="Agency logo preview" fill sizes="100px" className="object-contain object-left" unoptimized />
+                        ) : (
+                          <span className="text-[9px] text-slate-400 italic font-mono">No Logo Uploaded</span>
+                        )}
+                      </div>
                       <div className="text-right">
                         <p className="text-[11px] font-bold text-slate-800 truncate max-w-[140px]">
                           {agencyName || "Default SEO Reports"}
@@ -606,10 +613,8 @@ export default function DashboardClient({ user: initialUser }) {
               </div>
             </div>
 
-          </div>
-
+          </aside>
         </div>
-
       </main>
     </div>
   );

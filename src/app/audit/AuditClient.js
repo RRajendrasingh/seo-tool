@@ -1468,7 +1468,7 @@ export default function AuditClient({ initialUser = null }) {
   };
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative isolate">
+    <main className="bg-zinc-950 min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative isolate">
       {/* Background radial glow */}
       <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
@@ -1533,7 +1533,7 @@ export default function AuditClient({ initialUser = null }) {
         )}
 
         {/* Header */}
-        <div className="text-center space-y-4">
+        <header className="text-center space-y-4">
           <div className="inline-flex items-center gap-x-2 rounded-full border border-violet-500/30 bg-violet-500/5 px-4 py-1 text-xs font-semibold text-violet-300">
             <span>Enterprise SEO Performance Audit Suite</span>
           </div>
@@ -1546,7 +1546,7 @@ export default function AuditClient({ initialUser = null }) {
               : "Enter your details below to run a comprehensive check on your website's speed, mobile friendliness, meta configurations, and technical errors."
             }
           </p>
-        </div>
+        </header>
 
         {/* DEVELOPER REMINDER */}
         {!loading && !report && (
@@ -1586,7 +1586,7 @@ export default function AuditClient({ initialUser = null }) {
                 Upgrade to Pro Monitor ($29/mo)
               </button>
             </div>
-          ) : !auditId && user && user.subscription_tier !== "free" && user.paid_audits_run >= user.allowed_quota ? (
+          ) : !auditId && user && user.subscription_tier !== "free" && user.subscription_tier !== "agency" && user.subscription_tier !== "multi" && user.paid_audits_run >= user.allowed_quota ? (
             <div className="max-w-lg mx-auto rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md space-y-6 text-center">
               <span className="text-4xl block">⚠️</span>
               <h3 className="text-base font-bold text-white uppercase tracking-wider">Paid Audit Limit Reached</h3>
@@ -1601,7 +1601,7 @@ export default function AuditClient({ initialUser = null }) {
               </button>
             </div>
           ) : (
-            <div className={`rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md mx-auto space-y-6 text-left ${
+            <section aria-label="Audit Form" className={`rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 backdrop-blur-md mx-auto space-y-6 text-left ${
               user && (user.subscription_tier === "weekly" || user.subscription_tier === "agency") ? "max-w-2xl" : "max-w-lg"
             }`}>
               <h3 className="text-lg font-bold text-white">
@@ -1911,7 +1911,7 @@ export default function AuditClient({ initialUser = null }) {
                 </>
               )}
             </form>
-          </div>
+          </section>
         ))}
 
         {/* Loading Spinner */}
@@ -2124,6 +2124,7 @@ export default function AuditClient({ initialUser = null }) {
                           </svg>
                         </div>
                       )}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={`https://api.microlink.io/?url=${encodeURIComponent(report.url)}&screenshot=true&embed=screenshot.url&device=iPhone`}
                         alt={`${report.url} Mobile Preview`}
@@ -2178,6 +2179,7 @@ export default function AuditClient({ initialUser = null }) {
                         </svg>
                       </div>
                     )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`https://api.microlink.io/?url=${encodeURIComponent(report.url)}&screenshot=true&embed=screenshot.url`}
                       alt={`${report.url} Desktop Preview`}
@@ -2420,6 +2422,6 @@ export default function AuditClient({ initialUser = null }) {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

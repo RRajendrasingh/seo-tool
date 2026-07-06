@@ -42,7 +42,7 @@ export async function POST(req) {
 
     let planName = "Starter Single Report";
     let planDescription = `Comprehensive performance and SEO analysis checklist for ${url}`;
-    let planAmount = 900; // $9.00
+    let planAmount = 999; // $9.99
     let isSubscription = false;
 
     if (plan === "multi") {

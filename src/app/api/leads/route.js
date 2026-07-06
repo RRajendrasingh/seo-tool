@@ -51,14 +51,16 @@ export async function POST(request) {
     }
 
     if (isPaidTier) {
-      // Paid user: Enforce their specific allowedQuota, ignoring free audits
-      const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Paid Audit'", [leadData.email.trim()]);
-      const paidAuditsCount = leadCountResult[0]?.count || 0;
-      if (paidAuditsCount >= allowedQuota) {
-        return NextResponse.json(
-          { error: `You have reached your limit of ${allowedQuota} paid audits for your plan.` },
-          { status: 403 }
-        );
+      if (tier !== "agency" && tier !== "multi") {
+        // Paid user (Weekly): Enforce their specific allowedQuota, ignoring free audits
+        const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Paid Audit'", [leadData.email.trim()]);
+        const paidAuditsCount = leadCountResult[0]?.count || 0;
+        if (paidAuditsCount >= allowedQuota) {
+          return NextResponse.json(
+            { error: `You have reached your limit of ${allowedQuota} paid audits for your plan.` },
+            { status: 403 }
+          );
+        }
       }
     } else {
       // Free user: Enforce 2 free audits, ignoring any paid audits they might have had before

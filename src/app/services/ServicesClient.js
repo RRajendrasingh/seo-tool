@@ -190,25 +190,25 @@ export default function ServicesClient() {
   ];
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-16 sm:py-24 relative isolate overflow-x-hidden">
+    <main className="bg-zinc-950 min-h-screen py-16 sm:py-24 relative isolate overflow-x-hidden">
       {/* Glow effect */}
       <div className="absolute top-10 right-10 -z-10 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl" />
       <div className="absolute bottom-10 left-10 -z-10 w-96 h-96 bg-fuchsia-600/10 rounded-full blur-3xl" />
 
       {/* Header */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
+      <header className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
         <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
           High-Value Services Designed to Perform
         </h1>
         <p className="max-w-2xl mx-auto text-base sm:text-lg text-zinc-400">
           Transform your digital footprint with custom engineering, location targeting, and modern AI engine optimization.
         </p>
-      </div>
+      </header>
 
       {/* Core Services Section */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20 space-y-16 sm:space-y-20">
+      <section aria-label="Our Services" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20 space-y-16 sm:space-y-20">
         {serviceDetails.map((service, idx) => (
-          <div
+          <article
             key={service.id}
             id={service.id}
             className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-zinc-900 pb-12 sm:pb-16 last:border-b-0"
@@ -275,14 +275,14 @@ export default function ServicesClient() {
                 </div>
               </div>
             </div>
-          </div>
+          </article>
         ))}
-      </div>
+      </section>
 
       {/* Pricing Section */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32 border-t border-zinc-900 pt-24" id="plans">
+      <section aria-labelledby="plans-heading" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-32 border-t border-zinc-900 pt-24" id="plans">
         <div className="mx-auto max-w-3xl text-center space-y-4">
-          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          <h2 id="plans-heading" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
             Audit Plans & SEO Blueprints
           </h2>
           <p className="text-base text-zinc-400 max-w-lg mx-auto">
@@ -368,7 +368,7 @@ export default function ServicesClient() {
         </div>
 
         {/* Localized SEO Target Cities Banner */}
-        <div className="mx-auto max-w-4xl mt-16 text-center border-t border-zinc-900 pt-8 px-4">
+        <aside aria-label="Local SEO Target Cities" className="mx-auto max-w-4xl mt-16 text-center border-t border-zinc-900 pt-8 px-4">
           <p className="text-xs text-zinc-500 leading-relaxed">
             Our SEO services and GEO algorithms are specifically customized for major local markets including{" "}
             <Link href="/seo-services/new-york/" className="text-zinc-400 hover:text-violet-400 font-semibold transition-colors">New York</Link>,{" "}
@@ -380,8 +380,8 @@ export default function ServicesClient() {
               Explore All USA Locations →
             </Link>
           </p>
-        </div>
-      </div>
-    </div>
+        </aside>
+      </section>
+    </main>
   );
 }

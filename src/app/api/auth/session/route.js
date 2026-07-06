@@ -48,6 +48,8 @@ export async function GET() {
           allowedQuota += row.count * 25;
         } else if (row.packageRequest === "Premium multi") {
           allowedQuota += row.count * 100;
+        } else if (row.packageRequest === "Premium Report") {
+          allowedQuota += row.count * 1;
         }
       }
     }
