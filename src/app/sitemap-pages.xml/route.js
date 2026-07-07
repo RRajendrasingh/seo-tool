@@ -10,7 +10,6 @@ export async function GET() {
     `${siteUrl}/terms/`,
     `${siteUrl}/services/`,
     `${siteUrl}/audit/`,
-    `${siteUrl}/audit/report/`,
     `${siteUrl}/seo-services/`,
   ];
 

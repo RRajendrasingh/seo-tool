@@ -79,7 +79,7 @@ function WidgetForm() {
       }
 
       // Redirect client to audit report with branding overrides
-      const redirectUrl = `/audit/report?url=${encodeURIComponent(url.trim())}&agencyName=${encodeURIComponent(agencyName)}&agencyAccent=${accent}&agencyLogo=${encodeURIComponent(logo)}`;
+      const redirectUrl = `/audit?url=${encodeURIComponent(url.trim())}&agencyName=${encodeURIComponent(agencyName)}&agencyAccent=${accent}&agencyLogo=${encodeURIComponent(logo)}`;
       window.top.location.href = redirectUrl;
     } catch (err) {
       console.error(err);

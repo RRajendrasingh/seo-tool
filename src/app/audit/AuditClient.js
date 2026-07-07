@@ -2215,7 +2215,7 @@ export default function AuditClient({ initialUser = null }) {
                     type="button"
                     onClick={() => {
                       if (isPremium) {
-                        window.open(`/audit/report/?url=${encodeURIComponent(report.url)}`, '_blank');
+                        window.print();
                       } else {
                         setShowPayModal(true);
                       }

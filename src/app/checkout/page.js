@@ -233,7 +233,7 @@ function CheckoutContent() {
       if (selectedPlan === "weekly" || selectedPlan === "agency" || finalUrl === "domain-pending" || !finalUrl) {
         router.push("/dashboard");
       } else {
-        router.push(`/audit/report?url=${encodeURIComponent(finalUrl)}`);
+        router.push(`/audit?url=${encodeURIComponent(finalUrl)}`);
       }
     }, 2000);
   };

@@ -53,7 +53,7 @@ function SuccessContent() {
             if (plan === "weekly" || plan === "agency" || targetUrl === "domain-pending" || !targetUrl) {
               router.push("/dashboard");
             } else {
-              router.push(`/audit/report?url=${encodeURIComponent(targetUrl)}`);
+              router.push(`/audit?url=${encodeURIComponent(targetUrl)}`);
             }
           }, 1500);
         } else {
