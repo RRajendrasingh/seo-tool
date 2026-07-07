@@ -137,7 +137,7 @@ export default function AuditClient({ initialUser = null }) {
     }
   }, [activeEngine]);
 
-  const isPremium = user?.subscription_tier === "weekly" || user?.subscription_tier === "agency" || (user?.allowed_quota && user?.allowed_quota > 0) || (typeof window !== "undefined" && (() => {
+  const isPremium = user?.subscription_tier === "weekly" || user?.subscription_tier === "multi" || user?.subscription_tier === "agency" || (user?.allowed_quota && user?.allowed_quota > 0) || (typeof window !== "undefined" && (() => {
     try {
       const token = localStorage.getItem(`premium_token_${url}`);
       if (token) {
@@ -1144,14 +1144,34 @@ export default function AuditClient({ initialUser = null }) {
       // Sort priority checks so High impact are first
       priorityChecks.sort((a, b) => (a.impact === "High" ? -1 : 1));
 
-      const newEngines = {
-        "priority-fixes": {
-          name: "Priority Action Fix-list",
-          score: Math.max(0, 100 - priorityChecks.length * 5),
-          desc: "Consolidated list of the most critical warnings and errors found across all audits.",
-          checks: priorityChecks
-        },
-        ...engines
+      // Define the desired priority order for the tabs (user POV & importance)
+      const orderedKeys = [
+        "seo-tags",             // OPEN
+        "page-speed",           // OPEN
+        "aeo-geo",              // LOCKED
+        "crawlability-indexing",// LOCKED
+        "content-hierarchy",    // LOCKED
+        "server-security",      // LOCKED
+        "page-weight",          // LOCKED
+        "social-media",         // LOCKED
+        "advanced-structure",   // LOCKED
+        "html-css-validation"   // LOCKED
+      ];
+
+      const newEngines = {};
+
+      orderedKeys.forEach(key => {
+        if (engines[key]) {
+          newEngines[key] = engines[key];
+        }
+      });
+
+      // Add Priority Action Fix-list at the very end
+      newEngines["priority-fixes"] = {
+        name: "Priority Action Fix-list",
+        score: Math.max(0, 100 - priorityChecks.length * 5),
+        desc: "Consolidated list of the most critical warnings and errors found across all audits.",
+        checks: priorityChecks
       };
 
       const newReport = {
@@ -1203,6 +1223,17 @@ export default function AuditClient({ initialUser = null }) {
       }
 
       setReport(newReport);
+
+      // Update URL in browser without triggering a Next.js re-render (which router.replace does)
+      if (typeof window !== "undefined") {
+        const currentUrlParam = searchParams.get("url");
+        if (currentUrlParam !== formattedUrl) {
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("url", formattedUrl);
+          window.history.replaceState(null, "", `?${params.toString()}`);
+        }
+      }
+
       if (user) {
         setUser(prev => prev ? {
           ...prev,
@@ -1290,11 +1321,15 @@ export default function AuditClient({ initialUser = null }) {
     };
     const currentFilter = filterTabs[engineId] || "all";
 
-    const isGatedKey = !["seo-tags", "page-speed", "priority-fixes"].includes(engineId);
+    const isGatedKey = !["seo-tags", "page-speed"].includes(engineId);
     if (!isPremium && isGatedKey) {
       return (
         <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-8 text-center space-y-4 max-w-md mx-auto my-12 flex flex-col items-center justify-center min-h-[350px]">
-          <span className="text-3xl">🔒</span>
+          <div className="w-12 h-12 text-zinc-500 [.light_&]:text-zinc-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-full h-full">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          </div>
           <h3 className="text-sm font-bold text-white uppercase tracking-wider [.light_&]:text-zinc-900">{engine.name} Details Locked</h3>
           <p className="text-xxs text-zinc-400 leading-relaxed max-w-xs mx-auto [.light_&]:text-zinc-600">
             Detailed checks for page payloads, assets, responsive structures, server security parameters, and AEO indexation are only available for premium members.
@@ -1398,7 +1433,11 @@ export default function AuditClient({ initialUser = null }) {
               {engine.checks.map(check => (
                 <div key={check.name} className="rounded-xl border border-zinc-850 bg-zinc-900/20 p-4 flex gap-3 transition-all hover:bg-zinc-900/40">
                   <span className={`inline-flex items-center justify-center rounded-full text-xxs font-bold h-5.5 w-5.5 flex-shrink-0 mt-0.5 ${check.passed ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
-                    {check.passed ? "✓" : "✗"}
+                    {check.passed ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    )}
                   </span>
                   <div className="space-y-1 w-full">
                     <div className="flex justify-between items-center">
@@ -1486,7 +1525,11 @@ export default function AuditClient({ initialUser = null }) {
                           ? "bg-rose-500/10 text-rose-400"
                           : "bg-amber-500/10 text-amber-400"
                       }`}>
-                        {check.passed ? "✓" : "✗"}
+                        {check.passed ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        )}
                       </span>
                       <h4 className="text-xs font-bold text-white">{check.name}</h4>
                     </div>
@@ -2251,8 +2294,10 @@ export default function AuditClient({ initialUser = null }) {
 
                     {/* Mobile Address Bar (Adds browser spacing) */}
                     <div className="h-[7%] w-full bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-850 px-3 flex items-center justify-center shrink-0">
-                      <div className="bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-850 px-2 py-0.5 rounded-md text-[7px] text-zinc-900 dark:text-zinc-400 font-mono flex items-center justify-center gap-1 w-full select-none">
-                        <span className="text-[7px] text-emerald-500">🔒</span>
+                      <div className="bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-850 px-3 py-1 rounded-md text-[9px] text-zinc-900 dark:text-zinc-400 font-mono flex items-center justify-center gap-1 w-full select-none shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-2.5 h-2.5 text-emerald-500">
+                          <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+                        </svg>
                         <span className="truncate">{report.url.replace(/^https?:\/\//, '')}</span>
                       </div>
                     </div>
@@ -2303,7 +2348,11 @@ export default function AuditClient({ initialUser = null }) {
 
                     <div className="flex-grow max-w-xs mx-3 bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-850 px-2.5 py-0.5 rounded-md text-[9px] text-zinc-900 dark:text-zinc-400 font-mono flex items-center justify-between gap-1 select-none">
                       <div className="flex items-center gap-1 truncate">
-                        <span className="text-[9px] text-emerald-500">🔒</span>
+                        <span className="text-[9px] text-emerald-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                            <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+                          </svg>
+                        </span>
                         <span className="truncate">{report.url.replace(/^https?:\/\//, '')}</span>
                       </div>
                       <span className="text-[9px] text-zinc-400 font-sans cursor-pointer hover:text-zinc-600 dark:hover:text-zinc-300">↻</span>
@@ -2402,6 +2451,7 @@ export default function AuditClient({ initialUser = null }) {
               <div id="mobile-tabs-container" className="flex overflow-x-auto w-full gap-3 py-4 snap-x no-scrollbar items-center px-4 sm:px-6 scroll-pl-4 sm:scroll-pl-6">
                 {Object.entries(report.engines).map(([id, rawEng]) => {
                   const isSelected = activeEngine === id;
+                  const isPriority = id === "priority-fixes";
                   return (
                     <button
                       key={id}
@@ -2410,10 +2460,19 @@ export default function AuditClient({ initialUser = null }) {
                       className={`snap-start shrink-0 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
                         isSelected 
                           ? "bg-violet-600 text-white shadow-md border border-violet-500" 
-                          : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-zinc-200"
+                          : isPriority
+                          ? "bg-amber-900/40 text-amber-500 border border-amber-500/50 hover:bg-amber-900/60 [.light_&]:bg-amber-100 [.light_&]:text-amber-800 [.light_&]:border-amber-400"
+                          : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-zinc-200 [.light_&]:bg-white [.light_&]:border-zinc-300 [.light_&]:text-zinc-600"
                       }`}
                     >
-                      {rawEng.name}
+                      <div className="flex items-center">
+                        <span className="font-semibold text-xs tracking-wide truncate">{rawEng.name}</span>
+                        {isPriority && !isPremium && (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 ml-1.5 opacity-70">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                          </svg>
+                        )}
+                      </div>
                     </button>
                   );
                 })}
@@ -2431,11 +2490,21 @@ export default function AuditClient({ initialUser = null }) {
                   Active Auditing Engines
                 </h3>
                 {/* Scrollable list */}
-                <div id="lhs-sidebar-engines" className="space-y-3 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 pt-2 custom-scrollbar">
+                <div id="lhs-sidebar-engines" className="space-y-3 max-h-[calc(100vh-140px)] overflow-y-auto px-2 pt-2 pb-8 -mx-2 custom-scrollbar">
                   {Object.entries(report.engines).map(([id, rawEng]) => {
                     const isSelected = activeEngine === id;
+                    const isPriority = id === "priority-fixes";
                     const adjustedScore = getStrategyScore(id, rawEng.score, deviceStrategy);
                     const eng = { ...rawEng, score: adjustedScore };
+                    
+                    let buttonClass = "";
+                    if (isSelected) {
+                      buttonClass = "bg-violet-900/20 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/50 scale-[1.02] [.light_&]:bg-violet-100 [.light_&]:border-violet-400 [.light_&]:shadow-sm [.light_&]:ring-0";
+                    } else if (isPriority) {
+                      buttonClass = "bg-amber-900/20 border-amber-500/50 hover:bg-amber-900/40 hover:border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.05)] [.light_&]:bg-amber-50 [.light_&]:border-amber-300 [.light_&]:hover:bg-amber-100/70";
+                    } else {
+                      buttonClass = "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/60 [.light_&]:bg-white [.light_&]:border-zinc-200 [.light_&]:hover:border-violet-200 [.light_&]:hover:bg-violet-50/50";
+                    }
                     
                     return (
                       <button
@@ -2443,17 +2512,20 @@ export default function AuditClient({ initialUser = null }) {
                         id={`sidebar-engine-btn-${id}`}
                         type="button"
                         onClick={() => handleEngineClick(id)}
-                        className={`w-full relative overflow-hidden text-left rounded-2xl border p-4.5 transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer ${
-                          isSelected
-                            ? "bg-violet-900/20 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/50 scale-[1.02] [.light_&]:bg-violet-50 [.light_&]:border-violet-400 [.light_&]:shadow-sm [.light_&]:ring-0"
-                            : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/60 [.light_&]:bg-white [.light_&]:border-zinc-200 [.light_&]:hover:border-violet-200 [.light_&]:hover:bg-violet-50/50"
-                        }`}
+                        className={`w-full relative overflow-hidden text-left rounded-2xl border p-4.5 transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer ${buttonClass}`}
                       >
                         {isSelected && (
                           <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.8)] [.light_&]:hidden" />
                         )}
                         <div className={`space-y-1 min-w-0 ${isSelected ? 'pl-2 [.light_&]:pl-0' : ''} transition-all`}>
-                          <h4 className={`text-xs font-bold ${isSelected ? 'text-violet-300 [.light_&]:text-violet-700' : 'text-white [.light_&]:text-zinc-800'}`}>{eng.name}</h4>
+                          <div className="flex items-center">
+                            <h3 className={`font-semibold text-xs tracking-wide group-hover:text-white transition-colors duration-200 ${isSelected ? "text-white" : "text-zinc-400 [.light_&]:text-zinc-600 [.light_&]:group-hover:text-zinc-900"}`}>{eng.name}</h3>
+                            {isPriority && !isPremium && (
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 ml-1 opacity-70">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                              </svg>
+                            )}
+                          </div>
                           <p className={`text-xxs line-clamp-1 leading-relaxed ${isSelected ? 'text-zinc-400 [.light_&]:text-violet-500/80' : 'text-zinc-500 [.light_&]:text-zinc-500'}`}>
                             {eng.desc}
                           </p>
@@ -2500,23 +2572,6 @@ export default function AuditClient({ initialUser = null }) {
               </div>
             </div>
 
-          {/* Back Button */}
-            <div className="pt-6 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setReport(null);
-                  setLeadCaptured(false);
-                  setUrl("");
-                  setName("");
-                  setEmail("");
-                  setPhone("");
-                }}
-                className="rounded-xl border border-zinc-300 dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-900 px-6 py-2.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all cursor-pointer"
-              >
-                ← Audit Another Website
-              </button>
-            </div>
           </div>
         )}
 
