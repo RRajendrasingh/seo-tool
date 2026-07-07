@@ -1290,13 +1290,13 @@ export default function AuditClient({ initialUser = null }) {
     };
     const currentFilter = filterTabs[engineId] || "all";
 
-    const isGatedKey = !["seo-tags", "page-speed"].includes(engineId);
+    const isGatedKey = !["seo-tags", "page-speed", "priority-fixes"].includes(engineId);
     if (!isPremium && isGatedKey) {
       return (
-        <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-8 text-center space-y-4 max-w-md mx-auto my-6 flex flex-col items-center justify-center min-h-[350px]">
+        <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-8 text-center space-y-4 max-w-md mx-auto my-12 flex flex-col items-center justify-center min-h-[350px]">
           <span className="text-3xl">🔒</span>
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">{engine.name} Details Locked</h3>
-          <p className="text-xxs text-zinc-400 leading-relaxed max-w-xs mx-auto">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider [.light_&]:text-zinc-900">{engine.name} Details Locked</h3>
+          <p className="text-xxs text-zinc-400 leading-relaxed max-w-xs mx-auto [.light_&]:text-zinc-600">
             Detailed checks for page payloads, assets, responsive structures, server security parameters, and AEO indexation are only available for premium members.
           </p>
           <button
@@ -2427,11 +2427,11 @@ export default function AuditClient({ initialUser = null }) {
               
               {/* DESKTOP: Sidebar Selector (hidden lg:block) */}
               <div className="hidden lg:block lg:col-span-4 space-y-4 lg:sticky lg:top-24 z-10">
-                <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1 text-left">
+                <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1 text-left mt-2">
                   Active Auditing Engines
                 </h3>
                 {/* Scrollable list */}
-                <div id="lhs-sidebar-engines" className="space-y-3 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 custom-scrollbar">
+                <div id="lhs-sidebar-engines" className="space-y-3 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 pt-2 custom-scrollbar">
                   {Object.entries(report.engines).map(([id, rawEng]) => {
                     const isSelected = activeEngine === id;
                     const adjustedScore = getStrategyScore(id, rawEng.score, deviceStrategy);
@@ -2445,16 +2445,16 @@ export default function AuditClient({ initialUser = null }) {
                         onClick={() => handleEngineClick(id)}
                         className={`w-full relative overflow-hidden text-left rounded-2xl border p-4.5 transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer ${
                           isSelected
-                            ? "bg-violet-900/20 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/50 scale-[1.02]"
-                            : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/60"
+                            ? "bg-violet-900/20 border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.15)] ring-1 ring-violet-500/50 scale-[1.02] [.light_&]:bg-violet-50 [.light_&]:border-violet-400 [.light_&]:shadow-sm [.light_&]:ring-0"
+                            : "bg-zinc-900/30 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/60 [.light_&]:bg-white [.light_&]:border-zinc-200 [.light_&]:hover:border-violet-200 [.light_&]:hover:bg-violet-50/50"
                         }`}
                       >
                         {isSelected && (
-                          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.8)]" />
+                          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.8)] [.light_&]:hidden" />
                         )}
-                        <div className={`space-y-1 min-w-0 ${isSelected ? 'pl-2' : ''} transition-all`}>
-                          <h4 className={`text-xs font-bold ${isSelected ? 'text-violet-300' : 'text-white'}`}>{eng.name}</h4>
-                          <p className="text-xxs text-zinc-500 line-clamp-1 leading-relaxed">
+                        <div className={`space-y-1 min-w-0 ${isSelected ? 'pl-2 [.light_&]:pl-0' : ''} transition-all`}>
+                          <h4 className={`text-xs font-bold ${isSelected ? 'text-violet-300 [.light_&]:text-violet-700' : 'text-white [.light_&]:text-zinc-800'}`}>{eng.name}</h4>
+                          <p className={`text-xxs line-clamp-1 leading-relaxed ${isSelected ? 'text-zinc-400 [.light_&]:text-violet-500/80' : 'text-zinc-500 [.light_&]:text-zinc-500'}`}>
                             {eng.desc}
                           </p>
                         </div>
@@ -2462,7 +2462,7 @@ export default function AuditClient({ initialUser = null }) {
                         <div className="relative h-11 w-11 flex items-center justify-center flex-shrink-0 mx-auto">
                           <svg className="h-full w-full transform -rotate-90" viewBox="0 0 36 36">
                             <circle
-                              className="text-zinc-850"
+                              className="text-zinc-850 [.light_&]:text-zinc-200"
                               strokeWidth="3.5"
                               stroke="currentColor"
                               fill="none"
@@ -2482,7 +2482,7 @@ export default function AuditClient({ initialUser = null }) {
                               r="15.915"
                             />
                           </svg>
-                          <span className="absolute text-[10px] font-black text-white">{eng.score}</span>
+                          <span className="absolute text-[10px] font-black text-white [.light_&]:text-zinc-800">{eng.score}</span>
                         </div>
                       </button>
                     );
