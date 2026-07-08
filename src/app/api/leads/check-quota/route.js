@@ -9,13 +9,14 @@ export async function POST(request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
+    let tier = "free";
     let isPaidTier = false;
     let allowedQuota = 0;
     const userQuery = await query("SELECT subscription_tier, allowed_quota FROM users WHERE email = ?", [email.trim()]);
     if (userQuery && userQuery.length > 0) {
-      const tier = userQuery[0].subscription_tier;
+      tier = userQuery[0].subscription_tier || "free";
       allowedQuota = userQuery[0].allowed_quota || 0;
-      if (tier === "weekly" || tier === "agency" || tier === "multi") {
+      if (tier === "weekly" || tier === "agency" || tier === "multi" || allowedQuota > 0) {
         isPaidTier = true;
         if (allowedQuota === 0) {
           if (tier === "weekly") allowedQuota = 3;
@@ -31,7 +32,7 @@ export async function POST(request) {
         return NextResponse.json({ success: true, isPaidTier });
       }
 
-      const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Paid Audit' AND status != 'Failed'", [email.trim()]);
+      const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Premium Report' AND status != 'Failed'", [email.trim()]);
       const paidAuditsCount = leadCountResult[0]?.count || 0;
       if (paidAuditsCount >= allowedQuota) {
         return NextResponse.json(

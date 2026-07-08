@@ -68,7 +68,7 @@ export async function GET() {
     const freeAuditsRun = freeAuditsCount[0]?.count || 0;
     
     const paidAuditsCount = await query(
-      "SELECT COUNT(*) as count FROM leads WHERE email = ? AND website != 'domain-pending' AND packageRequest = 'Paid Audit'",
+      "SELECT COUNT(*) as count FROM leads WHERE email = ? AND website != 'domain-pending' AND packageRequest != 'Free Audit'",
       [decoded.email]
     );
     const paidAuditsRun = paidAuditsCount[0]?.count || 0;

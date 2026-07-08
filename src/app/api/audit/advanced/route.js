@@ -116,12 +116,68 @@ export async function POST(request) {
       const sitemapRes = await fetch(`${origin}/sitemap.xml`, { method: "HEAD", signal: AbortSignal.timeout(3000) });
       if (sitemapRes.ok) hasSitemap = true;
     } catch (e) {}
+    
+    // 5. New Checks: Links, Text, Tags, Server
+    // Text-to-HTML and Word Count
+    const rawText = $('body').text() || "";
+    const cleanText = rawText.replace(/\s+/g, " ").trim();
+    const wordCount = cleanText.split(" ").filter(w => w.length > 0).length;
+    const textBytes = new Blob([cleanText]).size;
+    const htmlBytes = new Blob([html]).size;
+    const textRatio = htmlBytes > 0 ? parseFloat(((textBytes / htmlBytes) * 100).toFixed(2)) : 0;
+
+    // Links Profiling
+    let internalLinks = 0;
+    let externalLinks = 0;
+    let nofollowLinks = 0;
+    let genericAnchors = 0;
+    
+    const genericWords = ["click here", "read more", "learn more", "here", "more"];
+    
+    $('a[href]').each((_, el) => {
+      const href = $(el).attr('href');
+      const rel = $(el).attr('rel') || "";
+      const text = $(el).text().trim().toLowerCase();
+      
+      if (href.startsWith("http") && !href.includes(origin)) {
+        externalLinks++;
+      } else {
+        internalLinks++;
+      }
+      
+      if (rel.toLowerCase().includes("nofollow")) {
+        nofollowLinks++;
+      }
+      
+      if (genericWords.includes(text)) {
+        genericAnchors++;
+      }
+    });
+
+    // Icons & Iframes & Pagination
+    const hasFavicon = $('link[rel="icon"], link[rel="shortcut icon"]').length > 0;
+    const hasAppleIcon = $('link[rel="apple-touch-icon"]').length > 0;
+    const iframeCount = $('iframe').length;
+    const hasPrev = $('link[rel="prev"]').length > 0;
+    const hasNext = $('link[rel="next"]').length > 0;
+
+    // Server Headers
+    const serverHeader = htmlRes.headers.get("server") || null;
+    const xPoweredBy = htmlRes.headers.get("x-powered-by") || null;
+    const redirected = htmlRes.redirected;
 
     return NextResponse.json({
       social: { ogTags, twitterTags },
-      structure: { h1Count, h2Count, h3Count, headingSkipError, headingElements, totalImages, missingAlt, missingAltElements, missingLazy, missingLazyElements },
+      structure: { 
+        h1Count, h2Count, h3Count, headingSkipError, headingElements, 
+        totalImages, missingAlt, missingAltElements, missingLazy, missingLazyElements,
+        hasFavicon, hasAppleIcon, iframeCount 
+      },
       language: { canonical, hreflangCount: hreflangs.length, hreflangs },
-      crawlability: { hasRobots, hasSitemap }
+      crawlability: { hasRobots, hasSitemap },
+      content: { wordCount, textRatio },
+      links: { internalLinks, externalLinks, nofollowLinks, genericAnchors, hasPrev, hasNext },
+      server: { serverHeader, xPoweredBy, redirected }
     });
   } catch (error) {
     console.error("Advanced API Error:", error);

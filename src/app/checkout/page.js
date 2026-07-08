@@ -36,12 +36,14 @@ function CheckoutContent() {
   const [user, setUser] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
 
+  // BUG #2 FIX: These values MUST match the unit_amount in /api/checkout/route.js exactly.
+  // single=$9.99 (999 cents), multi=$199 (19900 cents), weekly=$29 (2900 cents), agency=$99 (9900 cents)
   const getPlanPrice = () => {
-    if (selectedPlan === "single") return 9;
-    if (selectedPlan === "multi") return 199;
-    if (selectedPlan === "weekly") return 29;
-    if (selectedPlan === "agency") return 99;
-    return 9;
+    if (selectedPlan === "single") return "9.99";
+    if (selectedPlan === "multi") return "199.00";
+    if (selectedPlan === "weekly") return "29.00";
+    if (selectedPlan === "agency") return "99.00";
+    return "9.99";
   };
 
   const getPlanName = () => {
@@ -399,7 +401,7 @@ function CheckoutContent() {
                         <div className="space-y-0.5">
                           <span className="text-xs font-bold text-white block">Single Page PDF</span>
                           <span className="text-[10px] text-zinc-400 block">Unlock 1 full report PDF download.</span>
-                          <span className="text-[11px] font-bold text-violet-400 block">$29 USD (one-time)</span>
+                          <span className="text-[11px] font-bold text-violet-400 block">$9.99 USD (one-time)</span>
                         </div>
                       </label>
 
@@ -417,7 +419,7 @@ function CheckoutContent() {
                         <div className="space-y-0.5">
                           <span className="text-xs font-bold text-white block">3-Page Audit Pack</span>
                           <span className="text-[10px] text-zinc-400 block">Scan up to 3 core pages + PDF downloads.</span>
-                          <span className="text-[11px] font-bold text-violet-400 block">$59 USD (one-time)</span>
+                          <span className="text-[11px] font-bold text-violet-400 block">$199.00 USD (one-time)</span>
                         </div>
                       </label>
 
@@ -435,7 +437,7 @@ function CheckoutContent() {
                         <div className="space-y-0.5">
                           <span className="text-xs font-bold text-white block">Weekly Monitoring</span>
                           <span className="text-[10px] text-zinc-400 block">Monday morning audits & alerts.</span>
-                          <span className="text-[11px] font-bold text-violet-400 block">$49 / month</span>
+                          <span className="text-[11px] font-bold text-violet-400 block">$29.00 / month</span>
                         </div>
                       </label>
 
@@ -640,7 +642,7 @@ function CheckoutContent() {
               </div>
 
               <div className="space-y-3 text-center">
-                <h3 className="text-sm font-bold text-white tracking-wide">Processing Local Payment</h3>
+                <h3 className="text-sm font-bold text-white tracking-wide">Processing Payment</h3>
                 <div className="space-y-1">
                   {loadingSteps.map((step, idx) => {
                     const isPassed = loadingStep > idx;
@@ -683,8 +685,9 @@ function CheckoutContent() {
 
               <div className="text-center space-y-2">
                 <h3 className="text-base font-bold text-white">Payment Authorized Successfully!</h3>
+                {/* BUG #8 FIX: Removed "Demo Transaction" and "mysql DB" dev-only copy */}
                 <p className="text-xxs text-zinc-400 font-sans">
-                  Demo Transaction completed. Subscription data written to mysql DB.
+                  Transaction verified. Your premium access is now active and linked to your account.
                 </p>
                 <p className="text-xxs text-violet-400 font-mono animate-pulse pt-2">
                   Unlocking your portal settings...
@@ -766,7 +769,7 @@ function CheckoutContent() {
               <div className="space-y-2.5 px-1 text-left">
                 <div className="flex justify-between text-xxs">
                   <span className="text-zinc-500">Subtotal</span>
-                  <span className="text-zinc-300">${getPlanPrice()}.00 USD</span>
+                  <span className="text-zinc-300">${getPlanPrice()} USD</span>
                 </div>
                 <div className="flex justify-between text-xxs">
                   <span className="text-zinc-500">Tax / Processing fee</span>
@@ -777,7 +780,7 @@ function CheckoutContent() {
 
                 <div className="flex justify-between items-center text-xs font-bold pt-1">
                   <span className="text-white">Total Amount</span>
-                  <span className="text-violet-400 text-sm font-extrabold">${getPlanPrice()}.00 USD</span>
+                  <span className="text-violet-400 text-sm font-extrabold">${getPlanPrice()} USD</span>
                 </div>
               </div>
             </div>

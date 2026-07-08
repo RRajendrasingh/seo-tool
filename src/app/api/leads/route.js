@@ -40,7 +40,7 @@ export async function POST(request) {
     if (userQuery && userQuery.length > 0) {
       const tier = userQuery[0].subscription_tier;
       allowedQuota = userQuery[0].allowed_quota || 0;
-      if (tier === "weekly" || tier === "agency" || tier === "multi") {
+      if (tier === "weekly" || tier === "agency" || tier === "multi" || allowedQuota > 0) {
         isPaidTier = true;
         if (allowedQuota === 0) {
           if (tier === "weekly") allowedQuota = 3;
@@ -53,7 +53,7 @@ export async function POST(request) {
     if (isPaidTier) {
       if (tier !== "agency" && tier !== "multi") {
         // Paid user (Weekly): Enforce their specific allowedQuota, ignoring free audits
-        const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest = 'Paid Audit'", [leadData.email.trim()]);
+        const leadCountResult = await query("SELECT COUNT(*) as count FROM leads WHERE email = ? AND packageRequest != 'Free Audit'", [leadData.email.trim()]);
         const paidAuditsCount = leadCountResult[0]?.count || 0;
         if (paidAuditsCount >= allowedQuota) {
           return NextResponse.json(

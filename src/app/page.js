@@ -4,6 +4,7 @@ import HeroMockupTabs from "@/components/home/HeroMockupTabs";
 import CitySearchBox from "@/components/home/CitySearchBox";
 import FaqAccordion from "@/components/home/FaqAccordion";
 import AuditCtaForm from "@/components/home/AuditCtaForm";
+import PlatformFeatures from "@/components/home/PlatformFeatures";
 
 export const metadata = {
   title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
@@ -240,108 +241,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. BENEFITS SECTION */}
-        <section className="border-t border-zinc-900 py-24 sm:py-32" aria-labelledby="benefits">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center space-y-4 mb-20">
-              <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/30 px-3.5 py-1.5 rounded-full border border-cyan-500/10">
-                Why Choose SEOIntellect
-              </span>
-              <h2 id="benefits" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Engineered for High-Ranking Technical SEO Outcomes
-              </h2>
-              <p className="text-zinc-400 max-w-xl mx-auto text-sm sm:text-base">
-                Skip generic advice. Our system focuses on technical factors that directly impact crawling, speed indexing, and organic visibility.
-              </p>
-            </div>
-
-            <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "AI-Driven Checklists",
-                  desc: "Get code-ready HTML improvements and semantic guidelines tailored specifically for your site's structure.",
-                  icon: (
-                    <svg className="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                  ),
-                },
-                {
-                  title: "Targeted Local Hubs",
-                  desc: "Deploy lightning-fast location pages to index and capture high-value queries in 700+ cities globally.",
-                  icon: (
-                    <svg className="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  ),
-                },
-                {
-                  title: "Statically Exported Speed",
-                  desc: "Pass Core Web Vitals automatically. Next.js static exports load in 0.3s and eliminate database latency.",
-                  icon: (
-                    <svg className="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  ),
-                },
-              ].map((benefit) => (
-                <article
-                  key={benefit.title}
-                  className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-8 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:border-violet-500/30 hover:shadow-indigo-500/5 flex flex-col justify-between"
-                >
-                  <div className="space-y-4">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-950 border border-zinc-850">
-                      {benefit.icon}
-                    </div>
-                    <h3 className="text-lg font-bold text-white">
-                      {benefit.title}
-                    </h3>
-                    <p className="text-sm text-zinc-400 leading-relaxed">
-                      {benefit.desc}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 4. PROCESS SECTION */}
-        <section className="border-t border-slate-900 bg-slate-950/40 py-24 sm:py-32" aria-labelledby="blueprint">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center space-y-4 mb-20">
-              <span className="text-xs uppercase tracking-wider text-indigo-400 font-bold bg-indigo-950/30 px-3.5 py-1.5 rounded-full border border-indigo-500/10">
-                The Blueprint
-              </span>
-              <h2 id="blueprint" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Our 3-Step Search Engine & AI Optimization Blueprint
-              </h2>
-              <p className="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
-                A streamlined, friction-free lifecycle built to take your site from crawl-blocked to search-engine dominated.
-              </p>
-            </div>
-
-            <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-              {workflowSteps.map((step) => (
-                <article
-                  key={step.num}
-                  className="rounded-2xl border border-slate-900 bg-slate-900/20 p-8 space-y-4 relative group"
-                >
-                  <span className="absolute top-6 right-8 text-5xl font-black text-slate-800/20 select-none font-mono" aria-hidden="true">
-                    {step.num}
-                  </span>
-                  <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors pt-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    {step.desc}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* 3. PLATFORM FEATURES (Replaces Old Benefits & Process) */}
+        <PlatformFeatures />
 
         {/* 5. ALTERNATING FEATURES SECTION */}
         <section className="border-t border-slate-900 py-24 sm:py-32 space-y-32" aria-label="Features">

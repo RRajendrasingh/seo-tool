@@ -47,12 +47,12 @@ export async function GET(req) {
         const { query } = require("@/utils/db");
 
         // 1. Update Leads Table (CRM integration)
-        const leads = await query("SELECT id FROM leads WHERE website = ?", [cleanWebsite]);
+        const leads = await query("SELECT id FROM leads WHERE website = ? AND email = ? ORDER BY date DESC", [cleanWebsite, email]);
         const amountPaid = plan === "multi" ? 199.00 : plan === "weekly" ? 29.00 : plan === "agency" ? 99.00 : 9.00;
         if (leads && leads.length > 0) {
           await query(
             "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ?, notes = ? WHERE id = ?",
-            [`Premium ${plan}`, amountPaid, `Paid via Stripe session ${sessionId}`, leads[0].id]
+            [`Premium Report`, amountPaid, `Paid via Stripe session ${sessionId}`, leads[0].id]
           );
         } else {
           const leadId = "lead_" + Date.now();
@@ -74,17 +74,35 @@ export async function GET(req) {
                 "UPDATE users SET subscription_tier = ?, subscription_status = 'active' WHERE id = ?",
                 [newTier, userId]
               );
-              const monitorId = "mon_" + Math.random().toString(36).substring(2, 11);
-              await query(
-                "INSERT INTO monitored_domains (id, user_id, domain, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?)",
-                [monitorId, userId, cleanWebsite, cmsPlatform, businessNiche, targetAudience]
-              );
+              // BUG #13 FIX: Skip domain-pending — it's a placeholder, not a real domain
+              // BUG #11 FIX: Check for existing monitored_domain before inserting (idempotency)
+              if (cleanWebsite && cleanWebsite !== "domain-pending") {
+                const existingMonitor = await query(
+                  "SELECT id FROM monitored_domains WHERE user_id = ? AND domain = ? LIMIT 1",
+                  [userId, cleanWebsite]
+                );
+                if (!existingMonitor || existingMonitor.length === 0) {
+                  const monitorId = "mon_" + Math.random().toString(36).substring(2, 11);
+                  await query(
+                    "INSERT INTO monitored_domains (id, user_id, domain, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?)",
+                    [monitorId, userId, cleanWebsite, cmsPlatform, businessNiche, targetAudience]
+                  );
+                }
+              }
             } else {
-              const purchaseId = "prc_" + Math.random().toString(36).substring(2, 11);
-              await query(
-                "INSERT INTO purchased_audits (id, user_id, domain, pack_type, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [purchaseId, userId, cleanWebsite, plan, cmsPlatform, businessNiche, targetAudience]
+              // BUG #11 FIX: Check for existing purchased_audit record to prevent duplicate rows
+              // when user refreshes the /checkout/success page
+              const existingPurchase = await query(
+                "SELECT id FROM purchased_audits WHERE user_id = ? AND domain = ? AND pack_type = ? LIMIT 1",
+                [userId, cleanWebsite, plan]
               );
+              if (!existingPurchase || existingPurchase.length === 0) {
+                const purchaseId = "prc_" + Math.random().toString(36).substring(2, 11);
+                await query(
+                  "INSERT INTO purchased_audits (id, user_id, domain, pack_type, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                  [purchaseId, userId, cleanWebsite, plan, cmsPlatform, businessNiche, targetAudience]
+                );
+              }
             }
           }
         }
@@ -160,17 +178,33 @@ export async function POST(req) {
         [newTier, userId]
       );
       
-      const monitorId = "mon_" + Math.random().toString(36).substring(2, 11);
-      await query(
-        "INSERT INTO monitored_domains (id, user_id, domain, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?)",
-        [monitorId, userId, cleanWebsite, cmsPlatform || null, businessNiche || null, targetAudience || null]
-      );
+      // BUG #13 FIX: Skip domain-pending — BUG #11 FIX: Idempotency check
+      if (cleanWebsite && cleanWebsite !== "domain-pending") {
+        const existingMonitor = await query(
+          "SELECT id FROM monitored_domains WHERE user_id = ? AND domain = ? LIMIT 1",
+          [userId, cleanWebsite]
+        );
+        if (!existingMonitor || existingMonitor.length === 0) {
+          const monitorId = "mon_" + Math.random().toString(36).substring(2, 11);
+          await query(
+            "INSERT INTO monitored_domains (id, user_id, domain, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?)",
+            [monitorId, userId, cleanWebsite, cmsPlatform || null, businessNiche || null, targetAudience || null]
+          );
+        }
+      }
     } else {
-      const purchaseId = "prc_" + Math.random().toString(36).substring(2, 11);
-      await query(
-        "INSERT INTO purchased_audits (id, user_id, domain, pack_type, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [purchaseId, userId, cleanWebsite, plan || "single", cmsPlatform || null, businessNiche || null, targetAudience || null]
+      // BUG #11 FIX: Idempotency check before inserting purchased_audit
+      const existingPurchase = await query(
+        "SELECT id FROM purchased_audits WHERE user_id = ? AND domain = ? AND pack_type = ? LIMIT 1",
+        [userId, cleanWebsite, plan || "single"]
       );
+      if (!existingPurchase || existingPurchase.length === 0) {
+        const purchaseId = "prc_" + Math.random().toString(36).substring(2, 11);
+        await query(
+          "INSERT INTO purchased_audits (id, user_id, domain, pack_type, cms_platform, business_niche, target_audience) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [purchaseId, userId, cleanWebsite, plan || "single", cmsPlatform || null, businessNiche || null, targetAudience || null]
+        );
+      }
     }
 
     return NextResponse.json({ success: true });

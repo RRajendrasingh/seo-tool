@@ -45,6 +45,19 @@ function SuccessContent() {
           
           localStorage.setItem(`premium_token_${targetUrl}`, JSON.stringify(token));
           
+          // BUG #10 FIX: Clear any stale sessionStorage cache for this URL.
+          // Without this, if a user ran a free audit before paying, the old free
+          // audit report would load from cache instead of triggering a fresh premium run.
+          try {
+            if (typeof window !== "undefined") {
+              const rawTargetUrl = targetUrl?.startsWith("http") ? targetUrl : `https://${targetUrl}`;
+              sessionStorage.removeItem(`audit_report_${rawTargetUrl}`);
+              sessionStorage.removeItem(`audit_report_${targetUrl}`);
+            }
+          } catch (e) {
+            // sessionStorage not available (SSR safety)
+          }
+
           // Clear verifying spinner and trigger redirect
           setVerifying(false);
           

@@ -137,16 +137,29 @@ export default function AuditClient({ initialUser = null }) {
     }
   }, [activeEngine]);
 
-  const isPremium = user?.subscription_tier === "weekly" || user?.subscription_tier === "multi" || user?.subscription_tier === "agency" || (user?.allowed_quota && user?.allowed_quota > 0) || (typeof window !== "undefined" && (() => {
+  // BUG #4 FIX: The premium token key uses the URL exactly as stored by the success page
+  // (from Stripe metadata). The `url` state may be "google.com" while token was saved as
+  // "https://google.com". We check both variants to prevent false "not premium" results.
+  const checkPremiumToken = () => {
+    if (typeof window === "undefined") return false;
     try {
-      const token = localStorage.getItem(`premium_token_${url}`);
-      if (token) {
-        const parsed = JSON.parse(token);
-        return !!(parsed && parsed.paid);
+      const urlVariants = [
+        url,
+        url?.startsWith("http") ? url : `https://${url}`,
+        url?.replace(/^https?:\/\//i, "")
+      ].filter(Boolean);
+      for (const variant of urlVariants) {
+        const token = localStorage.getItem(`premium_token_${variant}`);
+        if (token) {
+          const parsed = JSON.parse(token);
+          if (parsed && parsed.paid) return true;
+        }
       }
     } catch (e) {}
     return false;
-  })());
+  };
+
+  const isPremium = user?.subscription_tier === "weekly" || user?.subscription_tier === "multi" || user?.subscription_tier === "agency" || (user?.allowed_quota && user?.allowed_quota > 0) || (report?.packageRequest && report.packageRequest !== "Free Audit") || checkPremiumToken();
 
   const loadingSteps = [
     "Saving lead details into secure database...",
@@ -313,7 +326,7 @@ export default function AuditClient({ initialUser = null }) {
           if (data.found && data.report) {
             // Restore stored snapshot — user sees original audit data
             setUrl(data.meta?.website || "");
-            setReport(data.report);
+            setReport({ ...data.report, packageRequest: data.meta?.packageRequest });
           } else {
             // No snapshot yet — re-run audit for this URL and save the result
             const targetUrl = data.meta?.website || "";
@@ -353,6 +366,41 @@ export default function AuditClient({ initialUser = null }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auditId, initialUrl]);
+
+  // Sync cached reports to DB for users returning from checkout
+  useEffect(() => {
+    if (report && user) {
+      const avgScore = Math.round((report.audits?.["performance"]?.score * 100 + report.audits?.["seo"]?.score * 100) / 2) || 0;
+      const grade = avgScore >= 90 ? "A" : avgScore >= 80 ? "B" : avgScore >= 70 ? "C" : "D";
+
+      // 1. Save to Monitors History table
+      fetch("/api/monitors/history", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ url: report.url, reportJson: report, score: avgScore })
+      }).catch(() => {});
+
+      // Determine if they are premium
+      const isPremiumSync = 
+        (user && user.subscription_tier !== "free") || 
+        (user && user.allowed_quota > 0) || 
+        (user && user.paid_audits_run > 0) || 
+        (localStorage.getItem(`premium_token_${report.url}`));
+
+      // 2. Attach to Lead profile (Dashboard table)
+      fetch("/api/leads/save-report", {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ 
+           leadId: currentLeadId || "unknown", 
+           reportJson: report, 
+           seoScore: avgScore, 
+           grade,
+           packageRequest: isPremiumSync ? "Premium Report" : "Free Audit"
+         })
+      }).catch(() => {});
+    }
+  }, [report, user, currentLeadId]);
 
   useEffect(() => {
     let interval;
@@ -989,7 +1037,7 @@ export default function AuditClient({ initialUser = null }) {
       };
 
       if (advancedData && !advancedData.error) {
-        const { social, structure, language, crawlability } = advancedData;
+        const { social, structure, language, crawlability, content, links, server } = advancedData;
         
         engines["social-media"] = {
           name: "Social Media Readiness",
@@ -1045,6 +1093,15 @@ export default function AuditClient({ initialUser = null }) {
               fix: "Add descriptive alt attributes to all image tags for accessibility and SEO."
             },
             {
+              name: "Favicon / Touch Icon",
+              passed: structure.hasFavicon || structure.hasAppleIcon,
+              value: (structure.hasFavicon || structure.hasAppleIcon) ? "Brand icons present" : "Favicon missing",
+              desc: "Checks for favicon or Apple touch icons, which improve CTR in mobile search results.",
+              severity: "warning",
+              impact: "Medium",
+              fix: "Add a <link rel='icon'> tag linking to your brand's favicon."
+            },
+            {
               name: "Lazy Loading",
               passed: structure.missingLazy === 0,
               value: structure.missingLazy === 0 ? "All images use lazy loading" : `${structure.missingLazy} of ${structure.totalImages} images missing loading="lazy"`,
@@ -1056,6 +1113,100 @@ export default function AuditClient({ initialUser = null }) {
             }
           ]
         };
+
+        engines["page-quality"] = {
+          name: "Page Quality & Content",
+          score: (content?.wordCount > 300 ? 50 : 0) + (structure?.iframeCount === 0 ? 50 : 0),
+          desc: "Evaluates the depth and quality of the text content and flags thin pages.",
+          checks: [
+            {
+              name: "Content Depth (Word Count)",
+              passed: content?.wordCount > 300,
+              value: content?.wordCount > 300 ? `${content?.wordCount} words detected` : `Thin Content (${content?.wordCount} words)`,
+              desc: "Analyzes the raw text volume. Pages under 300 words are often penalized as 'Thin Content'.",
+              severity: "error",
+              impact: "High",
+              fix: "Expand your page copy to thoroughly cover the topic (aim for 500+ words minimum)."
+            },
+            {
+              name: "Text-to-HTML Ratio",
+              passed: content?.textRatio > 10,
+              value: content?.textRatio > 10 ? `Healthy ratio (${content?.textRatio}%)` : `Code-heavy (${content?.textRatio}%)`,
+              desc: "Compares readable text byte size vs raw HTML code size. Low ratios suggest bloat.",
+              severity: "warning",
+              impact: "Medium",
+              fix: "Reduce inline CSS, minified scripts, and heavy DOM nesting to improve ratio."
+            },
+            {
+              name: "Iframe Embed Usage",
+              passed: structure?.iframeCount === 0,
+              value: structure?.iframeCount === 0 ? "No iframes detected" : `${structure?.iframeCount} iframes embedded`,
+              desc: "Checks for <iframe> tags. Content trapped inside iframes often isn't indexed by search engines.",
+              severity: "warning",
+              impact: "Low",
+              fix: "Ensure crucial text or navigation is not hidden inside iframes."
+            }
+          ]
+        };
+
+        engines["link-structure"] = {
+          name: "Link Structure & Authority",
+          score: (links?.internalLinks > 0 ? 50 : 0) + (links?.genericAnchors === 0 ? 50 : 0),
+          desc: "Analyzes the distribution of internal vs external links and anchor text descriptiveness.",
+          checks: [
+            {
+              name: "Internal vs External Links",
+              passed: links?.internalLinks > 0,
+              value: `${links?.internalLinks || 0} internal / ${links?.externalLinks || 0} external`,
+              desc: "Examines the balance of links. Internal links distribute PageRank; excessive external links leak it.",
+              severity: "info",
+              impact: "Medium",
+              fix: "Maintain a healthy internal linking structure to keep users on your site."
+            },
+            {
+              name: "Nofollow Attribute Usage",
+              passed: true,
+              value: `${links?.nofollowLinks || 0} nofollow links detected`,
+              desc: "Checks how many links use rel='nofollow' to restrict search engine crawling.",
+              severity: "info",
+              impact: "Low",
+              fix: "Use nofollow for untrusted user content, paid links, or unverified external resources."
+            },
+            {
+              name: "Anchor Text Descriptiveness",
+              passed: links?.genericAnchors === 0,
+              value: links?.genericAnchors === 0 ? "Descriptive anchors" : `${links?.genericAnchors} generic anchors ("click here")`,
+              desc: "Flags links using non-descriptive text like 'click here' or 'read more', which harms accessibility and SEO context.",
+              severity: "warning",
+              impact: "Medium",
+              fix: "Rewrite anchor text to describe the target page (e.g., 'View our SEO services')."
+            }
+          ]
+        };
+
+        if (server?.xPoweredBy || server?.serverHeader) {
+          engines["server-security"].checks.push({
+            name: "Backend Server Header Leak",
+            passed: false,
+            value: "Server headers exposed",
+            desc: `Detected X-Powered-By or Server headers: ${server.serverHeader || ''} ${server.xPoweredBy || ''}`,
+            severity: "warning",
+            impact: "Low",
+            fix: "Configure your web server to hide backend infrastructure headers for security."
+          });
+        }
+
+        if (server?.redirected) {
+          engines["server-security"].checks.push({
+            name: "HTTP Redirect Chain",
+            passed: false,
+            value: "Redirect detected",
+            desc: "The audited URL triggered a 301/302 redirect before loading the final page.",
+            severity: "warning",
+            impact: "Medium",
+            fix: "Audit the final destination URL directly to avoid diluting link equity."
+          });
+        }
 
         engines["crawlability-indexing"] = {
           name: "Crawlability & Indexing",
@@ -1148,6 +1299,8 @@ export default function AuditClient({ initialUser = null }) {
       const orderedKeys = [
         "seo-tags",             // OPEN
         "page-speed",           // OPEN
+        "page-quality",         // LOCKED
+        "link-structure",       // LOCKED
         "aeo-geo",              // LOCKED
         "crawlability-indexing",// LOCKED
         "content-hierarchy",    // LOCKED
@@ -1184,16 +1337,35 @@ export default function AuditClient({ initialUser = null }) {
           year: "numeric",
           month: "long",
           day: "numeric"
-        })
+        }),
+        packageRequest: (
+          (user && user.subscription_tier !== "free") || 
+          (user && user.allowed_quota > 0) || 
+          (user && user.paid_audits_run > 0) || 
+          (localStorage.getItem(`premium_token_${targetUrl}`)) 
+        ) ? "Premium Report" : "Free Audit"
       };
 
       // Persist full report JSON + score to the database for this lead record
       if (activeLeadId && user) {
         try {
+          // Determine if this run should be tagged as premium in the dashboard history
+          const isPremiumSync = 
+            (user && user.subscription_tier !== "free") || 
+            (user && user.allowed_quota > 0) || 
+            (user && user.paid_audits_run > 0) || 
+            (localStorage.getItem(`premium_token_${targetUrl}`));
+
           await fetch("/api/leads/save-report", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ leadId: activeLeadId, reportJson: newReport, seoScore: avgScore, grade })
+            body: JSON.stringify({ 
+              leadId: activeLeadId, 
+              reportJson: newReport, 
+              seoScore: avgScore, 
+              grade,
+              packageRequest: isPremiumSync ? "Premium Report" : "Free Audit"
+            })
           });
         } catch (saveErr) {
           console.error("Failed to persist report snapshot:", saveErr);

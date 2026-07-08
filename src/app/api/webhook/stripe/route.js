@@ -12,6 +12,13 @@ export async function POST(req) {
     return NextResponse.json({ error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
   }
 
+  // BUG #12 FIX: In production, webhook secret MUST be set. Without it, anyone can
+  // forge a fake checkout.session.completed event and upgrade accounts for free.
+  if (!webhookSecret && process.env.NODE_ENV === "production") {
+    console.error("CRITICAL SECURITY: STRIPE_WEBHOOK_SECRET is not set in production! Rejecting unverified webhook.");
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+  }
+
   const stripe = new Stripe(secretKey);
 
   const sig = req.headers.get("stripe-signature");
@@ -22,7 +29,8 @@ export async function POST(req) {
     if (webhookSecret) {
       event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
     } else {
-      // Allow testing without webhook secret if not configured in dev
+      // Allow testing without webhook secret in development only
+      console.warn("STRIPE_WEBHOOK_SECRET not set — skipping signature verification (dev mode only).");
       event = JSON.parse(rawBody);
     }
   } catch (err) {
@@ -56,7 +64,7 @@ export async function POST(req) {
             [customerId, email]
           );
         } else {
-          // single report
+          // single report — increment quota by 1
           await query(
             "UPDATE users SET allowed_quota = allowed_quota + 1, stripe_customer_id = COALESCE(stripe_customer_id, ?) WHERE email = ?",
             [customerId, email]
@@ -87,7 +95,8 @@ export async function POST(req) {
           }
         }
 
-        console.log(`Stripe Webhook: Successfully upgraded user ${email} to ${newTier} plan.`);
+        // BUG #1 FIX: was `newTier` (ReferenceError for single/multi plans) — now uses `plan`
+        console.log(`Stripe Webhook: Successfully upgraded user ${email} to ${plan} plan.`);
       } catch (e) {
         console.error("Stripe Webhook Database Error:", e);
       }

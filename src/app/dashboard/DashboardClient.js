@@ -148,7 +148,7 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
     }
   };
 
-  const isPaid = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || Boolean(user.allowed_quota && user.allowed_quota > 0);
+  const isPaid = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi" || Boolean(user.allowed_quota && user.allowed_quota > 0) || Boolean(user.paid_audits_run && user.paid_audits_run > 0);
 
   return (
     <div className="bg-slate-950 min-h-screen text-slate-300 transition-colors duration-300">
@@ -336,9 +336,19 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                         </div>
                         
                         <div className="flex items-center gap-3 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
-                          {isPaid && (
+                          {user && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); toggleMonitor(audit.id, audit.is_monitored === 1, audit.website); }}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                const isMonitoringEligible = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi";
+                                if (!isMonitoringEligible) {
+                                  if (confirm("Weekly monitoring requires a Pro Weekly, Agency, or Enterprise subscription. Would you like to upgrade now?")) {
+                                    router.push(`/checkout?plan=weekly&url=${encodeURIComponent(audit.website)}`);
+                                  }
+                                } else {
+                                  toggleMonitor(audit.id, audit.is_monitored === 1, audit.website); 
+                                }
+                              }}
                               className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] font-bold transition-all duration-200 border cursor-pointer shadow-sm ${
                                 audit.is_monitored === 1 
                                   ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"

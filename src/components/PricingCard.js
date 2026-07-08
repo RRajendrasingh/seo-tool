@@ -15,12 +15,16 @@ export default function PricingCard({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activePlan, setActivePlan] = useState(null);
+  const [userSession, setUserSession] = useState(null);
 
   useEffect(() => {
     fetch("/api/auth/session")
       .then((res) => res.json())
       .then((data) => {
-        if (data.session) setActivePlan(data.session.subscription_tier);
+        if (data.session) {
+          setActivePlan(data.session.subscription_tier);
+          setUserSession(data.session);
+        }
       })
       .catch(() => {});
   }, []);
@@ -30,7 +34,11 @@ export default function PricingCard({
   
   // Extract planKey from href (e.g., "/checkout?plan=weekly" -> "weekly")
   const planKey = href?.split("=")?.[1];
-  const isActive = activePlan && activePlan === planKey;
+  
+  let isActive = activePlan && activePlan === planKey;
+  if (planKey === "single" && userSession?.allowed_quota > 0) {
+    isActive = true;
+  }
 
   return (
     <div
