@@ -16,7 +16,7 @@ export default function HeroMockupTabs() {
             <span className="h-3 w-3 rounded-full bg-rose-500/80 flex-shrink-0" />
             <span className="h-3 w-3 rounded-full bg-amber-500/80 flex-shrink-0" />
             <span className="h-3 w-3 rounded-full bg-emerald-500/80 flex-shrink-0" />
-            <span className="ml-2 text-[9px] font-mono text-zinc-550 select-none hidden xs:inline">
+            <span className="ml-2 text-[9px] font-mono text-zinc-500 select-none hidden xs:inline">
               ENGINE_STATUS: ACTIVE
             </span>
           </div>

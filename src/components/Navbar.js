@@ -273,7 +273,7 @@ export default function Navbar({ initialSession = null }) {
             <Link
               href="/audit/"
               onClick={() => setIsOpen(false)}
-              className="flex w-full items-center justify-center rounded-xl bg-indigo-600 py-2.5 text-base font-semibold text-slate-55 shadow-lg shadow-indigo-600/20 hover:bg-indigo-500"
+              className="flex w-full items-center justify-center rounded-xl bg-indigo-600 py-2.5 text-base font-semibold text-slate-50 shadow-lg shadow-indigo-600/20 hover:bg-indigo-500"
             >
               Free SEO Audit
             </Link>

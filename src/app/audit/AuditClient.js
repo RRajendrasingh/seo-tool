@@ -1745,7 +1745,7 @@ export default function AuditClient({ initialUser = null }) {
                       Offending Resources ({check.details.length}):
                     </span>
                     <div className="mt-1.5 overflow-x-auto rounded-lg border border-zinc-850 bg-zinc-950">
-                      <table className="w-full text-[10px] font-mono border-collapse text-left text-zinc-550">
+                      <table className="w-full text-[10px] font-mono border-collapse text-left text-zinc-500">
                         <thead>
                           <tr className="bg-zinc-900 text-zinc-500 border-b border-zinc-850">
                             <th className="p-2 font-bold uppercase tracking-wider">Asset URL / Log</th>
@@ -1815,7 +1815,7 @@ export default function AuditClient({ initialUser = null }) {
             if (currentFilter === "passed") return check.passed;
             return true;
           }).length === 0 && (
-            <div className="rounded-xl border border-zinc-850 p-8 text-center text-zinc-550 text-xs">
+            <div className="rounded-xl border border-zinc-850 p-8 text-center text-zinc-500 text-xs">
               No parameters match this severity filter for {engine.name}.
             </div>
           )}

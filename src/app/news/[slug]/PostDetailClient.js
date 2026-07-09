@@ -39,7 +39,7 @@ export default function PostDetailClient({ slug, initialPost }) {
         <div className="max-w-md text-center space-y-6 px-4">
           <div className="text-6xl">🔍</div>
           <h1 className="text-xl font-bold text-white">Article Not Found</h1>
-          <p className="text-zinc-550 leading-relaxed text-xs">
+          <p className="text-zinc-500 leading-relaxed text-xs">
             The news article you are looking for might have been deleted by the administrator, or the URL path is invalid.
           </p>
           <Link
@@ -140,7 +140,7 @@ export default function PostDetailClient({ slug, initialPost }) {
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           ) : (
-            <p className="text-zinc-550 text-sm">No additional content body is available for this article.</p>
+            <p className="text-zinc-500 text-sm">No additional content body is available for this article.</p>
           )}
 
           {/* Bottom Navigation controls */}
@@ -154,7 +154,7 @@ export default function PostDetailClient({ slug, initialPost }) {
               </svg>
               Back to News Feed
             </Link>
-            <div className="flex items-center gap-3 text-[10px] text-zinc-550">
+            <div className="flex items-center gap-3 text-[10px] text-zinc-500">
               <span className="bg-zinc-900 px-3 py-1 rounded-md border border-zinc-880">{post.category}</span>
               <span className="bg-zinc-900 px-3 py-1 rounded-md border border-zinc-880">{post.readTime}</span>
             </div>

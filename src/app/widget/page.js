@@ -102,7 +102,7 @@ function WidgetForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-white uppercase tracking-widest">Instant Website SEO Audit</h3>
-            <span className="text-[9px] text-zinc-550 font-medium">Powered by {agencyName}</span>
+            <span className="text-[9px] text-zinc-500 font-medium">Powered by {agencyName}</span>
           </div>
 
           <div className="space-y-3">

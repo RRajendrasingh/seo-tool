@@ -1154,7 +1154,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Timeline labels */}
-                <div className="flex justify-between text-[8px] font-mono text-zinc-550 border-t border-zinc-850/60 pt-3">
+                <div className="flex justify-between text-[8px] font-mono text-zinc-500 border-t border-zinc-850/60 pt-3">
                   {timelineData.filter((_, idx) => idx % 2 === 0).map((d, idx) => (
                     <span key={idx}>{d.label}</span>
                   ))}
@@ -1358,7 +1358,7 @@ export default function AdminDashboard() {
             <div className="rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
               <div className="space-y-1.5">
                 <h2 className="text-lg font-bold text-white">Platform Settings & Integrations</h2>
-                <p className="text-xs text-zinc-550 leading-relaxed">
+                <p className="text-xs text-zinc-500 leading-relaxed">
                   Configure external webhooks or change administrator access passcodes.
                 </p>
               </div>
@@ -1552,7 +1552,7 @@ export default function AdminDashboard() {
             <div className="rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
               <div className="space-y-1.5">
                 <h2 className="text-lg font-bold text-white">Data Management & Testing</h2>
-                <p className="text-xs text-zinc-550 leading-relaxed">
+                <p className="text-xs text-zinc-500 leading-relaxed">
                   Clear your local storage cache or reset the dashboard to use mock data for testing purposes.
                 </p>
               </div>
@@ -1964,7 +1964,7 @@ export default function AdminDashboard() {
                 <h2 className="text-lg font-bold text-white">
                   {editingPostId ? "Edit Article" : "Create New Article"}
                 </h2>
-                <p className="text-xs text-zinc-550 leading-relaxed">
+                <p className="text-xs text-zinc-500 leading-relaxed">
                   {editingPostId
                     ? "Modify the selected article's details and content, then click Save Changes."
                     : "Compose your update, choose a category, and publish it instantly to your news page."}
@@ -2208,7 +2208,7 @@ export default function AdminDashboard() {
               <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 flex-grow max-h-[600px] overflow-y-auto font-sans">
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-white">Active News Articles</h3>
-                  <p className="text-xxs text-zinc-550 leading-normal">
+                  <p className="text-xxs text-zinc-500 leading-normal">
                     Management directory of active publications. You can edit or delete posts instantly.
                   </p>
                 </div>
@@ -2297,7 +2297,7 @@ export default function AdminDashboard() {
                       ));
                     } else {
                       return (
-                        <div className="text-center py-12 text-zinc-550 text-xs">
+                        <div className="text-center py-12 text-zinc-500 text-xs">
                           {blogSearch ? `No articles matching "${blogSearch}"` : "No published articles in database."}
                         </div>
                       );
@@ -2310,7 +2310,7 @@ export default function AdminDashboard() {
               <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-6">
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-white">CMS Stats &amp; SEO Checklist</h3>
-                  <p className="text-xxs text-zinc-550 leading-normal">
+                  <p className="text-xxs text-zinc-500 leading-normal">
                     Quick stats and SEO guidelines for publishing.
                   </p>
                 </div>
@@ -2383,7 +2383,7 @@ export default function AdminDashboard() {
                 <h3 className="text-xl font-bold text-white mt-1">
                   {selectedLead.name}
                 </h3>
-                <p className="text-xxs text-zinc-550 font-mono mt-0.5">
+                <p className="text-xxs text-zinc-500 font-mono mt-0.5">
                   ID: {selectedLead.id} • Submitted: {new Date(selectedLead.date).toLocaleString()}
                 </p>
               </div>
