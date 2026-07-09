@@ -8,13 +8,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req) {
   try {
-    const { searchParams } = new URL(req.url);
     const authHeader = req.headers.get("authorization");
+
+    // BUG H-2 FIX: Accept secret ONLY via Authorization header — never via URL query param
+    // (URL params get logged by Vercel, CDN, proxies, and browser history)
+    const providedSecret = authHeader ? authHeader.split(" ")[1] : null;
     
-    // Support either Vercel Cron header or manual secret param
-    const providedSecret = searchParams.get("secret") || (authHeader ? authHeader.split(" ")[1] : null);
-    
-    if (providedSecret !== process.env.CRON_SECRET) {
+    if (!providedSecret || providedSecret !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: "Unauthorized access to Cron Job." }, { status: 401 });
     }
 

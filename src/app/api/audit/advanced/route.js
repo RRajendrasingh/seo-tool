@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/utils/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
+  // BUG H-3 FIX: Require auth — prevent anonymous SSRF via server-side fetch
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  if (!token || !verifyToken(token)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { url } = await request.json();
     if (!url) {

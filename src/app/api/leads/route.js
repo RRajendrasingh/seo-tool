@@ -4,8 +4,10 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 function verifyAdmin(request) {
+  // SECURITY FIX C-6: Remove "admin123" fallback — deny all if env var not set
   const passcode = request.headers.get("x-admin-passcode");
-  const expected = process.env.ADMIN_PASSCODE || "admin123";
+  const expected = process.env.ADMIN_PASSCODE;
+  if (!expected) return false; // Deny everything if secret is not configured
   return passcode === expected;
 }
 
@@ -34,11 +36,13 @@ export async function POST(request) {
     }
 
     // Separate quota logic for Free vs Paid Audits
+    // BUG C-7 FIX: Declare `tier` in outer scope so it's accessible after the if-block
     let isPaidTier = false;
     let allowedQuota = 0;
+    let tier = "free";
     const userQuery = await query("SELECT subscription_tier, allowed_quota FROM users WHERE email = ?", [leadData.email.trim()]);
     if (userQuery && userQuery.length > 0) {
-      const tier = userQuery[0].subscription_tier;
+      tier = userQuery[0].subscription_tier;
       allowedQuota = userQuery[0].allowed_quota || 0;
       if (tier === "weekly" || tier === "agency" || tier === "multi" || allowedQuota > 0) {
         isPaidTier = true;
@@ -106,8 +110,9 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, id });
   } catch (error) {
+    // H-5 FIX: Never expose raw error.message to client
     console.error("Failed to save lead:", error);
-    return NextResponse.json({ error: error.message || "Failed to save lead to database" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save lead. Please try again." }, { status: 500 });
   }
 }
 
@@ -144,7 +149,7 @@ export async function PUT(request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to update lead:", error);
-    return NextResponse.json({ error: error.message || "Failed to update lead" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update lead. Please try again." }, { status: 500 });
   }
 }
 
@@ -170,6 +175,6 @@ export async function DELETE(request) {
     return NextResponse.json({ success: true, message: id === "all" ? "All leads cleared successfully" : "Lead deleted successfully" });
   } catch (error) {
     console.error("Failed to delete lead:", error);
-    return NextResponse.json({ error: error.message || "Failed to delete lead" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete lead. Please try again." }, { status: 500 });
   }
 }

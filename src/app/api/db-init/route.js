@@ -2,7 +2,14 @@ import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
 import { hashPassword } from "@/utils/auth";
 
-export async function GET() {
+export async function GET(request) {
+  // BUG C-1 FIX: Lock DB init behind admin passcode — this endpoint can wipe the entire database
+  const passcode = request.headers.get("x-admin-passcode");
+  const expected = process.env.ADMIN_PASSCODE;
+  if (!expected || passcode !== expected) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     // 0. Create users table
     await query(`
@@ -250,6 +257,6 @@ export async function GET() {
     return NextResponse.json({ success: true, message: "Hostinger SQL Tables initialized successfully, default posts and test users seeded." });
   } catch (error) {
     console.error("Database initialization failed:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Database initialization failed." }, { status: 500 });
   }
 }

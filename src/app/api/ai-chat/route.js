@@ -1,4 +1,30 @@
 import puppeteer from "puppeteer";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/utils/auth";
+
+// BUG C-5 FIX: Block SSRF — internal IPs and metadata endpoints are off-limits
+function isSafeUrl(rawUrl) {
+  try {
+    const parsed = new URL(rawUrl);
+    const host = parsed.hostname.toLowerCase();
+    // Block localhost, loopback, private ranges, and cloud metadata endpoints
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.startsWith("192.168.") ||
+      host.startsWith("10.") ||
+      host.startsWith("172.") ||
+      host === "169.254.169.254" || // AWS/GCP metadata
+      host === "metadata.google.internal" ||
+      parsed.protocol === "file:"
+    ) {
+      return false;
+    }
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 async function callGemini(systemInstruction, userPrompt) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -33,6 +59,13 @@ async function callGemini(systemInstruction, userPrompt) {
 }
 
 export async function POST(req) {
+  // BUG C-5 FIX: Require authentication — no anonymous access to AI + Puppeteer
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  if (!token || !verifyToken(token)) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { message, history = [] } = await req.json();
     if (!message) {
@@ -50,6 +83,11 @@ export async function POST(req) {
       // Standardize protocol
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
         url = "https://" + url;
+      }
+
+      // BUG C-5 FIX: Block SSRF — reject internal/private URLs before launching Chrome
+      if (!isSafeUrl(url)) {
+        url = null; // Silently drop the URL — don't crawl internal networks
       }
     }
 

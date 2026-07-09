@@ -1,7 +1,19 @@
 import { query } from "@/utils/db";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/utils/auth";
+
+// BUG H-7 FIX: Server-side MIME type whitelist — never trust client-supplied type
+const ALLOWED_MIME_TYPES = ["image/webp", "image/jpeg", "image/jpg", "image/png", "image/gif", "image/svg+xml"];
 
 export async function POST(request) {
+  // BUG C-4 FIX: Require authentication — anonymous users cannot write to DB
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  if (!token || !verifyToken(token)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { data, mimeType } = await request.json();
 
@@ -19,6 +31,11 @@ export async function POST(request) {
         mime = match[1];
         base64Data = match[2];
       }
+    }
+
+    // BUG H-7 FIX: Validate MIME type server-side — reject non-image types
+    if (!ALLOWED_MIME_TYPES.includes(mime.toLowerCase())) {
+      return NextResponse.json({ error: "Invalid file type. Only images are allowed." }, { status: 400 });
     }
 
     // Generate unique ID
@@ -42,6 +59,7 @@ export async function POST(request) {
     return NextResponse.json({ success: true, url: imageUrl });
   } catch (error) {
     console.error("Failed to upload image:", error);
-    return NextResponse.json({ error: error.message || "Failed to save image to database" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save image. Please try again." }, { status: 500 });
   }
 }
+

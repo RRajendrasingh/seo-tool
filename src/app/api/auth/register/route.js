@@ -4,6 +4,7 @@ import { query } from "@/utils/db";
 import { hashPassword, signToken } from "@/utils/auth";
 import crypto from "crypto";
 import { cookies } from "next/headers";
+import { rateLimit } from "@/utils/rateLimit";
 
 // Validation schema for manual registration
 const RegisterSchema = z.object({
@@ -19,6 +20,14 @@ const RegisterSchema = z.object({
 });
 
 export async function POST(request) {
+  // BUG C-3 FIX: Rate limit — max 5 registrations per IP per hour
+  if (rateLimit(request, { limit: 5, windowMs: 60 * 60 * 1000 })) {
+    return NextResponse.json(
+      { error: "Too many registration attempts. Please try again later." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json();
     const result = RegisterSchema.safeParse(body);

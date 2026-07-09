@@ -3,6 +3,7 @@ import { z } from "zod";
 import { query } from "@/utils/db";
 import { comparePassword, signToken } from "@/utils/auth";
 import { cookies } from "next/headers";
+import { rateLimit } from "@/utils/rateLimit";
 
 const LoginSchema = z.object({
   email: z.string().email("Invalid email format").toLowerCase().trim(),
@@ -10,6 +11,14 @@ const LoginSchema = z.object({
 });
 
 export async function POST(request) {
+  // BUG C-2 FIX: Rate limit — max 10 login attempts per IP per 15 minutes
+  if (rateLimit(request, { limit: 10, windowMs: 15 * 60 * 1000 })) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please wait 15 minutes and try again." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json();
     const result = LoginSchema.safeParse(body);
