@@ -22,6 +22,7 @@ export async function GET(request) {
         provider_id VARCHAR(255),
         email_verified BOOLEAN DEFAULT FALSE,
         subscription_tier VARCHAR(50) DEFAULT 'free',
+        subscription_status VARCHAR(50) DEFAULT 'inactive',
         allowed_quota INT DEFAULT 1,
         stripe_customer_id VARCHAR(255),
         agency_name VARCHAR(255),
@@ -36,6 +37,21 @@ export async function GET(request) {
         id VARCHAR(50) PRIMARY KEY,
         user_id VARCHAR(50) NOT NULL,
         domain VARCHAR(255) NOT NULL,
+        cms_platform VARCHAR(100),
+        business_niche VARCHAR(100),
+        target_audience VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 0.1b Create purchased_audits table
+    await query(`
+      CREATE TABLE IF NOT EXISTS purchased_audits (
+        id VARCHAR(50) PRIMARY KEY,
+        user_id VARCHAR(50) NOT NULL,
+        domain VARCHAR(255) NOT NULL,
+        pack_type VARCHAR(50) NOT NULL,
         cms_platform VARCHAR(100),
         business_niche VARCHAR(100),
         target_audience VARCHAR(100),
@@ -94,7 +110,8 @@ export async function GET(request) {
         status VARCHAR(50) NOT NULL DEFAULT 'New',
         packageRequest VARCHAR(100) NOT NULL DEFAULT 'Free Audit',
         amountPaid DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-        notes TEXT
+        notes TEXT,
+        is_monitored INT DEFAULT 0
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
@@ -121,6 +138,37 @@ export async function GET(request) {
     try {
       await query("ALTER TABLE posts ADD COLUMN source_name VARCHAR(255)");
     } catch { /* column already exists */ }
+
+    // 4d. Add subscription_status column to users (safe migration)
+    try {
+      await query("ALTER TABLE users ADD COLUMN subscription_status VARCHAR(50) DEFAULT 'inactive'");
+    } catch { /* column already exists */ }
+
+    // 4e. Add is_monitored column to leads (safe migration)
+    try {
+      await query("ALTER TABLE leads ADD COLUMN is_monitored INT DEFAULT 0");
+    } catch { /* column already exists */ }
+
+    // 4f. Create database indexes for performance optimization
+    try {
+      await query("ALTER TABLE leads ADD INDEX idx_leads_email (email)");
+    } catch { /* index already exists */ }
+
+    try {
+      await query("ALTER TABLE leads ADD INDEX idx_leads_is_monitored (is_monitored)");
+    } catch { /* index already exists */ }
+
+    try {
+      await query("ALTER TABLE monitored_domains ADD INDEX idx_monitored_user_domain (user_id, domain)");
+    } catch { /* index already exists */ }
+
+    try {
+      await query("ALTER TABLE purchased_audits ADD INDEX idx_purchased_user_domain_pack (user_id, domain, pack_type)");
+    } catch { /* index already exists */ }
+
+    try {
+      await query("ALTER TABLE audit_history ADD INDEX idx_audit_history_domain (domain)");
+    } catch { /* index already exists */ }
 
     // 5. Create rss_seen table for Auto-Draft deduplication
     await query(`
