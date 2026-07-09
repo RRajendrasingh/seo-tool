@@ -2333,7 +2333,7 @@ export default function AuditClient({ initialUser = null }) {
         {report && (
           <div className="space-y-8 animate-fade-in text-left">
             {/* Unified Strategy Switcher Tab */}
-            <div className="flex justify-center sm:justify-start">
+            <div className="flex justify-center sm:justify-start print:hidden">
               <div className="inline-flex rounded-xl bg-zinc-900/60 p-1 border border-zinc-850 backdrop-blur-md">
                 <button
                   type="button"
@@ -2369,7 +2369,7 @@ export default function AuditClient({ initialUser = null }) {
             {/* Banner Overview with Live Screenshot */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-[320px]">
               {/* Summary Card */}
-              <div className="lg:col-span-7 rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-900/60 to-zinc-950/40 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 backdrop-blur-md">
+              <div className="lg:col-span-7 print:col-span-12 rounded-3xl border border-zinc-800 bg-gradient-to-r from-zinc-900/60 to-zinc-950/40 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 backdrop-blur-md">
                 <div className="space-y-3 text-left">
                   <span className="text-xxs uppercase tracking-wider font-bold text-violet-400">
                     Enterprise Scan Completed (30+ Checks Verified)
@@ -2435,7 +2435,7 @@ export default function AuditClient({ initialUser = null }) {
                         setShowPayModal(true);
                       }
                     }}
-                    className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950 hover:bg-zinc-200 transition-all shadow-md hover:scale-[1.01] cursor-pointer"
+                    className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950 hover:bg-zinc-200 transition-all shadow-md hover:scale-[1.01] cursor-pointer print:hidden"
                   >
                     Download Report PDF
                   </button>
@@ -2445,7 +2445,7 @@ export default function AuditClient({ initialUser = null }) {
               {/* Dynamic Viewport Screenshot Panel */}
               {deviceStrategy === "mobile" ? (
                 /* Mobile Mockup (High-Fidelity iPhone Portrait frame) */
-                <div className="lg:col-span-5 flex items-center justify-center py-3 h-[320px]">
+                <div className="lg:col-span-5 flex items-center justify-center py-3 h-[320px] print:hidden">
                   {/* Phone frame — exact 375×667 Chrome DevTools ratio */}
                   <div
                     className="relative h-full rounded-[28px] border-[8px] border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-black shadow-2xl ring-1 ring-zinc-200 dark:ring-zinc-700/60 overflow-hidden flex flex-col group select-none"
@@ -2503,7 +2503,7 @@ export default function AuditClient({ initialUser = null }) {
                 </div>
               ) : (
                 /* Desktop Mockup (Browser landscape frame) */
-                <div className="lg:col-span-5 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/10 p-3.5 backdrop-blur-md flex flex-col justify-between relative overflow-hidden group h-[320px]">
+                <div className="lg:col-span-5 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/10 p-3.5 backdrop-blur-md flex flex-col justify-between relative overflow-hidden group h-[320px] print:hidden">
                   {/* Browser Top Window Controls */}
                   <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 pb-2 mb-2 select-none">
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -2619,7 +2619,7 @@ export default function AuditClient({ initialUser = null }) {
             })()}
 
             {/* MOBILE: Swipeable Pill Tabs (lg:hidden) */}
-            <div id="mobile-category-tabs" className="lg:hidden sticky top-16 z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/60 mb-6 -mx-4 sm:-mx-6 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)]">
+            <div id="mobile-category-tabs" className="lg:hidden sticky top-16 z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/60 mb-6 -mx-4 sm:-mx-6 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] print:hidden">
               <div id="mobile-tabs-container" className="flex overflow-x-auto w-full gap-3 py-4 snap-x no-scrollbar items-center px-4 sm:px-6 scroll-pl-4 sm:scroll-pl-6">
                 {Object.entries(report.engines).map(([id, rawEng]) => {
                   const isSelected = activeEngine === id;
@@ -2657,7 +2657,7 @@ export default function AuditClient({ initialUser = null }) {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               
               {/* DESKTOP: Sidebar Selector (hidden lg:block) */}
-              <div className="hidden lg:block lg:col-span-4 space-y-4 lg:sticky lg:top-24 z-10">
+              <div className="hidden lg:block lg:col-span-4 space-y-4 lg:sticky lg:top-24 z-10 print:hidden">
                 <h3 className="text-xs uppercase tracking-wider font-bold text-zinc-500 pl-1 text-left mt-2">
                   Active Auditing Engines
                 </h3>
@@ -2735,7 +2735,7 @@ export default function AuditClient({ initialUser = null }) {
               </div>
 
               {/* Detailed Results Output (Unified for Mobile & Desktop) */}
-              <div id="mobile-detail-pane" className="col-span-1 lg:col-span-8 w-full min-w-0 flex flex-col gap-12 pb-32">
+              <div id="mobile-detail-pane" className="col-span-1 lg:col-span-8 print:col-span-12 w-full min-w-0 flex flex-col gap-12 pb-32">
                 {Object.keys(report.engines).map((id) => (
                   <div key={id} id={`engine-section-${id}`} className="scroll-mt-[150px]">
                     {renderEngineDetails(id)}

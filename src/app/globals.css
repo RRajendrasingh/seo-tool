@@ -702,3 +702,127 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background-color: rgba(139, 92, 246, 0.5);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   @MEDIA PRINT OVERRIDES FOR PREMIUM PDF EXPORTS
+   ═══════════════════════════════════════════════════════════ */
+@media print {
+  /* 1. Force exact colors and backgrounds to render in PDF exports */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* 2. Global background and text override: Always render Light Mode on paper */
+  html, body {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+  }
+
+  /* 3. Background Color Resets: Turn dark backgrounds into white or very light gray */
+  .bg-zinc-950, .bg-zinc-900, .bg-zinc-950\/80, .bg-zinc-900\/60, .bg-zinc-900\/20, .bg-zinc-900\/10, .bg-zinc-900\/40, .bg-zinc-950\/40, .bg-zinc-950\/60, .bg-slate-950, .bg-slate-900\/10, [class*="bg-zinc-950"], [class*="bg-zinc-900"], [class*="bg-slate-950"] {
+    background-color: #ffffff !important;
+    background-image: none !important;
+  }
+
+  .bg-zinc-900\/50, .bg-zinc-800, .bg-zinc-850, .bg-slate-900, .bg-slate-800, .bg-zinc-900\/80, [class*="bg-zinc-8"], [class*="bg-slate-8"] {
+    background-color: #f1f5f9 !important; /* Soft gray highlight background */
+  }
+
+  /* 4. Text Contrast: Turn white/gray text into high-contrast dark gray or black */
+  .text-white, .text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400, .text-zinc-500, .text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500, p, span, li, td, a, code, pre {
+    color: #1e293b !important;
+    -webkit-text-fill-color: #1e293b !important;
+  }
+
+  /* Force headings to crisp, dark black */
+  h1, h2, h3, h4, h5, h6, th, .font-extrabold {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+  }
+
+  /* Disable transparent text gradients for printing */
+  .text-transparent, .bg-gradient-to-r {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+    text-fill-color: initial !important;
+    color: #0f172a !important;
+  }
+
+  /* 5. Compact Section Size Optimization: Compress paddings and margins for print to save pages */
+  .p-8 { padding: 1.25rem !important; }
+  .p-6 { padding: 0.85rem !important; }
+  .p-5 { padding: 0.65rem 0.85rem !important; }
+  .p-4 { padding: 0.65rem 0.85rem !important; }
+  .p-4\.5 { padding: 0.65rem 0.85rem !important; }
+  .p-3 { padding: 0.4rem 0.6rem !important; }
+  .px-6 { padding-left: 0.85rem !important; padding-right: 0.85rem !important; }
+  .py-3\.5 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+  .py-3 { padding-top: 0.45rem !important; padding-bottom: 0.45rem !important; }
+  .py-2\.5 { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
+  .mt-3 { margin-top: 0.5rem !important; }
+  
+  .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem !important; }
+  .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.85rem !important; }
+  .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.65rem !important; }
+  .gap-12 { gap: 1.75rem !important; }
+  .gap-8 { gap: 1.25rem !important; }
+  .gap-6 { gap: 0.85rem !important; }
+  .gap-4 { gap: 0.65rem !important; }
+  .pb-32 { padding-bottom: 1.5rem !important; }
+  
+  .min-h-\[400px\] { min-height: auto !important; }
+  .min-h-\[450px\] { min-height: 280px !important; }
+
+  /* 6. Avoid breaking components across page breaks */
+  .rounded-3xl, .rounded-2xl, .rounded-xl, tr, td, pre, table, code {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Force page breaks before subsequent check engine sections (skipping the first one) */
+  .scroll-mt-\[150px\]:not(:first-of-type) {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  /* 7. Border adjustment: Dark borders become clean light gray borders */
+  .border, .border-zinc-800, .border-zinc-850, .border-slate-800, .border-zinc-700, .border-zinc-900\/60, .border-slate-700\/50, .border-zinc-850\/60 {
+    border-color: #cbd5e1 !important;
+  }
+
+  /* 8. Keep status indicators colored (Emerald, Amber, Rose) */
+  .text-emerald-500, .text-emerald-400, .\[\.light_\&\]\:text-emerald-600 {
+    color: #059669 !important;
+    -webkit-text-fill-color: #059669 !important;
+  }
+  .text-amber-500, .text-amber-400, .\[\.light_\&\]\:text-amber-600 {
+    color: #d97706 !important;
+    -webkit-text-fill-color: #d97706 !important;
+  }
+  .text-rose-500, .text-rose-400, .\[\.light_\&\]\:text-rose-600 {
+    color: #dc2626 !important;
+    -webkit-text-fill-color: #dc2626 !important;
+  }
+
+  /* 9. Soft light backgrounds for warning, critical, and passed check cards */
+  .bg-rose-500\/5, .bg-rose-500\/\[0\.01\], .bg-rose-500\/10, .bg-rose-500\/\[0\.03\], [class*="bg-rose-500/"] {
+    background-color: #fef2f2 !important; /* Soft red for errors */
+  }
+  .bg-amber-500\/5, .bg-amber-500\/\[0\.01\], .bg-amber-500\/10, .bg-amber-500\/\[0\.03\], [class*="bg-amber-500/"] {
+    background-color: #fffbeb !important; /* Soft yellow for warnings */
+  }
+  .bg-emerald-500\/5, .bg-emerald-500\/10, .bg-emerald-500\/\[0\.03\], [class*="bg-emerald-500/"] {
+    background-color: #f0fdf4 !important; /* Soft green for passed */
+  }
+
+  /* 10. Hide shadows for clean print printing */
+  .rounded-3xl, .rounded-2xl, .rounded-xl {
+    box-shadow: none !important;
+  }
+}
+
