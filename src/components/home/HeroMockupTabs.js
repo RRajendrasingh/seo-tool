@@ -29,7 +29,7 @@ export default function HeroMockupTabs() {
         </div>
 
         {/* Tabs Selectors */}
-        <div className="flex border-b border-zinc-800 pb-px gap-2" role="tablist">
+        <div className="flex border-b border-zinc-800 pb-px gap-2" role="tablist" aria-label="SEO Audit Categories">
           {[
             { id: "overview", label: "Overview" },
             { id: "inspector", label: "Meta Inspector" },
@@ -37,8 +37,10 @@ export default function HeroMockupTabs() {
           ].map((tab) => (
             <button
               key={tab.id}
+              id={`mockup-tab-${tab.id}`}
               role="tab"
               aria-selected={activeMockupTab === tab.id}
+              aria-controls={`mockup-panel-${tab.id}`}
               onClick={() => setActiveMockupTab(tab.id)}
               className={`pb-2.5 text-xs font-bold transition-all duration-200 border-b-2 px-2.5 cursor-pointer relative ${
                 activeMockupTab === tab.id
@@ -52,7 +54,7 @@ export default function HeroMockupTabs() {
         </div>
 
         {/* Interactive Tab Panels */}
-        <div role="tabpanel">
+        <div role="tabpanel" id={`mockup-panel-${activeMockupTab}`} aria-labelledby={`mockup-tab-${activeMockupTab}`}>
           {activeMockupTab === "overview" && (
             <div className="space-y-5 animate-[slideDown_0.25s_ease-out]">
               <div className="grid grid-cols-3 gap-3 items-center">
@@ -70,7 +72,7 @@ export default function HeroMockupTabs() {
                     <span>Average SEO Score</span>
                     <span className="text-cyan-400 font-extrabold">94%</span>
                   </div>
-                  <div className="h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-850" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">
+                  <div className="h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-850" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100" aria-label="Average SEO Score Progress">
                     <div className="h-full bg-gradient-to-r from-cyan-400 to-indigo-500 rounded-full" style={{ width: "94%" }} />
                   </div>
                   <p className="text-[10px] text-zinc-500 leading-tight">
