@@ -132,7 +132,7 @@ export default async function NewsPage(props) {
               </h2>
               <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed line-clamp-2 sm:line-clamp-3 lg:line-clamp-none">{featuredPost.desc}</p>
               <div className="pt-2 sm:pt-4 flex items-center justify-between">
-                <span className="text-xxs sm:text-xs text-zinc-555">By {featuredPost.author}</span>
+                <span className="text-xxs sm:text-xs text-zinc-500">By {featuredPost.author}</span>
                 <span className="inline-flex items-center gap-1.5 text-xxs sm:text-xs font-bold text-violet-400 group-hover:text-violet-300">
                   Read Article
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -178,7 +178,7 @@ export default async function NewsPage(props) {
                     </div>
 
                     <div className="px-4 sm:px-6 space-y-1.5 sm:space-y-2">
-                      <div className="flex items-center gap-3 text-[10px] text-zinc-555">
+                      <div className="flex items-center gap-3 text-[10px] text-zinc-500">
                         <time dateTime={post.date}>{post.date}</time>
                         <span>•</span>
                         <span>{post.readTime}</span>
@@ -193,7 +193,7 @@ export default async function NewsPage(props) {
                   </div>
 
                   <div className="px-4 sm:px-6 mt-3 mb-4 border-t border-zinc-850 pt-3 flex items-center justify-between text-xxs">
-                    <span className="text-zinc-555">By {post.author}</span>
+                    <span className="text-zinc-500">By {post.author}</span>
                     <span className="inline-flex items-center gap-1 text-violet-400 group-hover:text-violet-300 font-semibold">
                       Read
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

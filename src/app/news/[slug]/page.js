@@ -96,8 +96,46 @@ export default async function Page(props) {
     );
   }
 
+  let dateIso = new Date().toISOString().split('T')[0];
+  try {
+    if (post.date) {
+      const parsed = new Date(post.date);
+      if (!isNaN(parsed.getTime())) {
+        dateIso = parsed.toISOString().split('T')[0];
+      }
+    }
+  } catch (e) {}
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": post.title,
+    "description": post.desc,
+    "image": [
+      post.featuredImage || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1200&q=80"
+    ],
+    "datePublished": dateIso,
+    "author": {
+      "@type": "Person",
+      "name": post.author || "Sarah Jenkins"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "SEOIntellect AI",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://seointellect.com/logo.png"
+      }
+    }
+  };
+
   return (
     <article className="bg-zinc-950 min-h-screen py-12 sm:py-20 relative isolate text-left overflow-x-hidden">
+      {/* JSON-LD Structured Data Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Decorative Glows */}
       <div className="absolute top-1/4 left-1/3 -z-10 w-96 h-96 bg-fuchsia-600/5 rounded-full blur-3xl" aria-hidden="true" />
       <div className="absolute bottom-1/4 right-1/4 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" aria-hidden="true" />
