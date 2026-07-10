@@ -37,8 +37,9 @@ test.describe('Free User & Guest QA Flow Verification', () => {
 
     // Fill out the Guest Lead Capture form
     console.log('Filling out lead capture form...');
+    const dynamicEmail = `qa-tester-${Date.now()}@example.com`;
     await page.getByPlaceholder('e.g. John Doe').fill('QA Tester');
-    await page.getByPlaceholder('e.g. john@business.com').fill('qa-tester@example.com');
+    await page.getByPlaceholder('e.g. john@business.com').fill(dynamicEmail);
     await page.locator('input[type="tel"]').fill('9876543210');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'free_test_step3_guest_lead_filled.png') });
 
@@ -76,8 +77,8 @@ test.describe('Free User & Guest QA Flow Verification', () => {
 
     // 4. Verify advanced diagnostic sections show locks
     console.log('Verifying lock icons on advanced engines...');
-    // Accordion item "Server & Security" is a locked advanced section for free users
-    const securityAccordion = page.locator('button:has-text("Server & Security")').first();
+    // Click on "Server & Security" engine in the desktop sidebar
+    const securityAccordion = page.locator('#sidebar-engine-btn-server-security');
     await securityAccordion.click();
     await page.waitForTimeout(500);
 

@@ -378,27 +378,7 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
   background-color: #f1f5f9 !important;
 }
 
-/* Global wildcard overrides to convert all dark-mode background opacities/borders to light-mode equivalents across the whole website */
-.light [class*="bg-zinc-950"],
-.light [class*="bg-zinc-900"],
-.light [class*="bg-slate-950"],
-.light [class*="bg-slate-900"] {
-  background-color: #ffffff !important;
-}
-.light [class*="bg-zinc-800"],
-.light [class*="bg-zinc-850"],
-.light [class*="bg-slate-800"],
-.light [class*="bg-slate-850"] {
-  background-color: #f1f5f9 !important;
-}
-.light [class*="border-zinc-800"],
-.light [class*="border-zinc-850"],
-.light [class*="border-slate-800"],
-.light [class*="border-slate-850"],
-.light [class*="border-zinc-700"],
-.light [class*="border-slate-700"] {
-  border-color: #cbd5e1 !important;
-}
+/* Prevent text elements with opacity-60 and opacity-50 from failing contrast checks in light mode */
 .light .opacity-60 {
   opacity: 0.9 !important; /* Prevent text elements with opacity-60 from failing contrast checks */
 }
@@ -429,6 +409,18 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .hover\:text-white:hover {
   color: #0f172a !important;
 }
+.light .hover\:text-cyan-400:hover   { color: #0e7490 !important; }
+.light .hover\:text-cyan-300:hover   { color: #0e7490 !important; }
+.light .hover\:text-indigo-400:hover { color: #3730a3 !important; }
+.light .hover\:text-violet-400:hover { color: #5b21b6 !important; }
+.light .hover\:text-violet-300:hover { color: #5b21b6 !important; }
+.light .hover\:text-slate-300:hover  { color: #0f172a !important; }
+.light .hover\:text-zinc-300:hover   { color: #0f172a !important; }
+.light .hover\:text-zinc-400:hover   { color: #1e293b !important; }
+.light .hover\:text-zinc-100:hover   { color: #0f172a !important; }
+.light .hover\:text-slate-100:hover  { color: #0f172a !important; }
+.light .hover\:text-indigo-300:hover { color: #3730a3 !important; }
+.light .hover\:text-fuchsia-400:hover { color: #86198f !important; }
 .light .bg-indigo-600.hover\:text-white:hover,
 .light .bg-indigo-500.hover\:text-white:hover,
 .light .bg-violet-600.hover\:text-white:hover,

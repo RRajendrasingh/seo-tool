@@ -29,14 +29,14 @@ test.describe('SEO Tool User Behavior Tests', () => {
     await expect(page.getByText('Grade')).toBeVisible();
 
     // 2. Simulate user clicking the 'Meta Inspector' tab
-    const metaInspectorTab = page.getByRole('button', { name: 'Meta Inspector', exact: true });
+    const metaInspectorTab = page.getByRole('tab', { name: 'Meta Inspector', exact: true });
     await metaInspectorTab.click();
 
     // Verify Meta Inspector content is now shown
     await expect(page.getByText('Title tag length (58 chars)')).toBeVisible();
 
     // 3. Simulate user clicking the 'Performance' tab
-    const performanceTab = page.getByRole('button', { name: 'Performance', exact: true });
+    const performanceTab = page.getByRole('tab', { name: 'Performance', exact: true });
     await performanceTab.click();
 
     // Verify Performance content is shown

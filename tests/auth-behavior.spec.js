@@ -47,17 +47,8 @@ test.describe('Client Portal Authentication Flow', () => {
   });
 
   test('should handle mock Google OAuth authentication successfully', async ({ page }) => {
-    // Mock the backend API response to avoid database dependencies during local testing
-    await page.route('**/api/auth/google', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          user: { id: 'usr_mock123', email: 'alex.dev@gmail.com', name: 'ALEX.DEV', provider: 'google' }
-        })
-      });
-    });
+    // Note: Do not mock **/api/auth/google request because the real backend has native mock token support
+    // (starts with MOCK_GOOGLE_TOKEN_) and correctly sets the secure session cookie needed for Server Components.
 
     // Click Continue with Google button
     await page.getByRole('button', { name: 'Continue with Google' }).click();
@@ -69,6 +60,6 @@ test.describe('Client Portal Authentication Flow', () => {
     await page.getByRole('button', { name: /Alex Mercer/ }).click();
 
     // Verify successful login redirects user to their dashboard page
-    await page.waitForURL(/.*\/dashboard/, { timeout: 8000 });
+    await page.waitForURL(/.*\/dashboard/, { timeout: 25000 });
   });
 });
