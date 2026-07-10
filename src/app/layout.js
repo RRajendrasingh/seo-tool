@@ -28,7 +28,7 @@ export default async function RootLayout({ children }) {
   const themeScript = `
     (function() {
       try {
-        const theme = localStorage.getItem('theme');
+        const theme = localStorage.getItem('theme') || 'light';
         if (theme === 'light') {
           document.documentElement.classList.add('light');
         } else {

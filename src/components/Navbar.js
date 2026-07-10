@@ -8,12 +8,12 @@ export default function Navbar({ initialSession = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
   const [session, setSession] = useState(initialSession);
 
   // 1. Initial theme load
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "dark";
+    const savedTheme = localStorage.getItem("theme") || "light";
     if (savedTheme === "light") {
       document.documentElement.classList.add("light");
     } else {
