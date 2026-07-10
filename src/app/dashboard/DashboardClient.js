@@ -258,13 +258,13 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                 </div>
                 <div className="flex items-center gap-2.5">
                   <button
-                    onClick={() => router.push("/dashboard/ai-chat")}
+                    onClick={() => router.push("/dashboard/ai-chat/")}
                     className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-4 py-2 text-xs font-bold text-slate-200 transition-all cursor-pointer"
                   >
                     💬 AI SEO Chat
                   </button>
                   <button
-                    onClick={() => router.push("/audit")}
+                    onClick={() => router.push("/audit/")}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0"
                   >
                     Run New Audit
@@ -281,7 +281,7 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                 <div className="py-8 text-center space-y-3 bg-slate-950/20 rounded-2xl border border-dashed border-slate-800 p-6">
                   <p className="text-xxs text-slate-500">No audits found in your history.</p>
                   <button
-                    onClick={() => router.push("/audit")}
+                    onClick={() => router.push("/audit/")}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0"
                   >
                     Run Your First Audit
@@ -341,11 +341,11 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                               onClick={(e) => { 
                                 e.stopPropagation(); 
                                 const isMonitoringEligible = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi";
-                                if (!isMonitoringEligible) {
-                                  if (confirm("Weekly monitoring requires a Pro Weekly, Agency, or Enterprise subscription. Would you like to upgrade now?")) {
-                                    router.push(`/checkout?plan=weekly&url=${encodeURIComponent(audit.website)}`);
-                                  }
-                                } else {
+                                  if (!isMonitoringEligible) {
+                                    if (confirm("Weekly monitoring requires a Pro Weekly, Agency, or Enterprise subscription. Would you like to upgrade now?")) {
+                                      router.push(`/checkout/?plan=weekly&url=${encodeURIComponent(audit.website)}`);
+                                    }
+                                  } else {
                                   toggleMonitor(audit.id, audit.is_monitored === 1, audit.website); 
                                 }
                               }}

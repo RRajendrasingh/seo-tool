@@ -7,6 +7,13 @@ export const metadata = {
   keywords: ["local SEO directory", "seo cities", "SEO services locations", "US local seo", "USA local seo", "United States local seo"],
 };
 
+import LatestBlogs from "@/components/home/LatestBlogs";
+
 export default function SeoServicesPage() {
-  return <LocationsDirectory citiesDb={citiesDb} />;
+  return (
+    <>
+      <LocationsDirectory citiesDb={citiesDb} />
+      <LatestBlogs />
+    </>
+  );
 }

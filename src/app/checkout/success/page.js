@@ -64,9 +64,9 @@ function SuccessContent() {
           const plan = data.metadata?.plan || "";
           setTimeout(() => {
             if (plan === "weekly" || plan === "agency" || targetUrl === "domain-pending" || !targetUrl) {
-              router.push("/dashboard");
+              router.push("/dashboard/");
             } else {
-              router.push(`/audit?url=${encodeURIComponent(targetUrl)}`);
+              router.push(`/audit/?url=${encodeURIComponent(targetUrl)}`);
             }
           }, 1500);
         } else {
@@ -112,7 +112,7 @@ function SuccessContent() {
               <p className="text-xs text-zinc-400 leading-relaxed">{error}</p>
             </div>
             <button
-              onClick={() => router.push("/audit")}
+              onClick={() => router.push("/audit/")}
               className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 py-3 text-xs font-semibold text-white transition-all"
             >
               Return to Audit Dashboard

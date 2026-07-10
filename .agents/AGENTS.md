@@ -1,5 +1,6 @@
 # Workspace Guidelines
 - **Local Development Only (Do NOT Push):** All development must be done locally. Do not run `git push` or upload code to the remote GitHub repository unless explicitly requested by the user after they have verified the changes.
+- **Trailing Slash Enforced:** All internal links (`href`), client-side redirections (`router.push()`), and navigation item directories must strictly include a trailing slash (e.g. use `/news/` instead of `/news`, `/audit/` instead of `/audit`). No paths should be linked without a trailing slash.
 
 # UI & Theming Guidelines
 - **Strict Theme Variable Usage:** Never hardcode colors (e.g., `bg-[#161618]`) when global theme variables exist. Always respect the project's global CSS theme variables (e.g., `bg-background`, `text-foreground`).

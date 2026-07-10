@@ -263,7 +263,7 @@ function TopBar({ url, report, onReset }) {
             ← New Audit
           </button>
         )}
-        <a href="/audit" style={{ textDecoration:"none", background:"rgba(124,58,237,.12)", border:"1px solid rgba(124,58,237,.25)", borderRadius:8, padding:"5px 14px", fontSize:11, fontWeight:600, color:"#a78bfa", cursor:"pointer" }}>
+        <a href="/audit/" style={{ textDecoration:"none", background:"rgba(124,58,237,.12)", border:"1px solid rgba(124,58,237,.25)", borderRadius:8, padding:"5px 14px", fontSize:11, fontWeight:600, color:"#a78bfa", cursor:"pointer" }}>
           Classic UI
         </a>
       </div>
@@ -459,7 +459,7 @@ function Sidebar({ engines, report, activeEngine, setActiveEngine, isPremium }) 
         <div style={{ margin:"12px 4px 4px", padding:"12px", background:"rgba(124,58,237,.06)", border:"1px solid rgba(124,58,237,.15)", borderRadius:12, textAlign:"center" }}>
           <div style={{ fontSize:11, fontWeight:700, color:"#a78bfa", marginBottom:6 }}>🔓 Unlock All Engines</div>
           <div style={{ fontSize:10, color:"#52525b", marginBottom:10, lineHeight:1.4 }}>Upgrade for full access to 10+ audit engines</div>
-          <a href="/checkout" style={{ display:"block", background:"linear-gradient(135deg,#7c3aed,#5b21b6)", borderRadius:8, padding:"7px 0", fontSize:10, fontWeight:700, color:"#fff", textDecoration:"none", textAlign:"center" }}>Upgrade →</a>
+          <a href="/checkout/" style={{ display:"block", background:"linear-gradient(135deg,#7c3aed,#5b21b6)", borderRadius:8, padding:"7px 0", fontSize:10, fontWeight:700, color:"#fff", textDecoration:"none", textAlign:"center" }}>Upgrade →</a>
         </div>
       )}
     </div>
@@ -477,7 +477,7 @@ function EnginePanel({ engine, engineId, isPremium, filter, setFilter, report, r
       <div style={{ fontSize:48, marginBottom:16 }}>🔒</div>
       <h3 style={{ fontSize:16, fontWeight:800, marginBottom:8 }}>{engine.name} — Premium Only</h3>
       <p style={{ fontSize:12, color:"#52525b", maxWidth:360, margin:"0 auto 24px", lineHeight:1.6 }}>Detailed checks for {engine.name.toLowerCase()} are only available for premium members.</p>
-      <button onClick={() => router.push(`/checkout?url=${encodeURIComponent(url)}`)} style={{ background:"linear-gradient(135deg,#7c3aed,#a855f7)", border:"none", borderRadius:12, padding:"12px 32px", fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer" }}>
+      <button onClick={() => router.push(`/checkout/?url=${encodeURIComponent(url)}`)} style={{ background:"linear-gradient(135deg,#7c3aed,#a855f7)", border:"none", borderRadius:12, padding:"12px 32px", fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer" }}>
         Upgrade to Pro →
       </button>
     </div>

@@ -5,6 +5,8 @@ import CitySearchBox from "@/components/home/CitySearchBox";
 import FaqAccordion from "@/components/home/FaqAccordion";
 import AuditCtaForm from "@/components/home/AuditCtaForm";
 import PlatformFeatures from "@/components/home/PlatformFeatures";
+import VideoIntro from "@/components/home/VideoIntro";
+import LatestBlogs from "@/components/home/LatestBlogs";
 
 export const metadata = {
   title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
@@ -224,6 +226,9 @@ export default function Home() {
           </div>
         </header>
 
+        {/* 1.5 INTRO VIDEO */}
+        <VideoIntro />
+
         {/* 2. TRUST LOGOS */}
         <section className="border-t border-slate-900 bg-slate-950/60 py-12" aria-labelledby="trust-logos">
           <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center space-y-6">
@@ -360,7 +365,7 @@ export default function Home() {
         {/* 6. PRICING SECTION */}
         <section className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 border-t border-slate-900" id="pricing" aria-labelledby="pricing-heading">
           <div className="mx-auto max-w-3xl text-center space-y-4 mb-16">
-            <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/30 px-3.5 py-1.5 rounded-full border border-cyan-500/10">
+            <span className="inline-block text-xs uppercase tracking-widest text-cyan-400 font-extrabold bg-cyan-950/30 px-4 py-1.5 rounded-full border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] animate-pulse-subtle">
               Subscription Tiers
             </span>
             <h2 id="pricing-heading" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
@@ -419,7 +424,7 @@ export default function Home() {
         <section className="border-t border-slate-900 bg-slate-950/40 py-24 sm:py-32" aria-labelledby="testimonials">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center space-y-4 mb-20">
-              <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/30 px-3.5 py-1.5 rounded-full border border-cyan-500/10">
+              <span className="inline-block text-xs uppercase tracking-widest text-cyan-400 font-extrabold bg-cyan-950/30 px-4 py-1.5 rounded-full border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] animate-pulse-subtle">
                 Reviews
               </span>
               <h2 id="testimonials" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
@@ -460,7 +465,7 @@ export default function Home() {
                     &quot;{test.text}&quot;
                   </p>
                   <div className="flex items-center gap-3 border-t border-zinc-850 pt-4">
-                    <div className="h-9 w-9 rounded-full bg-indigo-950/45 border border-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400 select-none" aria-hidden="true">
+                    <div className="h-9 w-9 rounded-full bg-indigo-950/20 border border-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400 select-none" aria-hidden="true">
                       {test.name.charAt(0)}
                     </div>
                     <div>
@@ -504,11 +509,14 @@ export default function Home() {
           </div>
         </section>
 
+        {/* 7.5 LATEST BLOGS SECTION */}
+        <LatestBlogs />
+
         {/* 8. FAQ ACCORDION SECTION */}
         <section className="border-t border-slate-900 bg-slate-950 py-24 sm:py-32" id="faq" aria-labelledby="faq-heading">
           <div className="mx-auto max-w-4xl px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center mb-16 space-y-4">
-              <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/30 px-3.5 py-1.5 rounded-full border border-cyan-500/10">
+              <span className="inline-block text-xs uppercase tracking-widest text-cyan-400 font-extrabold bg-cyan-950/30 px-4 py-1.5 rounded-full border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] animate-pulse-subtle">
                 Clear Friction
               </span>
               <h2 id="faq-heading" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl text-center">

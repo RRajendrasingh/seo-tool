@@ -129,11 +129,24 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .bg-zinc-950\/80  { background-color: rgba(248,250,252,0.85) !important; }
 .light .bg-zinc-950\/40  { background-color: rgba(248,250,252,0.40) !important; }
 .light .bg-zinc-950\/20  { background-color: rgba(248,250,252,0.80) !important; }
-.light .bg-zinc-900\/40  { background-color: rgba(241,245,249,0.70) !important; }
-.light .bg-zinc-900\/20  { background-color: rgba(255,255,255,0.80) !important; }
 .light .bg-zinc-900\/10  { background-color: rgba(241,245,249,0.10) !important; }
+.light .bg-zinc-900\/20  { background-color: rgba(255,255,255,0.80) !important; }
 .light .bg-zinc-900\/30  { background-color: rgba(241,245,249,0.30) !important; }
-.light .bg-zinc-900\/80  { background-color: rgba(241,245,249,0.80) !important; }
+.light .bg-zinc-900\/40  { background-color: rgba(241,245,249,0.70) !important; }
+.light .bg-zinc-900\/50  { background-color: rgba(241,245,249,0.75) !important; }
+.light .bg-zinc-900\/60  { background-color: rgba(241,245,249,0.80) !important; }
+.light .bg-zinc-900\/70  { background-color: rgba(241,245,249,0.85) !important; }
+.light .bg-zinc-900\/80  { background-color: rgba(241,245,249,0.90) !important; }
+.light .bg-zinc-900\/90  { background-color: rgba(241,245,249,0.95) !important; }
+.light .bg-zinc-800\/10  { background-color: rgba(226,232,240,0.10) !important; }
+.light .bg-zinc-800\/20  { background-color: rgba(226,232,240,0.20) !important; }
+.light .bg-zinc-800\/30  { background-color: rgba(226,232,240,0.30) !important; }
+.light .bg-zinc-800\/40  { background-color: rgba(226,232,240,0.40) !important; }
+.light .bg-zinc-800\/50  { background-color: rgba(226,232,240,0.50) !important; }
+.light .bg-zinc-800\/60  { background-color: rgba(226,232,240,0.60) !important; }
+.light .bg-zinc-800\/70  { background-color: rgba(226,232,240,0.70) !important; }
+.light .bg-zinc-800\/80  { background-color: rgba(226,232,240,0.80) !important; }
+.light .bg-zinc-800\/90  { background-color: rgba(226,232,240,0.90) !important; }
 
 /* Slate equivalents used in Navbar, sections, and buttons */
 .light .bg-slate-950  { background-color: #f8fafc !important; }
@@ -144,17 +157,28 @@ details[open] summary ~ * { animation: slideDown 0.3s ease-out; }
 .light .bg-slate-950\/85 { background-color: rgba(248, 250, 252, 0.85) !important; }
 .light .bg-slate-950\/80 { background-color: rgba(248, 250, 252, 0.85) !important; }
 .light .bg-slate-950\/60 { background-color: rgba(248, 250, 252, 0.60) !important; }
+.light .bg-slate-950\/50 { background-color: rgba(248, 250, 252, 0.50) !important; }
 .light .bg-slate-950\/40 { background-color: rgba(241, 245, 249, 0.40) !important; }
 .light .bg-slate-950\/35 { background-color: rgba(241, 245, 249, 0.60) !important; }
 .light .bg-slate-950\/20 { background-color: rgba(248, 250, 252, 0.40) !important; }
+.light .bg-slate-900\/90 { background-color: rgba(241, 245, 249, 0.90) !important; }
+.light .bg-slate-900\/80 { background-color: rgba(241, 245, 249, 0.80) !important; }
+.light .bg-slate-900\/70 { background-color: rgba(241, 245, 249, 0.70) !important; }
+.light .bg-slate-900\/60 { background-color: rgba(241, 245, 249, 0.60) !important; }
+.light .bg-slate-900\/50 { background-color: rgba(241, 245, 249, 0.50) !important; }
 .light .bg-slate-900\/40 { background-color: rgba(241, 245, 249, 0.70) !important; }
 .light .bg-slate-900\/30 { background-color: rgba(241, 245, 249, 0.30) !important; }
 .light .bg-slate-900\/20 { background-color: rgba(255, 255, 255, 0.80) !important; }
-.light .bg-slate-950\/50 { background-color: rgba(241, 245, 249, 0.80) !important; }
 .light .bg-slate-900\/10 { background-color: rgba(241, 245, 249, 0.10) !important; }
+.light .bg-slate-800\/90 { background-color: rgba(226, 232, 240, 0.90) !important; }
+.light .bg-slate-800\/80 { background-color: rgba(226, 232, 240, 0.80) !important; }
+.light .bg-slate-800\/70 { background-color: rgba(226, 232, 240, 0.70) !important; }
 .light .bg-slate-800\/60 { background-color: rgba(226, 232, 240, 0.60) !important; }
+.light .bg-slate-800\/50 { background-color: rgba(226, 232, 240, 0.50) !important; }
 .light .bg-slate-800\/40 { background-color: rgba(226, 232, 240, 0.40) !important; }
 .light .bg-slate-800\/30 { background-color: rgba(226, 232, 240, 0.30) !important; }
+.light .bg-slate-800\/20 { background-color: rgba(226, 232, 240, 0.20) !important; }
+.light .bg-slate-800\/10 { background-color: rgba(226, 232, 240, 0.10) !important; }
 
 /* Faint background badges & glows to light pastels */
 .light .bg-cyan-950\/20    { background-color: rgba(6, 182, 212, 0.08) !important; }

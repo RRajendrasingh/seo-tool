@@ -6,3 +6,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Workspace Guidelines
 - **Local Development Only (Do NOT Push):** All development must be done locally. Do not run `git push` or upload code to the remote GitHub repository unless explicitly requested by the user after they have verified the changes.
+- **Trailing Slash Enforced:** All internal links (`href`), client-side redirections (`router.push()`), and navigation item directories must strictly include a trailing slash (e.g. use `/news/` instead of `/news`, `/audit/` instead of `/audit`). No paths should be linked without a trailing slash.

@@ -86,7 +86,7 @@ function CheckoutContent() {
     if (loadingSession) return;
     if (!user) {
       const currentPath = window.location.pathname + window.location.search;
-      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      router.push(`/login/?redirect=${encodeURIComponent(currentPath)}`);
     }
   }, [user, loadingSession, router]);
 
@@ -233,9 +233,9 @@ function CheckoutContent() {
 
     setTimeout(() => {
       if (selectedPlan === "weekly" || selectedPlan === "agency" || finalUrl === "domain-pending" || !finalUrl) {
-        router.push("/dashboard");
+        router.push("/dashboard/");
       } else {
-        router.push(`/audit?url=${encodeURIComponent(finalUrl)}`);
+        router.push(`/audit/?url=${encodeURIComponent(finalUrl)}`);
       }
     }, 2000);
   };
@@ -798,7 +798,7 @@ function CheckoutContent() {
             
             <button
               onClick={() => {
-                router.push(`/audit?url=${encodeURIComponent(url)}&canceled=true`);
+                router.push(`/audit/?url=${encodeURIComponent(url)}&canceled=true`);
               }}
               className="text-[10px] text-zinc-400 hover:text-white transition-all underline flex items-center gap-1 pt-2 cursor-pointer"
             >

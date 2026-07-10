@@ -48,7 +48,7 @@ export default function Navbar({ initialSession = null }) {
       });
       if (res.ok) {
         setSession(null);
-        router.push("/login");
+        router.push("/login/");
         router.refresh();
       }
     } catch (err) {
@@ -66,7 +66,7 @@ export default function Navbar({ initialSession = null }) {
   ];
 
   if (session) {
-    navLinks.push({ name: "Dashboard", href: "/dashboard" });
+    navLinks.push({ name: "Dashboard", href: "/dashboard/" });
   }
 
   const isActive = (path) => pathname === path;
@@ -139,7 +139,7 @@ export default function Navbar({ initialSession = null }) {
               </button>
             ) : (
               <Link
-                href="/login"
+                href="/login/"
                 className="text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
               >
                 Sign In
@@ -258,7 +258,7 @@ export default function Navbar({ initialSession = null }) {
               </button>
             ) : (
               <Link
-                href="/login"
+                href="/login/"
                 onClick={() => setIsOpen(false)}
                 className={`flex w-full items-center justify-center rounded-xl border py-2 text-base font-semibold transition-colors ${
                   theme === "dark"

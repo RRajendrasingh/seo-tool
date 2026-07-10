@@ -110,7 +110,7 @@ export default function PlatformFeatures() {
                 </div>
               </div>
               <div className="pt-2 relative z-10">
-                <Link href="/audit" className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1">Run Audit <span aria-hidden="true">&rarr;</span></Link>
+                <Link href="/audit/" className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1">Run Audit <span aria-hidden="true">&rarr;</span></Link>
               </div>
             </div>
 
@@ -120,7 +120,7 @@ export default function PlatformFeatures() {
               <div className="bg-zinc-950 rounded-xl p-4 border border-zinc-800/80 relative z-10 shadow-inner h-[100px] flex flex-col justify-between">
                  <div className="flex justify-between items-start">
                     <span className="text-xs font-bold text-zinc-300">Entity Maps</span>
-                    <span className="text-[9px] text-zinc-500 bg-zinc-800/50 px-2 py-0.5 rounded">Verified</span>
+                    <span className="text-[9px] text-zinc-500 [.light_&]:text-indigo-600 bg-zinc-800/50 [.light_&]:bg-indigo-50 px-2 py-0.5 rounded">Verified</span>
                  </div>
                  <div className="space-y-1">
                    <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden"><div className="h-full w-[95%] bg-violet-500 rounded-full"/></div>
@@ -171,7 +171,7 @@ export default function PlatformFeatures() {
                 </div>
               </div>
               <div className="pt-2 relative z-10">
-                <Link href="/seo-services" className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1">Explore Map <span aria-hidden="true">&rarr;</span></Link>
+                <Link href="/seo-services/" className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1">Explore Map <span aria-hidden="true">&rarr;</span></Link>
               </div>
             </div>
 
@@ -277,10 +277,10 @@ export default function PlatformFeatures() {
                 <div className="w-16 h-20 bg-zinc-900 border border-zinc-700 shadow-xl relative -rotate-3 rounded-sm flex flex-col p-2">
                   <div className="h-2 w-8 bg-orange-500/20 rounded mb-2"></div>
                   <div className="space-y-1">
-                    <div className="h-1 w-full bg-zinc-800 rounded"></div>
-                    <div className="h-1 w-3/4 bg-zinc-800 rounded"></div>
+                    <div className="h-1 w-full bg-zinc-800 [.light_&]:bg-slate-300 rounded"></div>
+                    <div className="h-1 w-3/4 bg-zinc-800 [.light_&]:bg-slate-300 rounded"></div>
                   </div>
-                  <div className="mt-auto h-6 w-full bg-zinc-800/50 rounded flex items-center justify-center">
+                  <div className="mt-auto h-6 w-full bg-zinc-800/50 [.light_&]:bg-slate-200 rounded flex items-center justify-center">
                     <div className="w-4 h-4 rounded-full border-2 border-orange-500/30"></div>
                   </div>
                 </div>
@@ -334,7 +334,7 @@ export default function PlatformFeatures() {
                 </div>
               </div>
               <div className="pt-2 relative z-10">
-                <Link href="/dashboard" className="text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1">Open Dashboard <span aria-hidden="true">&rarr;</span></Link>
+                <Link href="/dashboard/" className="text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1">Open Dashboard <span aria-hidden="true">&rarr;</span></Link>
               </div>
             </div>
 
@@ -364,7 +364,7 @@ export default function PlatformFeatures() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-3xl pointer-events-none rounded-full" />
           
           <div className="flex items-center gap-5 relative z-10 w-full md:w-auto">
-            <div className="h-14 w-14 rounded-full bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+            <div className="h-14 w-14 rounded-full bg-cyan-950/20 border border-cyan-500/30 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
               <span className="text-2xl">✨</span>
             </div>
             <div>
@@ -374,14 +374,14 @@ export default function PlatformFeatures() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10 shrink-0 w-full md:w-auto">
-             <Link href="/audit" className="w-full sm:w-auto rounded-xl bg-indigo-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 hover:shadow-cyan-500/20 hover:scale-[1.02] transition-all text-center">
+             <Link href="/audit/" className="w-full sm:w-auto rounded-xl bg-indigo-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 hover:shadow-cyan-500/20 hover:scale-[1.02] transition-all text-center">
                Start Free Audit &rarr;
              </Link>
              <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium">
                <div className="flex -space-x-2">
-                 <div className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900 z-30"></div>
-                 <div className="w-6 h-6 rounded-full bg-zinc-600 border-2 border-zinc-900 z-20"></div>
-                 <div className="w-6 h-6 rounded-full bg-zinc-500 border-2 border-zinc-900 z-10"></div>
+                 <div className="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900 [.light_&]:border-white z-30"></div>
+                 <div className="w-6 h-6 rounded-full bg-zinc-600 border-2 border-zinc-900 [.light_&]:border-white z-20"></div>
+                 <div className="w-6 h-6 rounded-full bg-zinc-500 border-2 border-zinc-900 [.light_&]:border-white z-10"></div>
                </div>
                Join 1,200+ happy users
              </div>

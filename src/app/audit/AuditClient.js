@@ -1938,7 +1938,7 @@ export default function AuditClient({ initialUser = null }) {
                 You have used both of your 2 free registered account audits. Upgrade to our Pro Monitor Plan to unlock 3 premium monthly audits, automated tracking, and white-label client PDF exports.
               </p>
               <button
-                onClick={() => router.push("/checkout?plan=weekly")}
+                onClick={() => router.push("/checkout/?plan=weekly")}
                 className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
                 Upgrade to Pro Monitor ($29/mo)
@@ -1952,7 +1952,7 @@ export default function AuditClient({ initialUser = null }) {
                 You have used all {user.allowed_quota} of your premium paid audits. To run more audits for additional clients, please upgrade your agency plan.
               </p>
               <button
-                onClick={() => router.push("/checkout?plan=agency")}
+                onClick={() => router.push("/checkout/?plan=agency")}
                 className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
                 View Agency Plans

@@ -28,6 +28,13 @@ export const metadata = {
   },
 };
 
+import LatestBlogs from "@/components/home/LatestBlogs";
+
 export default function ServicesPage() {
-  return <ServicesClient />;
+  return (
+    <>
+      <ServicesClient />
+      <LatestBlogs />
+    </>
+  );
 }
