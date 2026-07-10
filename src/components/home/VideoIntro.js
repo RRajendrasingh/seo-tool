@@ -14,11 +14,12 @@ export default function VideoIntro() {
         <div className="relative rounded-xl sm:rounded-2xl overflow-hidden aspect-video bg-zinc-900 flex items-center justify-center border border-zinc-800/50">
           {!isPlaying ? (
             <>
-              {/* Thumbnail Placeholder Image */}
+              {/* YouTube Video Thumbnail — auto-generated from video ID */}
               <img
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"
-                alt="Video Thumbnail"
-                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500"
+                src="https://img.youtube.com/vi/A8LW2h9HR04/maxresdefault.jpg"
+                alt="SEOIntellect AI Platform Demo - Click to Play"
+                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-500"
+                onError={(e) => { e.target.src = "https://img.youtube.com/vi/A8LW2h9HR04/hqdefault.jpg"; }}
               />
               
               {/* Play Button Overlay */}
@@ -41,7 +42,7 @@ export default function VideoIntro() {
             /* YouTube iframe */
             <iframe
               className="absolute inset-0 w-full h-full bg-black"
-              src="https://www.youtube.com/embed/_jP1Ki4b6cs?autoplay=1&rel=0"
+              src="https://www.youtube.com/embed/A8LW2h9HR04?autoplay=1&rel=0&modestbranding=1"
               title="SEOIntellect Intro Video"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
