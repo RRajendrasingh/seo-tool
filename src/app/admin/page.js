@@ -43,7 +43,7 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState([]);
   const [users, setUsers] = useState([]);
   const [settings, setSettings] = useState({ adminPasscode: "admin123", webhookUrl: "", web3formsKey: "" });
-  const [activeTab, setActiveTab] = useState("leads"); // 'leads' | 'analytics' | 'settings'
+  const [activeTab, setActiveTab] = useState("analytics"); // 'analytics' | 'leads' | 'settings'
 
   const refreshUsers = (passcode) => {
     const activePasscode = passcode || sessionStorage.getItem("admin_passcode_saved") || (settings && settings.adminPasscode) || "admin123";
@@ -973,12 +973,12 @@ export default function AdminDashboard() {
             {/* Sidebar Navigation */}
             <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-1.5 md:gap-2 no-scrollbar" aria-label="Sidebar Navigation">
               {[
-                { id: "leads", label: "Leads Database", icon: "📊" },
-                { id: "users", label: "Users Database", icon: "👥" },
-                { id: "queries", label: "Queries Database", icon: "✉️" },
                 { id: "analytics", label: "Visual Analytics", icon: "📈" },
                 { id: "blog", label: "Write Article", icon: "✍️" },
                 { id: "news-directory", label: "All News", icon: "📰" },
+                { id: "leads", label: "Leads Database", icon: "📊" },
+                { id: "queries", label: "Queries Database", icon: "✉️" },
+                { id: "users", label: "Users Database", icon: "👥" },
                 { id: "drafts", label: "Auto-Drafts", icon: "📥", badge: drafts.length || null },
                 { id: "sources", label: "RSS Sources", icon: "🌐" },
                 { id: "settings", label: "Dashboard Settings", icon: "⚙️" },
