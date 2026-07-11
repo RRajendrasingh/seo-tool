@@ -666,17 +666,70 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleExportCSV = () => {
-    const csvContent = exportToCSV();
+  const downloadCSV = (headers, rows, filename) => {
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(r => r.join(","))
+    ].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `seointellect_leads_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute("download", filename);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleExportLeadsCSV = () => {
+    const headers = ["ID", "Name", "Email", "Phone", "Audited Website", "Date", "SEO Score", "Grade", "Status", "Package Request", "Amount Paid", "Notes"];
+    const rows = filteredLeads.map(l => [
+      l.id,
+      `"${(l.name || "").replace(/"/g, '""')}"`,
+      l.email,
+      l.phone,
+      l.website,
+      l.date,
+      l.seoScore || "",
+      l.grade || "",
+      l.status,
+      l.packageRequest,
+      l.amountPaid,
+      `"${(l.notes || "").replace(/"/g, '""')}"`
+    ]);
+    downloadCSV(headers, rows, `seointellect_leads_${new Date().toISOString().split("T")[0]}.csv`);
+  };
+
+  const handleExportUsersCSV = () => {
+    const headers = ["ID", "Name", "Email", "Auth Provider", "Email Verified", "Subscription Tier", "Allowed Quota", "Registration Date"];
+    const rows = filteredUsers.map(u => [
+      u.id,
+      `"${(u.full_name || "").replace(/"/g, '""')}"`,
+      u.email,
+      u.auth_provider || "local",
+      u.email_verified ? "Verified" : "Pending",
+      u.subscription_tier || "free",
+      u.allowed_quota ?? 1,
+      u.created_at
+    ]);
+    downloadCSV(headers, rows, `seointellect_users_${new Date().toISOString().split("T")[0]}.csv`);
+  };
+
+  const handleExportQueriesCSV = () => {
+    const headers = ["ID", "Name", "Email", "Phone", "Source Channel", "Inquiry Category", "Status", "Submission Date", "Message / Notes"];
+    const rows = filteredQueries.map(q => [
+      q.id,
+      `"${(q.name || "").replace(/"/g, '""')}"`,
+      q.email,
+      q.phone || "Not Provided",
+      q.website === "consultancy-widget" ? "Widget Hub" : "Contact Us Page",
+      q.packageRequest,
+      q.status,
+      q.date,
+      `"${(q.notes || "").replace(/"/g, '""')}"`
+    ]);
+    downloadCSV(headers, rows, `seointellect_queries_${new Date().toISOString().split("T")[0]}.csv`);
   };
 
   // Filter & Search Logic
@@ -885,7 +938,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="bg-zinc-950 min-h-screen relative isolate">
+    <div className="bg-zinc-950 min-h-screen relative isolate admin-container">
       {/* Background ambient glow */}
       <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
@@ -942,15 +995,8 @@ export default function AdminDashboard() {
           {/* Sidebar Footer Actions */}
           <div className="flex flex-row md:flex-col gap-3 pt-6 border-t border-zinc-850">
             <button
-              onClick={handleExportCSV}
-              disabled={leads.length === 0}
-              className="flex-1 md:w-full rounded-xl border border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 px-4 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
-            >
-              📥 Export CSV
-            </button>
-            <button
               onClick={handleLogout}
-              className="flex-1 md:w-full rounded-xl border border-rose-900/20 bg-rose-950/10 hover:bg-rose-900/20 px-4 py-2.5 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-all text-center"
+              className="flex-1 md:w-full rounded-xl border border-rose-900/20 bg-rose-950/10 hover:bg-rose-900/20 px-4 py-2.5 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-all text-center cursor-pointer"
             >
               Log Out
             </button>
@@ -963,6 +1009,20 @@ export default function AdminDashboard() {
         {/* ==================== TAB 1: LEADS LIST DATABASE ==================== */}
         {activeTab === "leads" && (
           <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-white">Leads Database</h2>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Manage website audit leads and outreach pipelines.
+                </p>
+              </div>
+              <button
+                onClick={handleExportLeadsCSV}
+                className="rounded-xl border border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                📥 Export Leads CSV
+              </button>
+            </div>
             
             {/* KPI STATS ROW */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1198,6 +1258,12 @@ export default function AdminDashboard() {
                   Manage registered user accounts, active subscription tiers, and audit quotas.
                 </p>
               </div>
+              <button
+                onClick={handleExportUsersCSV}
+                className="rounded-xl border border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                📥 Export Users CSV
+              </button>
             </div>
 
             <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 overflow-hidden shadow-xl">
@@ -1286,6 +1352,12 @@ export default function AdminDashboard() {
                   Review and manage customer queries, contact form submissions, and widget appointments.
                 </p>
               </div>
+              <button
+                onClick={handleExportQueriesCSV}
+                className="rounded-xl border border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                📥 Export Queries CSV
+              </button>
             </div>
 
             <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 overflow-hidden shadow-xl">
