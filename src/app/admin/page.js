@@ -41,8 +41,17 @@ export default function AdminDashboard() {
 
   // Leads & Data States
   const [leads, setLeads] = useState([]);
+  const [users, setUsers] = useState([]);
   const [settings, setSettings] = useState({ adminPasscode: "admin123", webhookUrl: "", web3formsKey: "" });
   const [activeTab, setActiveTab] = useState("leads"); // 'leads' | 'analytics' | 'settings'
+
+  const refreshUsers = (passcode) => {
+    const activePasscode = passcode || sessionStorage.getItem("admin_passcode_saved") || (settings && settings.adminPasscode) || "admin123";
+    fetch("/api/admin/users", { headers: { "x-admin-passcode": activePasscode } })
+      .then(res => res.json())
+      .then(setUsers)
+      .catch(console.error);
+  };
 
   // Blog CMS States
   const [posts, setPosts] = useState([]);
@@ -129,26 +138,44 @@ export default function AdminDashboard() {
     // Check session storage for auto-login during active session
     if (typeof window !== "undefined") {
       const authSession = sessionStorage.getItem("admin_authenticated");
+      const savedPasscode = sessionStorage.getItem("admin_passcode_saved") || loadedSettings.adminPasscode || "admin123";
       if (authSession === "true") {
         setIsAuthenticated(true);
-        Promise.resolve(getAllLeads()).then(setLeads).catch(console.error);
+        fetch("/api/leads", { headers: { "x-admin-passcode": savedPasscode } })
+          .then(res => res.json())
+          .then(setLeads)
+          .catch(console.error);
         getAllPosts().then(setPosts).catch(console.error); // Fetch posts
         refreshRssSources();
       }
     }
   }, []);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (passcode === settings.adminPasscode) {
+    setLoginError("");
+    try {
+      const res = await fetch("/api/leads", {
+        headers: { "x-admin-passcode": passcode }
+      });
+      if (res.status === 401) {
+        setLoginError("Invalid passcode. Please try again.");
+        return;
+      }
+      if (!res.ok) {
+        throw new Error("Authentication failed.");
+      }
+      const data = await res.json();
       setIsAuthenticated(true);
-      Promise.resolve(getAllLeads()).then(setLeads).catch(console.error);
-      getAllPosts().then(setPosts).catch(console.error); // Fetch posts
+      setLeads(data);
+      getAllPosts().then(setPosts).catch(console.error);
       refreshRssSources();
       sessionStorage.setItem("admin_authenticated", "true");
+      sessionStorage.setItem("admin_passcode_saved", passcode);
       setLoginError("");
-    } else {
-      setLoginError("Invalid passcode. Please try again.");
+    } catch (err) {
+      console.error(err);
+      setLoginError("Failed to connect to database or invalid passcode.");
     }
   };
 
@@ -156,11 +183,16 @@ export default function AdminDashboard() {
     setIsAuthenticated(false);
     setPasscode("");
     sessionStorage.removeItem("admin_authenticated");
+    sessionStorage.removeItem("admin_passcode_saved");
   };
 
   // Sync state after modifications
   const refreshLeads = () => {
-    Promise.resolve(getAllLeads()).then(setLeads).catch(console.error);
+    const savedPasscode = sessionStorage.getItem("admin_passcode_saved") || settings.adminPasscode || "admin123";
+    fetch("/api/leads", { headers: { "x-admin-passcode": savedPasscode } })
+      .then(res => res.json())
+      .then(setLeads)
+      .catch(console.error);
   };
 
   const refreshPosts = () => {
@@ -480,38 +512,74 @@ export default function AdminDashboard() {
 
   const handleSaveLeadChanges = () => {
     if (!selectedLead) return;
-    updateLead(selectedLead.id, {
-      status: leadStatus,
-      notes: leadNotes,
-    }).then((updated) => {
-      if (updated) {
+    const savedPasscode = sessionStorage.getItem("admin_passcode_saved") || settings.adminPasscode || "admin123";
+    fetch("/api/leads", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-passcode": savedPasscode
+      },
+      body: JSON.stringify({
+        id: selectedLead.id,
+        updates: {
+          status: leadStatus,
+          notes: leadNotes,
+        }
+      })
+    })
+    .then(res => {
+      if (res.ok) {
         refreshLeads();
         setSelectedLead(null);
+      } else {
+        alert("Failed to update lead changes.");
       }
-    }).catch(console.error);
+    })
+    .catch(console.error);
   };
 
   const handleDeleteLead = (id) => {
     if (confirm("Are you sure you want to delete this lead? This action cannot be undone.")) {
-      Promise.resolve(deleteLead(id)).then(() => {
-        refreshLeads();
-      }).catch(console.error);
+      const savedPasscode = sessionStorage.getItem("admin_passcode_saved") || settings.adminPasscode || "admin123";
+      fetch(`/api/leads?id=${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-passcode": savedPasscode }
+      })
+      .then(res => {
+        if (res.ok) {
+          refreshLeads();
+        } else {
+          alert("Failed to delete lead from database.");
+        }
+      })
+      .catch(console.error);
     }
   };
 
   const handleResetMockData = () => {
-    if (confirm("This will overwrite existing leads with a set of realistic mock data. Proceed?")) {
+    if (confirm("This will reset the browser client-side mock data store. Proceed?")) {
       Promise.resolve(resetToMock()).then((fresh) => {
-        setLeads(fresh);
+        alert("Client-side mock store reset. (Database records are not affected).");
+        refreshLeads();
       }).catch(console.error);
     }
   };
 
   const handleClearAllData = () => {
-    if (confirm("Are you sure you want to clear ALL leads? This will empty the database.")) {
-      Promise.resolve(clearAllLeads()).then(() => {
-        setLeads([]);
-      }).catch(console.error);
+    if (confirm("Are you sure you want to clear ALL database leads? This will empty the table.")) {
+      const savedPasscode = sessionStorage.getItem("admin_passcode_saved") || settings.adminPasscode || "admin123";
+      fetch("/api/leads?id=all", {
+        method: "DELETE",
+        headers: { "x-admin-passcode": savedPasscode }
+      })
+      .then(res => {
+        if (res.ok) {
+          setLeads([]);
+        } else {
+          alert("Failed to clear database leads.");
+        }
+      })
+      .catch(console.error);
     }
   };
 
@@ -781,76 +849,78 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="bg-zinc-950 min-h-screen py-8 px-4 sm:px-6 lg:px-8 relative isolate overflow-x-hidden">
+    <div className="bg-zinc-950 min-h-screen relative isolate">
       {/* Background ambient glow */}
       <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
       <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
 
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row min-h-[calc(100vh-80px)] py-8 px-4 sm:px-6 lg:px-8 gap-8">
         
-        {/* Header Console */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-850 pb-6">
-          <div className="space-y-1.5 text-left">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-extrabold text-white">Leads Management Hub</h1>
-              <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
-                Live Data
-              </span>
+        {/* LEFT SIDEBAR (Sticky on desktop, horizontal scroll / top list on mobile) */}
+        <aside className="w-full md:w-64 shrink-0 flex flex-col justify-between border-b md:border-b-0 md:border-r border-zinc-850 pb-6 md:pb-0 md:pr-6 gap-6 self-start sticky top-24">
+          <div className="space-y-6">
+            {/* Header Console */}
+            <div className="space-y-1.5 text-left">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-extrabold text-white">Leads Hub</h1>
+                <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                  Live Data
+                </span>
+              </div>
+              <p className="text-xxs text-zinc-400">
+                SEOIntellect AI Console
+              </p>
             </div>
-            <p className="text-xs text-zinc-400">
-              Analyze organic traffic conversions and manage client audits in real-time.
-            </p>
+
+            {/* Sidebar Navigation */}
+            <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-1.5 md:gap-2 no-scrollbar" aria-label="Sidebar Navigation">
+              {[
+                { id: "leads", label: "Leads Database", icon: "📊" },
+                { id: "analytics", label: "Visual Analytics", icon: "📈" },
+                { id: "blog", label: "Manage Blog", icon: "📰" },
+                { id: "drafts", label: "Auto-Drafts", icon: "📥", badge: drafts.length || null },
+                { id: "sources", label: "RSS Sources", icon: "🌐" },
+                { id: "settings", label: "Dashboard Settings", icon: "⚙️" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setActiveTab(tab.id); if (tab.id === "drafts") refreshDrafts(); }}
+                  className={`flex items-center gap-2.5 px-4 py-3 text-xs font-semibold rounded-xl border transition-all whitespace-nowrap md:w-full text-left relative ${
+                    activeTab === tab.id
+                      ? "bg-violet-600/15 border-violet-500/30 text-violet-400 font-bold shadow-[0_0_15px_rgba(139,92,246,0.08)]"
+                      : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-900/30"
+                  }`}
+                >
+                  <span className="text-sm">{tab.icon}</span>
+                  <span>{tab.label}</span>
+                  {tab.badge ? (
+                    <span className="ml-auto inline-flex items-center justify-center w-4.5 h-4.5 text-[9px] font-bold bg-violet-600 text-white rounded-full">{tab.badge}</span>
+                  ) : null}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          {/* Sidebar Footer Actions */}
+          <div className="flex flex-row md:flex-col gap-3 pt-6 border-t border-zinc-850">
             <button
               onClick={handleExportCSV}
               disabled={leads.length === 0}
-              className="rounded-xl border border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 px-4 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 disabled:opacity-50"
+              className="flex-1 md:w-full rounded-xl border border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 px-4 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
-              📥 Export to CSV
+              📥 Export CSV
             </button>
             <button
               onClick={handleLogout}
-              className="rounded-xl border border-rose-900/20 bg-rose-950/10 hover:bg-rose-900/10 px-4 py-2.5 text-xs font-semibold text-rose-400 transition-all"
+              className="flex-1 md:w-full rounded-xl border border-rose-900/20 bg-rose-950/10 hover:bg-rose-900/20 px-4 py-2.5 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-all text-center"
             >
               Log Out
             </button>
           </div>
-        </div>
+        </aside>
 
-        {/* Dashboard Tabs Bar */}
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <div className="flex border-b border-zinc-850 pb-[1px] min-w-max px-4 sm:px-0">
-            {[
-              { id: "leads", label: "Leads Database", icon: "📊" },
-              { id: "analytics", label: "Visual Analytics", icon: "📈" },
-              { id: "blog", label: "Manage Blog", icon: "📰" },
-              { id: "drafts", label: "Auto-Drafts", icon: "📥", badge: drafts.length || null },
-              { id: "sources", label: "RSS Sources", icon: "🌐" },
-              { id: "settings", label: "Dashboard Settings", icon: "⚙️" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id); if (tab.id === "drafts") refreshDrafts(); }}
-                className={`pb-4 px-4 sm:px-6 text-xs sm:text-sm font-semibold transition-all relative whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "text-violet-600 dark:text-violet-400 font-bold"
-                    : "text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                }`}
-              >
-                <span className="mr-1.5">{tab.icon}</span>
-                {tab.label}
-                {tab.badge ? (
-                  <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[9px] font-bold bg-violet-600 text-white rounded-full">{tab.badge}</span>
-                ) : null}
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-violet-500" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* RIGHT WORKSPACE */}
+        <div className="flex-grow w-full min-w-0 space-y-8">
 
         {/* ==================== TAB 1: LEADS LIST DATABASE ==================== */}
         {activeTab === "leads" && (
@@ -2481,14 +2551,36 @@ export default function AdminDashboard() {
                     <select
                       value={selectedLead.packageRequest}
                       onChange={(e) => {
-                        const updated = updateLead(selectedLead.id, {
-                          packageRequest: e.target.value,
-                          amountPaid: e.target.value === "Premium Report" ? 29 : e.target.value === "Growth Agency Plan" ? 199 : 0,
-                        });
-                        if (updated) {
-                          setSelectedLead(updated);
-                          refreshLeads();
-                        }
+                        const newVal = e.target.value;
+                        const newAmt = newVal === "Premium Report" ? 29 : newVal === "Growth Agency Plan" ? 199 : 0;
+                        const savedPasscode = sessionStorage.getItem("admin_passcode_saved") || settings.adminPasscode || "admin123";
+                        fetch("/api/leads", {
+                          method: "PUT",
+                          headers: {
+                            "Content-Type": "application/json",
+                            "x-admin-passcode": savedPasscode
+                          },
+                          body: JSON.stringify({
+                            id: selectedLead.id,
+                            updates: {
+                              packageRequest: newVal,
+                              amountPaid: newAmt,
+                            }
+                          })
+                        })
+                        .then(res => {
+                          if (res.ok) {
+                            setSelectedLead(prev => ({
+                              ...prev,
+                              packageRequest: newVal,
+                              amountPaid: newAmt
+                            }));
+                            refreshLeads();
+                          } else {
+                            alert("Failed to update service interest package.");
+                          }
+                        })
+                        .catch(console.error);
                       }}
                       className="w-full bg-zinc-950 px-3 py-2.5 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500 cursor-pointer"
                     >
@@ -2598,6 +2690,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        </div>
       </div>
     </div>
   );

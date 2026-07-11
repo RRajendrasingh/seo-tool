@@ -7,7 +7,7 @@ export default function PlatformFeatures() {
   const stats = [
     { value: "1,200+", label: "Sites Analyzed", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" /></svg>, color: "text-violet-400", bg: "bg-violet-500/10" },
     { value: "100%", label: "Core Web Vitals", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { value: "700+", label: "Cities Covered", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>, color: "text-amber-400", bg: "bg-amber-500/10" },
+    { value: "99%", label: "Audit Accuracy", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>, color: "text-amber-400", bg: "bg-amber-500/10" },
     { value: "20s", label: "Average Audit Time", icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, color: "text-cyan-400", bg: "bg-cyan-500/10" },
   ];
 
@@ -145,33 +145,33 @@ export default function PlatformFeatures() {
               </div>
             </div>
 
-            {/* Card 3: Local SEO Hub */}
+            {/* Card 3: Managed SEO Services */}
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-5 hover:border-amber-500/30 transition-all shadow-lg group relative overflow-hidden flex flex-col">
               <div className="absolute -inset-1 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity blur-xl rounded-3xl pointer-events-none" />
               <div className="bg-zinc-950 rounded-xl p-4 border border-zinc-800/80 flex items-center justify-between relative z-10 shadow-inner h-[100px]">
                 <div className="space-y-1">
-                  <div className="text-2xl font-black text-white">712<span className="text-xs text-amber-500">+</span></div>
-                  <div className="text-[9px] font-medium text-zinc-500 uppercase tracking-widest">Live Hubs</div>
+                  <div className="text-2xl font-black text-white">99%<span className="text-xs text-amber-500"> Rank</span></div>
+                  <div className="text-[9px] font-medium text-zinc-500 uppercase tracking-widest">Client Success</div>
                 </div>
                 <div className="space-y-1.5 text-right">
-                  <div className="text-[9px] text-zinc-400 flex justify-end gap-2 items-center"><span className="truncate max-w-[60px]">New York, NY</span> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/></div>
-                  <div className="text-[9px] text-zinc-400 flex justify-end gap-2 items-center"><span className="truncate max-w-[60px]">Los Angeles, CA</span> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/></div>
-                  <div className="text-[9px] text-zinc-400 flex justify-end gap-2 items-center"><span className="truncate max-w-[60px]">Chicago, IL</span> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/></div>
+                  <div className="text-[9px] text-zinc-400 flex justify-end gap-2 items-center"><span>Managed SEO</span> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/></div>
+                  <div className="text-[9px] text-zinc-400 flex justify-end gap-2 items-center"><span>Link Building</span> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/></div>
+                  <div className="text-[9px] text-zinc-400 flex justify-end gap-2 items-center"><span>On-Page Fixes</span> <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/></div>
                 </div>
               </div>
               <div className="flex-1 space-y-3 relative z-10">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-white">Local SEO Hubs</h3>
-                  <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">700+ Cities</span>
+                  <h3 className="text-sm font-bold text-white">SEO Services</h3>
+                  <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Managed Campaigns</span>
                 </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">Generate high-ranking local programmatic pages for any business instantly.</p>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">Boost domain authority and organic footprint with professional, fully-managed SEO services.</p>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  <span className="text-[9px] text-emerald-400 flex items-center gap-1"><span className="font-black text-xs">✓</span> Landing Pages</span>
-                  <span className="text-[9px] text-emerald-400 flex items-center gap-1"><span className="font-black text-xs">✓</span> Local Schema</span>
+                  <span className="text-[9px] text-emerald-400 flex items-center gap-1"><span className="font-black text-xs">✓</span> Auditing</span>
+                  <span className="text-[9px] text-emerald-400 flex items-center gap-1"><span className="font-black text-xs">✓</span> link Building</span>
                 </div>
               </div>
               <div className="pt-2 relative z-10">
-                <Link href="/seo-services/" className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1">Explore Map <span aria-hidden="true">&rarr;</span></Link>
+                <Link href="/services/" className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1">View Services <span aria-hidden="true">&rarr;</span></Link>
               </div>
             </div>
 

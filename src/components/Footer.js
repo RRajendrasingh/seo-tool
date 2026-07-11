@@ -26,6 +26,7 @@ export default function Footer() {
     { name: "SEO Audit Tool", href: "/audit/" },
     { name: "Success Stories", href: "/#case-studies" },
     { name: "FAQ", href: "/#faq" },
+    { name: "Contact Us", href: "/contact/" },
   ];
 
   return (
@@ -98,7 +99,6 @@ export default function Footer() {
           <div className="flex space-x-6 text-xs text-slate-400">
             <Link href="/privacy/" className="hover:text-slate-300">Privacy Policy</Link>
             <Link href="/terms/" className="hover:text-slate-300">Terms of Service</Link>
-            <Link href="/admin/" className="hover:text-slate-300">Admin Panel</Link>
           </div>
         </div>
       </div>

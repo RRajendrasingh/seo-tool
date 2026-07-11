@@ -18,7 +18,7 @@ test.describe('Free User & Guest QA Flow Verification', () => {
     await page.waitForTimeout(1500); // Hydration wait
     
     // Check main heading is visible
-    await expect(page.locator('h1')).toContainText('Dominate Google & AI Search Engines with');
+    await expect(page.locator('h1')).toContainText('Get Your Website Ready for Google AI & Conversational Search');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'free_test_step1_guest_homepage.png') });
 
     // 2. Submit URL for free audit scan

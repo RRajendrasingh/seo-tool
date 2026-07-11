@@ -101,7 +101,7 @@ export default function FloatingConsultantButton({ session }) {
     }
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
       setErrorMsg("Please enter your name.");
@@ -119,6 +119,24 @@ export default function FloatingConsultantButton({ session }) {
 
     setErrorMsg("");
     setIsOpen(false);
+
+    // Log the meeting request into the leads database table
+    try {
+      fetch("/api/contact/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          service: "Video Strategy Meet",
+          message: query || "Booked strategy call via floating button widget.",
+          source: "widget",
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to log consultant widget lead:", err);
+    }
+
     openCalendly(email, name, query);
   };
 

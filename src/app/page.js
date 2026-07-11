@@ -9,20 +9,20 @@ import VideoIntro from "@/components/home/VideoIntro";
 import LatestBlogs from "@/components/home/LatestBlogs";
 
 export const metadata = {
-  title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
-  description: "Analyze your website's ranking signals instantly. Get detailed AI action checklists, optimize for ChatGPT and Gemini citation grids, and capture local customers globally.",
+  title: "SEOIntellect AI | Technical Website Auditor, AEO/GEO Diagnostic Tool & SEO Services",
+  description: "Audit your website instantly for traditional SEO rankings, Core Web Vitals speed, and Generative Engine Optimization (GEO/AEO) to secure ChatGPT & Gemini citations.",
   keywords: [
     "AI SEO audit",
     "Generative Engine Optimization",
     "GEO",
     "AEO",
-    "local SEO agency",
+    "technical site auditor",
     "website speed audit",
-    "website audit tool"
+    "SEO services"
   ],
   openGraph: {
-    title: "SEOIntellect AI | AI-Powered SEO Audits & Local SEO Services",
-    description: "Analyze your website's ranking signals instantly. Get detailed AI action checklists, optimize for ChatGPT and Gemini citation grids, and capture local customers globally.",
+    title: "SEOIntellect AI | Technical Website Auditor, AEO/GEO Diagnostic Tool & SEO Services",
+    description: "Audit your website instantly for traditional SEO rankings, Core Web Vitals speed, and Generative Engine Optimization (GEO/AEO) to secure ChatGPT & Gemini citations.",
     type: "website",
     url: "https://seointellect-ai.vercel.app/",
     images: [
@@ -198,13 +198,13 @@ export default function Home() {
                 <span>5.0 Rating by 1,200+ Growth Teams</span>
               </div>
               <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15]">
-                Dominate Google & AI Search Engines with{" "}
+                Get Your Website Ready for{" "}
                 <span className="bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent">
-                  AI-Powered SEO Audits
+                  Google AI & Conversational Search
                 </span>
               </h1>
               <p className="text-base sm:text-lg leading-8 text-zinc-400 max-w-xl">
-                Instantly analyze your website’s ranking signals. Get detailed AI action checklists, prepare copy for ChatGPT citations, and capture local customers globally.
+                Traditional links are losing clicks. Audit your website instantly for technical speed bottlenecks, Core Web Vitals compliance, and Generative Engine Optimization (GEO/AEO) to secure citations in Gemini and ChatGPT.
               </p>
               <div className="flex flex-col xs:flex-row flex-wrap gap-3 pt-2">
                 <Link
@@ -372,7 +372,7 @@ export default function Home() {
               Affordable SEO Audit & GEO Monitoring Plans
             </h2>
             <p className="text-slate-400 max-w-lg mx-auto text-sm">
-              Choose the scale your digital operations require. No setup fees, cancel anytime.
+              Choose the plan duration that fits your project. No setup fees, no contracts.
             </p>
           </div>
 

@@ -101,6 +101,34 @@ export async function POST(req) {
         console.error("Stripe Webhook Database Error:", e);
       }
     }
+  } else if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object;
+    const customerId = subscription.customer;
+    if (customerId) {
+      try {
+        await query(
+          "UPDATE users SET subscription_tier = 'free', allowed_quota = 1 WHERE stripe_customer_id = ?",
+          [customerId]
+        );
+        console.log(`Stripe Webhook: Successfully downgraded user with customer ID ${customerId} due to subscription cancellation.`);
+      } catch (e) {
+        console.error("Stripe Webhook Cancellation Database Error:", e);
+      }
+    }
+  } else if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object;
+    const customerId = invoice.customer;
+    if (customerId && invoice.subscription) {
+      try {
+        await query(
+          "UPDATE users SET subscription_tier = 'free', allowed_quota = 1 WHERE stripe_customer_id = ?",
+          [customerId]
+        );
+        console.log(`Stripe Webhook: Successfully downgraded user with customer ID ${customerId} due to failed payment.`);
+      } catch (e) {
+        console.error("Stripe Webhook Failed Payment Database Error:", e);
+      }
+    }
   }
 
   return NextResponse.json({ received: true });

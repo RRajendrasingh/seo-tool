@@ -14,7 +14,7 @@ test.describe('SEO Tool User Behavior Tests', () => {
 
   test('should load the homepage and check main content elements', async ({ page }) => {
     // Check if the main heading is visible
-    await expect(page.locator('h1')).toContainText('Dominate Google & AI Search Engines with');
+    await expect(page.locator('h1')).toContainText('Get Your Website Ready for Google AI & Conversational Search');
 
     // Check if the "Launch SEO Auditor" button is visible and redirects to /audit/
     const auditorLink = page.getByRole('link', { name: 'Launch SEO Auditor' });
