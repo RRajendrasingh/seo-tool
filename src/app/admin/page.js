@@ -145,6 +145,7 @@ export default function AdminDashboard() {
           .then(res => res.json())
           .then(setLeads)
           .catch(console.error);
+        refreshUsers(savedPasscode);
         getAllPosts().then(setPosts).catch(console.error); // Fetch posts
         refreshRssSources();
       }
@@ -168,6 +169,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       setIsAuthenticated(true);
       setLeads(data);
+      refreshUsers(passcode);
       getAllPosts().then(setPosts).catch(console.error);
       refreshRssSources();
       sessionStorage.setItem("admin_authenticated", "true");
@@ -193,6 +195,7 @@ export default function AdminDashboard() {
       .then(res => res.json())
       .then(setLeads)
       .catch(console.error);
+    refreshUsers(savedPasscode);
   };
 
   const refreshPosts = () => {
@@ -679,6 +682,10 @@ export default function AdminDashboard() {
   // Filter & Search Logic
   const filteredLeads = leads
     .filter((l) => {
+      // Exclude contact page/widget submissions from leads database
+      const isQuery = l.website === "contact-page" || l.website === "consultancy-widget";
+      if (isQuery) return false;
+
       const matchesSearch =
         l.name.toLowerCase().includes(search.toLowerCase()) ||
         l.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -710,15 +717,44 @@ export default function AdminDashboard() {
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
+  const filteredQueries = leads
+    .filter((l) => {
+      // ONLY include contact queries
+      const isQuery = l.website === "contact-page" || l.website === "consultancy-widget";
+      if (!isQuery) return false;
+
+      const matchesSearch =
+        l.name.toLowerCase().includes(search.toLowerCase()) ||
+        l.email.toLowerCase().includes(search.toLowerCase()) ||
+        (l.notes && l.notes.toLowerCase().includes(search.toLowerCase())) ||
+        l.packageRequest.toLowerCase().includes(search.toLowerCase());
+
+      const matchesStatus = statusFilter === "All" || l.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const filteredUsers = users
+    .filter((u) => {
+      const matchesSearch =
+        !search ||
+        (u.full_name && u.full_name.toLowerCase().includes(search.toLowerCase())) ||
+        u.email.toLowerCase().includes(search.toLowerCase()) ||
+        u.subscription_tier.toLowerCase().includes(search.toLowerCase());
+      return matchesSearch;
+    });
+
   // Calculate Dashboard KPI stats
-  const totalLeadsCount = leads.length;
-  const closedWonLeads = leads.filter((l) => l.status === "Closed Won");
-  const totalPaidRevenue = leads.reduce((sum, l) => sum + parseFloat(l.amountPaid || 0), 0);
+  const auditLeads = leads.filter(l => l.website !== "contact-page" && l.website !== "consultancy-widget");
+  const totalLeadsCount = auditLeads.length;
+  const closedWonLeads = auditLeads.filter((l) => l.status === "Closed Won");
+  const totalPaidRevenue = auditLeads.reduce((sum, l) => sum + parseFloat(l.amountPaid || 0), 0);
   const conversionRate = totalLeadsCount
     ? Math.round((closedWonLeads.length / totalLeadsCount) * 100)
     : 0;
 
-  const validScoreLeads = leads.filter((l) => l.seoScore > 0);
+  const validScoreLeads = auditLeads.filter((l) => l.seoScore > 0);
   const averageSeoScore = validScoreLeads.length
     ? Math.round(validScoreLeads.reduce((sum, l) => sum + Number(l.seoScore || 0), 0) / validScoreLeads.length)
     : 0;
@@ -876,6 +912,8 @@ export default function AdminDashboard() {
             <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-1.5 md:gap-2 no-scrollbar" aria-label="Sidebar Navigation">
               {[
                 { id: "leads", label: "Leads Database", icon: "📊" },
+                { id: "users", label: "Users Database", icon: "👥" },
+                { id: "queries", label: "Queries Database", icon: "✉️" },
                 { id: "analytics", label: "Visual Analytics", icon: "📈" },
                 { id: "blog", label: "Manage Blog", icon: "📰" },
                 { id: "drafts", label: "Auto-Drafts", icon: "📥", badge: drafts.length || null },
@@ -1147,6 +1185,185 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* ==================== TAB: USERS DATABASE ==================== */}
+        {activeTab === "users" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-white">Registered Users Database</h2>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Manage registered user accounts, active subscription tiers, and audit quotas.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-zinc-850 text-left text-xs">
+                  <thead className="bg-zinc-950 text-zinc-400 font-bold uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="px-6 py-4">Name</th>
+                      <th className="px-6 py-4">Email Address</th>
+                      <th className="px-6 py-4">Auth Provider</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Subscription Tier</th>
+                      <th className="px-6 py-4">Allowed Quota</th>
+                      <th className="px-6 py-4">Registration Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <tr key={user.id} className="hover:bg-zinc-900/10 transition-colors">
+                          <td className="px-6 py-4 font-semibold text-white">
+                            {user.full_name || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 text-zinc-450">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center rounded-md bg-zinc-950/80 px-2.5 py-0.5 text-[10px] font-bold text-zinc-400 ring-1 ring-inset ring-zinc-800">
+                              {user.auth_provider || "local"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${
+                              user.email_verified
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            }`}>
+                              {user.email_verified ? "Verified" : "Pending"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi"
+                                ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                                : "bg-zinc-800 text-zinc-500 border border-zinc-750"
+                            }`}>
+                              {user.subscription_tier || "free"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 font-mono font-bold text-white">
+                            {user.allowed_quota ?? 1} audits
+                          </td>
+                          <td className="px-6 py-4 text-zinc-450 font-mono text-[10px]">
+                            {new Date(user.created_at).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="px-6 py-12 text-center text-zinc-500">
+                          <span className="text-xl block mb-2">👥</span>
+                          No user accounts found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB: QUERIES DATABASE ==================== */}
+        {activeTab === "queries" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-white">User Form Queries Database</h2>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Review and manage customer queries, contact form submissions, and widget appointments.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-zinc-850 text-left text-xs">
+                  <thead className="bg-zinc-950 text-zinc-400 font-bold uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="px-6 py-4">Sender Detail</th>
+                      <th className="px-6 py-4">Source Channel</th>
+                      <th className="px-6 py-4">Inquiry Category</th>
+                      <th className="px-6 py-4">Inquiry Message / Notes</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Submission Date</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+                    {filteredQueries.length > 0 ? (
+                      filteredQueries.map((queryItem) => (
+                        <tr key={queryItem.id} className="hover:bg-zinc-900/10 transition-colors">
+                          <td className="px-6 py-4 text-left">
+                            <div className="space-y-1">
+                              <span className="font-bold text-white block">{queryItem.name}</span>
+                              <span className="text-[10px] text-zinc-400 block">{queryItem.email}</span>
+                              {queryItem.phone && queryItem.phone !== "Not Provided" && (
+                                <span className="text-[10px] text-zinc-500 font-mono block">{queryItem.phone}</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center rounded-md bg-zinc-950/80 px-2.5 py-0.5 text-[10px] font-bold text-cyan-400 ring-1 ring-inset ring-cyan-500/20">
+                              {queryItem.website === "consultancy-widget" ? "Widget Hub" : "Contact Us Page"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-zinc-200 font-medium">
+                            {queryItem.packageRequest}
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-zinc-450 leading-relaxed line-clamp-3 max-w-sm whitespace-pre-wrap">
+                              {queryItem.notes || "No message detail provided."}
+                            </p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${getStatusBadgeClass(queryItem.status)}`}>
+                              {queryItem.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-zinc-450 font-mono text-[10px]">
+                            {new Date(queryItem.date).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => handleOpenLeadDetails(queryItem)}
+                              className="rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1.5 font-semibold text-[10px] tracking-wide uppercase transition-all"
+                            >
+                              Manage
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="px-6 py-12 text-center text-zinc-500">
+                          <span className="text-xl block mb-2">✉️</span>
+                          No inquiries found matching your filter options.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
 
