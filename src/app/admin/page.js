@@ -2654,20 +2654,20 @@ export default function AdminDashboard() {
         {/* ==================== MODAL DIALOG: LEAD DETAILS ==================== */}
         {selectedLead && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs">
-            <div className="w-full max-w-2xl rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8 space-y-6 relative shadow-2xl animate-scale-up text-left max-h-[90vh] overflow-y-auto">
+            <div className="w-full max-w-2xl rounded-2xl border border-zinc-800 bg-zinc-950 p-5 space-y-4 relative shadow-2xl animate-scale-up text-left max-h-[80vh] overflow-y-auto">
               
               <button
                 onClick={() => setSelectedLead(null)}
-                className="absolute top-5 right-5 text-zinc-500 hover:text-white"
+                className="absolute top-4 right-4 w-7 h-7 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-500 hover:text-white transition-colors bg-zinc-950/40"
               >
                 ✕
               </button>
 
-              <div className="border-b border-zinc-800 pb-4">
+              <div className="border-b border-zinc-850 pb-3">
                 <span className="text-xxs uppercase tracking-wider font-bold text-violet-400">
                   Lead Details & Remarks
                 </span>
-                <h3 className="text-xl font-bold text-white mt-1">
+                <h3 className="text-lg font-bold text-white mt-0.5">
                   {selectedLead.name}
                 </h3>
                 <p className="text-xxs text-zinc-500 font-mono mt-0.5">
@@ -2676,17 +2676,17 @@ export default function AdminDashboard() {
               </div>
 
               {/* Detail fields grids */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 {/* Column 1: Contact Details */}
-                <div className="space-y-4">
-                  <h4 className="text-[10px] uppercase font-extrabold text-zinc-450 tracking-wider">
+                <div className="space-y-2">
+                  <h4 className="text-[10px] uppercase font-extrabold text-zinc-500 tracking-wider">
                     Contact & Website
                   </h4>
-                  <div className="bg-zinc-950 border border-zinc-850 p-4 rounded-xl space-y-3 text-xs">
+                  <div className="bg-zinc-950 border border-zinc-850/60 p-3 rounded-xl space-y-2 text-xs">
                     <div>
                       <span className="text-zinc-600 block text-[9px] uppercase font-bold">Email Address</span>
-                      <span className="text-zinc-200 font-mono select-all block">{selectedLead.email}</span>
+                      <span className="text-zinc-200 font-mono select-all block break-all">{selectedLead.email}</span>
                     </div>
                     <div>
                       <span className="text-zinc-600 block text-[9px] uppercase font-bold">Phone Number</span>
@@ -2698,7 +2698,7 @@ export default function AdminDashboard() {
                         href={`https://${selectedLead.website}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-violet-400 hover:underline font-mono select-all block"
+                        className="text-violet-400 hover:underline font-mono select-all block break-all"
                       >
                         {selectedLead.website} ↗
                       </a>
@@ -2707,27 +2707,27 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Column 2: Audit Performance */}
-                <div className="space-y-4">
-                  <h4 className="text-[10px] uppercase font-extrabold text-zinc-450 tracking-wider">
+                <div className="space-y-2">
+                  <h4 className="text-[10px] uppercase font-extrabold text-zinc-500 tracking-wider">
                     SEO Audit summary
                   </h4>
-                  <div className="bg-zinc-950 border border-zinc-850 p-4 rounded-xl flex items-center justify-around gap-4">
+                  <div className="bg-zinc-950 border border-zinc-850/60 p-3 rounded-xl flex items-center justify-around gap-3 h-[118px]">
                     <div className="text-center">
                       <span className="text-zinc-600 block text-[9px] uppercase font-bold mb-1">Grade</span>
-                      <span className={`inline-flex items-center justify-center rounded-2xl border text-3xl font-extrabold h-16 w-16 shadow-md ${getScoreBadgeClass(selectedLead.seoScore)}`}>
+                      <span className={`inline-flex items-center justify-center rounded-xl border text-2xl font-extrabold h-12 w-12 shadow-md ${getScoreBadgeClass(selectedLead.seoScore)}`}>
                         {selectedLead.grade === "Pending" ? "-" : selectedLead.grade}
                       </span>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5 min-w-0">
                       <div>
                         <span className="text-zinc-650 text-[9px] uppercase font-bold block">Calculated Score</span>
                         <span className="text-xs font-mono font-bold text-white">
-                          {selectedLead.seoScore > 0 ? `${selectedLead.seoScore}% / 100` : "Pending audit execution"}
+                          {selectedLead.seoScore > 0 ? `${selectedLead.seoScore}% / 100` : "Pending audit"}
                         </span>
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <span className="text-zinc-650 text-[9px] uppercase font-bold block">Interested Package</span>
-                        <span className="text-xs font-semibold text-zinc-300 block">
+                        <span className="text-[11px] font-semibold text-zinc-300 block truncate">
                           {selectedLead.packageRequest}
                         </span>
                       </div>
@@ -2738,20 +2738,20 @@ export default function AdminDashboard() {
               </div>
 
               {/* Status & Remarks update */}
-              <div className="space-y-4 pt-2 border-t border-zinc-800">
-                <h4 className="text-[10px] uppercase font-extrabold text-zinc-450 tracking-wider">
+              <div className="space-y-3 pt-3 border-t border-zinc-850">
+                <h4 className="text-[10px] uppercase font-extrabold text-zinc-500 tracking-wider">
                   Lead Management Actions
                 </h4>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
                   <div className="sm:col-span-1">
-                    <label className="block text-xxs font-bold text-zinc-500 uppercase mb-1.5 pl-0.5">
+                    <label className="block text-xxs font-bold text-zinc-500 uppercase mb-1 pl-0.5">
                       Lead Pipeline Stage
                     </label>
                     <select
                       value={leadStatus}
                       onChange={(e) => setLeadStatus(e.target.value)}
-                      className="w-full bg-zinc-950 px-3 py-2.5 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500 cursor-pointer"
+                      className="w-full bg-zinc-950 px-2.5 py-2 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500 cursor-pointer"
                     >
                       <option value="New">New</option>
                       <option value="Contacted">Contacted</option>
@@ -2762,7 +2762,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-xxs font-bold text-zinc-500 uppercase mb-1.5 pl-0.5">
+                    <label className="block text-xxs font-bold text-zinc-500 uppercase mb-1 pl-0.5">
                       Service Interest Package (Change)
                     </label>
                     <select
@@ -2799,7 +2799,7 @@ export default function AdminDashboard() {
                         })
                         .catch(console.error);
                       }}
-                      className="w-full bg-zinc-950 px-3 py-2.5 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500 cursor-pointer"
+                      className="w-full bg-zinc-950 px-2.5 py-2 rounded-xl border border-zinc-850 text-xs text-zinc-300 focus:outline-none focus:border-violet-500 cursor-pointer"
                     >
                       <option value="Free Audit">Free Audit ($0)</option>
                       <option value="Premium Report">Premium Report ($29)</option>
@@ -2809,41 +2809,41 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-xxs font-bold text-zinc-500 uppercase mb-1.5 pl-0.5">
+                  <label className="block text-xxs font-bold text-zinc-500 uppercase mb-1 pl-0.5">
                     Follow-up remarks & Admin notes
                   </label>
                   <textarea
-                    rows="4"
+                    rows="2"
                     placeholder="Enter sales outreach remarks, meeting schedules, or client preferences here..."
                     value={leadNotes}
                     onChange={(e) => setLeadNotes(e.target.value)}
-                    className="w-full bg-zinc-950 px-4 py-3 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500 resize-none font-sans"
+                    className="w-full bg-zinc-950 px-3 py-2 rounded-xl border border-zinc-850 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-violet-500 resize-none font-sans"
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-zinc-800 flex flex-col sm:flex-row justify-between gap-4">
+              <div className="pt-3 border-t border-zinc-850 flex flex-col sm:flex-row justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => handleDeleteLead(selectedLead.id)}
-                  className="rounded-xl border border-rose-900/40 bg-rose-950/5 hover:bg-rose-950/15 text-rose-450 hover:text-rose-400 px-5 py-3 text-xs font-semibold transition-all cursor-pointer text-center"
+                  className="rounded-xl border border-rose-900/40 bg-rose-950/5 hover:bg-rose-950/15 text-rose-450 hover:text-rose-400 px-4 py-2.5 text-xs font-semibold transition-all cursor-pointer text-center"
                 >
-                  🗑️ Delete Lead Record
+                  🗑️ Delete Record
                 </button>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2.5 justify-end">
                   <button
                     type="button"
                     onClick={() => setSelectedLead(null)}
-                    className="rounded-xl border border-zinc-750 bg-zinc-900 px-5 py-3 text-xs font-semibold text-zinc-400 hover:text-white transition-all cursor-pointer"
+                    className="rounded-xl border border-zinc-750 bg-zinc-900 px-4 py-2.5 text-xs font-semibold text-zinc-400 hover:text-white transition-all cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleSaveLeadChanges}
-                    className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                    className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                   >
                     Save Changes
                   </button>
@@ -2853,6 +2853,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
 
         {/* ==================== DRAFT PREVIEW MODAL ==================== */}
         {draftPreview && (
