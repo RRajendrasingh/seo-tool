@@ -91,9 +91,12 @@ body {
   background-image: radial-gradient(circle at 50% -20%, #ffffff 0%, #f8fafc 100%) !important;
 }
 
-/* Allow sticky sidebar on admin page by overriding main tag clip */
+/* Allow sticky sidebar on admin page by overriding html, body, and main tag clip */
+html:has(.admin-container),
+body:has(.admin-container),
 main:has(.admin-container) {
   overflow: visible !important;
+  overflow-x: visible !important;
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────── */

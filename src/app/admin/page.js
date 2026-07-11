@@ -708,9 +708,18 @@ export default function AdminDashboard() {
       `"${(u.full_name || "").replace(/"/g, '""')}"`,
       u.email,
       u.auth_provider || "local",
-      u.email_verified ? "Verified" : "Pending",
-      u.subscription_tier || "free",
-      u.allowed_quota ?? 1,
+      u.subscription_tier === "weekly"
+        ? "weekly pro"
+        : u.subscription_tier === "agency"
+        ? "agency owner"
+        : u.subscription_tier === "multi"
+        ? "agency multi"
+        : u.allowed_quota > 0
+        ? "starter report"
+        : "free",
+      u.subscription_tier === "weekly" || u.subscription_tier === "agency" || u.subscription_tier === "multi" || (u.allowed_quota && u.allowed_quota > 0)
+        ? `${u.allowed_quota || 0} premium`
+        : "2 free",
       u.created_at
     ]);
     downloadCSV(headers, rows, `seointellect_users_${new Date().toISOString().split("T")[0]}.csv`);
@@ -968,7 +977,8 @@ export default function AdminDashboard() {
                 { id: "users", label: "Users Database", icon: "👥" },
                 { id: "queries", label: "Queries Database", icon: "✉️" },
                 { id: "analytics", label: "Visual Analytics", icon: "📈" },
-                { id: "blog", label: "Manage Blog", icon: "📰" },
+                { id: "blog", label: "Write Article", icon: "✍️" },
+                { id: "news-directory", label: "All News", icon: "📰" },
                 { id: "drafts", label: "Auto-Drafts", icon: "📥", badge: drafts.length || null },
                 { id: "sources", label: "RSS Sources", icon: "🌐" },
                 { id: "settings", label: "Dashboard Settings", icon: "⚙️" },
@@ -1308,13 +1318,25 @@ export default function AdminDashboard() {
                             <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi"
                                 ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                                : user.allowed_quota > 0
+                                ? "bg-violet-500/10 text-violet-400 border border-violet-500/20"
                                 : "bg-zinc-800 text-zinc-500 border border-zinc-750"
                             }`}>
-                              {user.subscription_tier || "free"}
+                              {user.subscription_tier === "weekly"
+                                ? "weekly pro"
+                                : user.subscription_tier === "agency"
+                                ? "agency owner"
+                                : user.subscription_tier === "multi"
+                                ? "agency multi"
+                                : user.allowed_quota > 0
+                                ? "starter report"
+                                : "free"}
                             </span>
                           </td>
                           <td className="px-6 py-4 font-mono font-bold text-white">
-                            {user.allowed_quota ?? 1} audits
+                            {user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi" || (user.allowed_quota && user.allowed_quota > 0)
+                              ? `${user.allowed_quota || 0} premium`
+                              : "2 free"}
                           </td>
                           <td className="px-6 py-4 text-zinc-450 font-mono text-[10px]">
                             {new Date(user.created_at).toLocaleDateString(undefined, {
@@ -2315,10 +2337,40 @@ export default function AdminDashboard() {
 
         {/* ==================== TAB: BLOG CMS ==================== */}
         {activeTab === "blog" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
+          <div className="max-w-4xl mx-auto w-full space-y-6 text-left">
             
-            {/* Publisher Form (8 columns) */}
-            <div id="blog-editor-form" className="lg:col-span-8 rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
+            {/* CMS Stats & SEO Checklist Header Widget */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 flex items-center justify-between shadow-lg">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">Total Articles</span>
+                  <span className="text-2xl font-extrabold text-violet-400 block">{posts.length}</span>
+                </div>
+                <div className="text-3xl p-2.5 bg-violet-600/10 rounded-xl text-violet-400">📰</div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 flex items-center justify-between shadow-lg">
+                <div className="min-w-0 space-y-1 flex-grow">
+                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">Featured Post</span>
+                  <span className="text-xs font-bold text-emerald-450 block truncate" title={posts.find(p => p.featured)?.title || "None"}>
+                    {posts.find(p => p.featured)?.title || "None"}
+                  </span>
+                </div>
+                <div className="text-3xl p-2.5 bg-emerald-600/10 rounded-xl text-emerald-450 flex-shrink-0">★</div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 flex flex-col justify-center shadow-lg text-left">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">📋 SEO Playbook Tip</span>
+                  <p className="text-[10px] text-zinc-450 leading-relaxed font-medium">
+                    Write short descriptions between 120-160 chars and use H2/H3 tags in the body content.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Publisher Form (Full-width) */}
+            <div id="blog-editor-form" className="w-full rounded-2xl border border-zinc-850 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md space-y-6">
               <div className="space-y-1.5">
                 <h2 className="text-lg font-bold text-white">
                   {editingPostId ? "Edit Article" : "Create New Article"}
@@ -2559,167 +2611,188 @@ export default function AdminDashboard() {
                 </div>
               </form>
             </div>
+          </div>
+        )}
 
-            {/* Published Posts Directory (4 columns) */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
-              
-              {/* Directory list card */}
-              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 flex-grow max-h-[600px] overflow-y-auto font-sans">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-white">Active News Articles</h3>
-                  <p className="text-xxs text-zinc-500 leading-normal">
-                    Management directory of active publications. You can edit or delete posts instantly.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 w-full bg-zinc-955 px-3 py-2 rounded-xl border border-zinc-850 focus-within:border-violet-500 transition-all mt-2">
-                  <svg
-                    className="h-3 w-3 text-zinc-650 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="Search articles by title..."
-                    value={blogSearch}
-                    onChange={(e) => setBlogSearch(e.target.value)}
-                    className="w-full bg-transparent border-0 p-0 text-xxs text-white placeholder-zinc-600 focus:outline-none focus:ring-0"
-                  />
-                  {blogSearch && (
-                    <button
-                      type="button"
-                      onClick={() => setBlogSearch("")}
-                      className="text-[9px] font-bold text-zinc-500 hover:text-white flex-shrink-0"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-
-                <div className="space-y-3 pt-4 border-t border-zinc-850/60">
-                  {(() => {
-                    const filtered = posts.filter(
-                      (p) =>
-                        !blogSearch ||
-                        p.title.toLowerCase().includes(blogSearch.toLowerCase()) ||
-                        p.slug.toLowerCase().includes(blogSearch.toLowerCase())
-                    );
-                    if (filtered.length > 0) {
-                      return filtered.map((post) => (
-                        <div
-                          key={post.id}
-                          className="rounded-xl border border-zinc-850/80 bg-zinc-950/40 p-3.5 flex justify-between items-center gap-4 hover:border-zinc-800 transition-all relative group"
-                        >
-                          <div className="flex items-center gap-3 flex-grow min-w-0">
-                            {post.featuredImage ? (
-                              <img
-                                src={post.featuredImage}
-                                alt=""
-                                className="w-10 h-7 object-cover rounded border border-zinc-800 flex-shrink-0"
-                              />
-                            ) : (
-                              <div className="w-10 h-7 bg-zinc-900 rounded border border-zinc-800 flex-shrink-0 flex items-center justify-center text-[10px]">
-                                🖼️
-                              </div>
-                            )}
-                            <div className="min-w-0 space-y-0.5 text-left">
-                              <h4 className="text-xs font-bold text-white line-clamp-1">{post.title}</h4>
-                              <p className="text-[9px] font-mono text-zinc-500">{post.date}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-1.5 flex-shrink-0">
-                            <button
-                              onClick={() => handleEditPost(post)}
-                              className="text-xxs text-violet-400 hover:text-violet-300 font-bold border border-violet-950/20 hover:border-violet-900/40 hover:bg-violet-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
-                              title="Edit Post"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeletePost(post.id)}
-                              className="text-xxs text-rose-500 hover:text-rose-400 font-bold border border-rose-950/20 hover:border-rose-900/40 hover:bg-rose-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
-                              title="Delete Post"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ));
-                    } else {
-                      return (
-                        <div className="text-center py-12 text-zinc-500 text-xs">
-                          {blogSearch ? `No articles matching "${blogSearch}"` : "No published articles in database."}
-                        </div>
-                      );
-                    }
-                  })()}
-                </div>
+        {/* ==================== TAB: ALL NEWS DIRECTORY ==================== */}
+        {activeTab === "news-directory" && (
+          <div className="space-y-6 text-left">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-white">Published News Articles</h2>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Manage all news posts currently published on your website. Edit, search, or delete articles instantly.
+                </p>
               </div>
-
-              {/* Sidebar Stats & SEO Checklist (fills the RHS blank space) */}
-              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-6">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-white">CMS Stats &amp; SEO Checklist</h3>
-                  <p className="text-xxs text-zinc-500 leading-normal">
-                    Quick stats and SEO guidelines for publishing.
-                  </p>
-                </div>
-
-                {/* Mini Stats */}
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-zinc-850/60">
-                  <div className="bg-zinc-950/40 border border-zinc-850/60 p-3 rounded-xl">
-                    <span className="text-[10px] text-zinc-500 uppercase font-bold block">Total Posts</span>
-                    <span className="text-lg font-extrabold text-violet-400 block mt-0.5">{posts.length}</span>
-                  </div>
-                  <div className="bg-zinc-950/40 border border-zinc-850/60 p-3 rounded-xl">
-                    <span className="text-[10px] text-zinc-500 uppercase font-bold block">Featured Slot</span>
-                    <span className="text-xxs font-semibold text-emerald-400 block mt-1.5 line-clamp-1" title={posts.find(p => p.featured)?.title || "None"}>
-                      {posts.find(p => p.featured)?.title || "None"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* SEO Checklist */}
-                <div className="space-y-3 pt-4 border-t border-zinc-850/60">
-                  <span className="text-[10px] uppercase font-bold text-zinc-450 tracking-wider block">
-                    📋 SEO Publishing Playbook
-                  </span>
-                  <ul className="space-y-2 text-xxs text-zinc-400 pl-0.5">
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
-                      <span>URL slugs should be lowercase, using hyphens (no spaces).</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
-                      <span>Short description ideal length: 120-160 characters.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
-                      <span>Organize long-form body text with Heading H2/H3 tags.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
-                      <span>Resize or compress large images (WebP is recommended).</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 font-bold flex-shrink-0">✓</span>
-                      <span>Add internal anchor links to drive visitor conversions.</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
+              <button
+                onClick={() => {
+                  setEditingPostId(null);
+                  setPostTitle("");
+                  setPostSlug("");
+                  setPostCategory("Core Updates");
+                  setCustomCategory("");
+                  setPostFeaturedImage("");
+                  setPostDesc("");
+                  setPostContent("");
+                  setPostFeatured(false);
+                  setActiveTab("blog");
+                }}
+                className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-semibold text-white shadow-md hover:from-violet-500 hover:to-fuchsia-500 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                ✍️ Write New Article
+              </button>
             </div>
 
+            {/* CMS Stats & SEO Checklist Header Widget */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 flex items-center justify-between shadow-lg">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">Total Articles</span>
+                  <span className="text-2xl font-extrabold text-violet-400 block">{posts.length}</span>
+                </div>
+                <div className="text-3xl p-2.5 bg-violet-600/10 rounded-xl text-violet-400">📰</div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 flex items-center justify-between shadow-lg">
+                <div className="min-w-0 space-y-1 flex-grow">
+                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">Featured Post</span>
+                  <span className="text-xs font-bold text-emerald-450 block truncate" title={posts.find(p => p.featured)?.title || "None"}>
+                    {posts.find(p => p.featured)?.title || "None"}
+                  </span>
+                </div>
+                <div className="text-3xl p-2.5 bg-emerald-600/10 rounded-xl text-emerald-400 flex-shrink-0">★</div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 p-5 flex flex-col justify-center shadow-lg text-left">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider block">📋 SEO Playbook Tip</span>
+                  <p className="text-[10px] text-zinc-450 leading-relaxed font-medium">
+                    Write short descriptions between 120-160 chars and use H2/H3 tags in the body content.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Search row */}
+            <div className="flex items-center gap-2.5 w-full max-w-md bg-zinc-900/30 px-3.5 py-2.5 rounded-xl border border-zinc-850 focus-within:border-violet-500 transition-all">
+              <svg className="h-4 w-4 text-zinc-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search articles by title or slug..."
+                value={blogSearch}
+                onChange={(e) => setBlogSearch(e.target.value)}
+                className="w-full bg-transparent border-0 p-0 text-xs text-white placeholder-zinc-650 focus:outline-none focus:ring-0"
+              />
+              {blogSearch && (
+                <button type="button" onClick={() => setBlogSearch("")} className="text-xs font-bold text-zinc-500 hover:text-white flex-shrink-0">
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-zinc-850 text-left text-xs">
+                  <thead className="bg-zinc-950 text-zinc-400 font-bold uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="px-6 py-4">Article Title</th>
+                      <th className="px-6 py-4">Category</th>
+                      <th className="px-6 py-4">Author</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Publish Date</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+                    {(() => {
+                      const filtered = posts.filter(
+                        (p) =>
+                          !blogSearch ||
+                          p.title.toLowerCase().includes(blogSearch.toLowerCase()) ||
+                          p.slug.toLowerCase().includes(blogSearch.toLowerCase())
+                      );
+                      if (filtered.length > 0) {
+                        return filtered.map((post) => (
+                          <tr key={post.id} className="hover:bg-zinc-900/10 transition-colors">
+                            <td className="px-6 py-4 text-left">
+                              <div className="flex items-center gap-3">
+                                {post.featuredImage ? (
+                                  <img
+                                    src={post.featuredImage}
+                                    alt=""
+                                    className="w-12 h-8 object-cover rounded border border-zinc-800 flex-shrink-0"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-8 bg-zinc-950 rounded border border-zinc-800 flex-shrink-0 flex items-center justify-center text-xs">
+                                    🖼️
+                                  </div>
+                                )}
+                                <div className="min-w-0 space-y-0.5">
+                                  <span className="font-bold text-white block truncate max-w-sm">{post.title}</span>
+                                  <span className="text-[10px] text-zinc-500 font-mono block truncate max-w-sm">/{post.slug}/</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="inline-flex items-center rounded-md bg-zinc-950/80 px-2 py-0.5 text-[9px] font-bold text-zinc-450 ring-1 ring-inset ring-zinc-800">
+                                {post.category || "General"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-zinc-300 font-semibold">
+                              {post.author}
+                            </td>
+                            <td className="px-6 py-4">
+                              {post.featured ? (
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                                  ★ Featured
+                                </span>
+                              ) : (
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-zinc-800 text-zinc-400 border border-zinc-750">
+                                  Standard
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-zinc-450 font-mono text-[10px]">
+                              {post.date}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => {
+                                    handleEditPost(post);
+                                    setActiveTab("blog");
+                                  }}
+                                  className="text-[10px] text-violet-400 hover:text-violet-300 font-bold border border-violet-950/20 hover:border-violet-900/40 hover:bg-violet-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="text-[10px] text-rose-500 hover:text-rose-400 font-bold border border-rose-950/20 hover:border-rose-900/40 hover:bg-rose-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ));
+                      } else {
+                        return (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-12 text-center text-zinc-500">
+                              <span className="text-xl block mb-2">📰</span>
+                              {blogSearch ? `No articles matching "${blogSearch}"` : "No published articles in database."}
+                            </td>
+                          </tr>
+                        );
+                      }
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
 

@@ -253,7 +253,17 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                 <div>
                   <h2 className="text-sm font-bold text-slate-200">Your Audit History</h2>
                   <p className="text-[10px] text-slate-500">
-                    Tier: <span className="capitalize font-bold text-violet-400">{user.subscription_tier}</span>
+                    Tier: <span className="capitalize font-bold text-violet-400">
+                      {user.subscription_tier === "weekly"
+                        ? "weekly pro"
+                        : user.subscription_tier === "agency"
+                        ? "agency owner"
+                        : user.subscription_tier === "multi"
+                        ? "agency multi"
+                        : user.allowed_quota > 0
+                        ? "starter report"
+                        : "free"}
+                    </span>
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
