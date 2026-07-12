@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { citiesDb } from "@/data/cities";
 import GoogleSerpPreview from "./GoogleSerpPreview";
 import InteractiveEstimator from "./InteractiveEstimator";
-import GeoGridSimulator from "./GeoGridSimulator";
 
 // Generates static paths for all cities during build time (Next.js Static Export requirement)
 export async function generateStaticParams() {
@@ -281,10 +280,6 @@ export default async function LocationPage({ params }) {
           <InteractiveEstimator cityName={city.name} />
         </div>
 
-        {/* Google Map Proximity Geo-Grid Simulator */}
-        <div className="mx-auto max-w-5xl px-6 py-6 relative z-10">
-          <GeoGridSimulator cityName={city.name} />
-        </div>
 
         {/* Simple 3-Step Process */}
         <div className="mx-auto max-w-5xl px-6 py-12 relative z-10 border-t border-zinc-900/60 [.light_&]:border-slate-200">
