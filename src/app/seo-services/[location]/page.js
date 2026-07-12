@@ -164,7 +164,7 @@ export default async function LocationPage({ params }) {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[400px] bg-gradient-to-b from-violet-600/5 via-fuchsia-600/3 to-transparent blur-[120px] pointer-events-none rounded-full" />
         
         {/* Hero Section */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-16 pb-12 sm:pt-20 lg:pt-24 lg:pb-16 lg:px-8 relative z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-12 sm:pt-8 lg:pt-10 lg:pb-16 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
             {/* Left Panel: Dynamic Copy & Forms */}
