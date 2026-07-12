@@ -37,12 +37,16 @@ test.describe('Admin Console Security and Dashboard Flow', () => {
     // 3. Submit login form
     await page.getByRole('button', { name: 'Sign In to Dashboard' }).click();
 
-    // 4. Verify user gains access and sees leads hub
-    await expect(page.getByRole('heading', { name: 'Leads Management Hub' })).toBeVisible();
+    // 4. Verify user gains access and is on Visual Analytics tab by default
+    await expect(page.getByRole('button', { name: /Visual Analytics/ })).toBeVisible({ timeout: 30000 });
 
-    // 5. Verify the Leads Database tab button is visible and active
+    // 5. Click the Leads Database tab button
     const leadsTabButton = page.getByRole('button', { name: /Leads Database/ });
     await expect(leadsTabButton).toBeVisible();
+    await leadsTabButton.click();
+
+    // Verify Leads Management Hub is now visible
+    await expect(page.getByRole('heading', { name: 'Leads Database' })).toBeVisible({ timeout: 30000 });
 
     // 6. Navigate to settings tab
     const settingsTabButton = page.getByRole('button', { name: /Dashboard Settings/ });

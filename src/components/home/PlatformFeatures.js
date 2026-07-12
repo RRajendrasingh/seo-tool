@@ -218,8 +218,8 @@ export default function PlatformFeatures() {
                 </div>
                 <pre className="text-[8px] text-zinc-400 font-mono leading-relaxed select-none">
                   <span className="text-pink-400">export const</span> <span className="text-cyan-400">metadata</span> = {'{'}<br/>
-                  &nbsp;&nbsp;<span className="text-amber-300">title</span>: <span className="text-emerald-300">"Optimized Title"</span>,<br/>
-                  &nbsp;&nbsp;<span className="text-amber-300">description</span>: <span className="text-emerald-300">"AI-ready desc"</span><br/>
+                  &nbsp;&nbsp;<span className="text-amber-300">title</span>: <span className="text-emerald-300">&quot;Optimized Title&quot;</span>,<br/>
+                  &nbsp;&nbsp;<span className="text-amber-300">description</span>: <span className="text-emerald-300">&quot;AI-ready desc&quot;</span><br/>
                   {'}'};
                 </pre>
               </div>
@@ -248,9 +248,9 @@ export default function PlatformFeatures() {
                 </div>
                 <pre className="text-[8px] text-zinc-400 font-mono leading-relaxed select-none">
                   {'{'}<br/>
-                  &nbsp;&nbsp;<span className="text-blue-400">"@context"</span>: <span className="text-emerald-300">"https://schema.org"</span>,<br/>
-                  &nbsp;&nbsp;<span className="text-blue-400">"@type"</span>: <span className="text-emerald-300">"LocalBusiness"</span>,<br/>
-                  &nbsp;&nbsp;<span className="text-blue-400">"name"</span>: <span className="text-emerald-300">"SEOIntellect"</span><br/>
+                  &nbsp;&nbsp;<span className="text-blue-400">&quot;@context&quot;</span>: <span className="text-emerald-300">&quot;https://schema.org&quot;</span>,<br/>
+                  &nbsp;&nbsp;<span className="text-blue-400">&quot;@type&quot;</span>: <span className="text-emerald-300">&quot;LocalBusiness&quot;</span>,<br/>
+                  &nbsp;&nbsp;<span className="text-blue-400">&quot;name&quot;</span>: <span className="text-emerald-300">&quot;SEOIntellect&quot;</span><br/>
                   {'}'}
                 </pre>
               </div>

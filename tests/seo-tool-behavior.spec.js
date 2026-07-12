@@ -90,7 +90,7 @@ test.describe('SEO Tool User Behavior Tests', () => {
     await expect(page.locator('h1')).toContainText('SEO Services in Los Angeles');
 
     // 2. Verify Google SERP preview simulator is visible
-    await expect(page.locator('text=/Local Map Pack Proximity/i')).toBeVisible();
+    await expect(page.locator('text=/Local Proximity Grid/i')).toBeVisible();
 
     // 3. Verify Local SEO opportunity calculator is visible
     await expect(page.locator('text=/SEO Revenue Potential/i')).toBeVisible();

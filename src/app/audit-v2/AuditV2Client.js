@@ -64,10 +64,10 @@ export default function AuditV2Client({ initialUser = null }) {
 
   /* ─── loading step ticker ─── */
   useEffect(() => {
-    if (!loading) { setLoadStep(0); return; }
+    if (!loading) return;
     const t = setInterval(() => setLoadStep(p => Math.min(p + 1, STEPS.length - 1)), USE_MOCK ? 500 : 3500);
     return () => clearInterval(t);
-  }, [loading]);
+  }, [loading, STEPS.length]);
 
   /* ─── AUDIT RUNNER ─── */
   async function runAudit(target) {
@@ -75,7 +75,7 @@ export default function AuditV2Client({ initialUser = null }) {
     if (!fmt) return;
     if (!/^https?:\/\//i.test(fmt)) fmt = "https://" + fmt;
 
-    setError(null); setReport(null); setLoading(true); setUrl(fmt);
+    setError(null); setReport(null); setLoading(true); setLoadStep(0); setUrl(fmt);
 
     try {
       let data;

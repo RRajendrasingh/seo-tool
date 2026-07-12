@@ -182,7 +182,7 @@ export default async function LocationPage({ params }) {
               </h1>
 
               <p className="text-sm sm:text-base leading-relaxed text-zinc-400 max-w-2xl mx-auto lg:mx-0">
-                {city.description} We optimize code structures, content intent, and local citations to place your business at the top of Google rankings in {city.name}.
+                {city.description} We fix technical speed bottlenecks, optimize your local keywords, and ensure your site is structured to rank high in {city.name} search results.
               </p>
 
               {/* Lead Capture Form: Pre-filled Dynamic URL input */}
@@ -286,15 +286,50 @@ export default async function LocationPage({ params }) {
           <GeoGridSimulator cityName={city.name} />
         </div>
 
+        {/* Simple 3-Step Process */}
+        <div className="mx-auto max-w-5xl px-6 py-12 relative z-10 border-t border-zinc-900/60 [.light_&]:border-slate-200">
+          <div className="text-center space-y-4 mb-12">
+            <span className="inline-block text-[10px] uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+              How It Works
+            </span>
+            <h2 className="text-2xl font-extrabold text-white sm:text-3xl [.light_&]:text-slate-900 leading-tight">
+              Get Local Customers in 3 Easy Steps
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-6 space-y-3 hover:border-zinc-800 transition-all [.light_&]:bg-white [.light_&]:border-slate-200">
+              <span className="text-2xl font-black text-violet-500">01</span>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Run a Free Audit</h4>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Enter your website URL at the top of the page. Our diagnostic tool scans your website's speed, mobile responsiveness, and ranking structures in 20 seconds.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-6 space-y-3 hover:border-zinc-800 transition-all [.light_&]:bg-white [.light_&]:border-slate-200 border-l-2 border-l-violet-600/40">
+              <span className="text-2xl font-black text-violet-500">02</span>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Get Your AI Checklist</h4>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                We generate a prioritized, easy-to-understand checklist showing you exactly what code to fix, which keywords to inject, and how to improve your scores.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-6 space-y-3 hover:border-zinc-800 transition-all [.light_&]:bg-white [.light_&]:border-slate-200">
+              <span className="text-2xl font-black text-violet-500">03</span>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Claim the Top Spots</h4>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Apply the fixes to rank high in the Google Map Pack and organic local search, or choose one of our managed campaigns to let our team handle everything.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Core Local Strategy Details */}
         <div className="mx-auto max-w-5xl px-6 py-12 space-y-16 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-6 text-left">
-              <h2 className="text-2xl font-extrabold text-white sm:text-3xl leading-tight">
+              <h2 className="text-2xl font-extrabold text-white sm:text-3xl [.light_&]:text-slate-900 leading-tight">
                 Why General SEO Fails in {city.name} <span className="text-zinc-500 font-medium">(And What Works)</span>
               </h2>
               <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                Standard, generic SEO strategies don’t capture regional buyers. Local searches are characterized by specific buying intent, map locations, and mobile search queries. Here is how we optimize for {city.name}:
+                Standard SEO doesn't work for local businesses. Local customers search differently—they search on mobile devices, look at map locations, and want immediate answers. Here is how we help you capture buyers in {city.name}:
               </p>
               <div className="space-y-4 pt-2">
                 <div className="flex gap-3.5">

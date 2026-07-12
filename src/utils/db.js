@@ -9,6 +9,8 @@ const dbConfig = {
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
 };
 
 let pool;
@@ -25,9 +27,22 @@ export function getDbPool() {
   return pool;
 }
 
-// Reusable query executor
+// Reusable query executor with connection-loss retry logic
 export async function query(sql, params) {
   const db = getDbPool();
-  const [results] = await db.execute(sql, params);
-  return results;
+  try {
+    const [results] = await db.execute(sql, params);
+    return results;
+  } catch (error) {
+    if (
+      error.code === "ECONNRESET" ||
+      error.code === "PROTOCOL_CONNECTION_LOST" ||
+      error.fatal
+    ) {
+      console.warn("Database connection reset or lost. Retrying query...", error.message);
+      const [results] = await db.execute(sql, params);
+      return results;
+    }
+    throw error;
+  }
 }
