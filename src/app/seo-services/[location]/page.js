@@ -324,33 +324,32 @@ export default async function LocationPage({ params }) {
                 Why General SEO Fails in {city.name} <span className="text-zinc-500 font-medium">(And What Works)</span>
               </h2>
               <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                Standard SEO doesn't work for local businesses. Local customers search differently—they search on mobile devices, look at map locations, and want immediate answers. Here is how we help you capture buyers in {city.name}:
+                Our agency focuses on modern, high-performance search strategy. We optimize your website not just for standard search engines, but for conversational and AI search environments to position your brand where clients in {city.name} look for answers:
               </p>
               <div className="space-y-4 pt-2">
                 <div className="flex gap-3.5">
                   <div className="mt-1 flex-shrink-0 p-1.5 bg-zinc-900/80 border border-zinc-850 rounded-xl text-violet-400 h-9 w-9 flex items-center justify-center text-sm shadow-md">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 21l8.904-4.43M19 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Google Map Pack Optimization</h4>
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">AEO & GEO Optimization</h4>
                     <p className="text-xs text-zinc-500 leading-relaxed">
-                      We sync metadata, schemas, and coordinates to ensure your profile appears in the 3-Pack local maps for searches in {city.name}.
+                      We optimize your website content so AI search systems (such as ChatGPT, Gemini, and Google AI Overviews) quote and cite your brand as the top recommendation in {city.name}.
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3.5">
                   <div className="mt-1 flex-shrink-0 p-1.5 bg-zinc-900/80 border border-zinc-850 rounded-xl text-fuchsia-400 h-9 w-9 flex items-center justify-center text-sm shadow-md">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Hyper-Fast Mobile Page Speed</h4>
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Complete SEO & Automated Audits</h4>
                     <p className="text-xs text-zinc-500 leading-relaxed">
-                      Mobile searches represent over 60% of search queries. If your site takes more than 3 seconds to load on mobile connections, you lose up to 50% of your potential leads in {city.name}.
+                      We pair technical, high-performance SEO strategy with our proprietary audit tools, allowing you to instantly analyze page speed, crawlability, and indexing factors.
                     </p>
                   </div>
                 </div>
