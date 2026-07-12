@@ -140,10 +140,10 @@ export default async function LocationPage({ params }) {
       },
       {
         "@type": "Question",
-        "name": `Do you optimize Google Business Profiles for ${city.name} clients?`,
+        "name": `Do you optimize for AI engines and generative search in ${city.name}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Yes. Google Business Profile optimization is the cornerstone of local search. We optimize category selection, business descriptions, geo-tagged photos, reviews templates, and locally structured schema maps to boost your proximity signals.`
+          "text": `Yes. We optimize your website structures and entity data to ensure your brand is cited and recommended in generative AI searches (like ChatGPT, Gemini, and Claude) alongside standard search engines.`
         }
       }
     ]
@@ -310,7 +310,7 @@ export default async function LocationPage({ params }) {
               <span className="text-2xl font-black text-violet-500">03</span>
               <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Claim the Top Spots</h4>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                Apply the fixes to rank high in the Google Map Pack and organic local search, or choose one of our managed campaigns to let our team handle everything.
+                Apply the fixes to rank high in AI search engines and organic search, or choose one of our managed campaigns to let our team handle everything.
               </p>
             </div>
           </div>
@@ -396,10 +396,10 @@ export default async function LocationPage({ params }) {
               </div>
               <div className="p-6 rounded-2xl border border-zinc-850 bg-zinc-900/10 hover:border-zinc-800 transition-colors">
                 <h4 className="text-sm font-extrabold text-white uppercase tracking-wider">
-                  Do you optimize Google Business Profiles for {city.name} clients?
+                  Do you optimize for AI engines and generative search in {city.name}?
                 </h4>
                 <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
-                  Yes. Google Business Profile optimization is the cornerstone of local search. We optimize category selection, business descriptions, geo-tagged photos, reviews templates, and locally structured schema maps to boost your proximity signals.
+                  Yes. We optimize your website structures and entity data to ensure your brand is cited and recommended in generative AI searches (like ChatGPT, Gemini, and Claude) alongside standard search engines.
                 </p>
               </div>
             </div>
