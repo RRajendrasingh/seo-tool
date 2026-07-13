@@ -18,12 +18,13 @@ export async function POST(req) {
       email, 
       phone, 
       plan, 
+      billing,
       cmsPlatform, 
       businessNiche, 
       targetAudience 
     } = await req.json();
 
-    if (!url && (plan === "weekly" || plan === "agency")) {
+    if (!url && (plan === "weekly" || plan === "agency" || plan === "multi")) {
       url = "domain-pending";
     }
 
@@ -39,6 +40,7 @@ export async function POST(req) {
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const isYearly = billing === "yearly";
 
     let planName = "Starter Single Report";
     let planDescription = `Comprehensive performance and SEO analysis checklist for ${url}`;
@@ -46,19 +48,19 @@ export async function POST(req) {
     let isSubscription = false;
 
     if (plan === "multi") {
-      planName = "Enterprise Tracking";
+      planName = isYearly ? "Enterprise Tracking (Yearly)" : "Enterprise Tracking (Monthly)";
       planDescription = `High-volume domain tracking and advanced technical crawling for ${url}`;
-      planAmount = 19900; // $199.00
+      planAmount = isYearly ? 190800 : 19900; // $159/mo * 12 or $199/mo
       isSubscription = true;
     } else if (plan === "weekly") {
-      planName = "Pro Monitor (Monthly)";
+      planName = isYearly ? "Pro Monitor (Yearly)" : "Pro Monitor (Monthly)";
       planDescription = `Weekly automated background scans with email alerts for ${url}`;
-      planAmount = 2900; // $29.00
+      planAmount = isYearly ? 27600 : 2900; // $23/mo * 12 or $29/mo
       isSubscription = true;
     } else if (plan === "agency") {
-      planName = "Agency Sales Plan (Monthly)";
-      planDescription = `Up to 25 monitored domains with white-label PDF templates for ${url}`;
-      planAmount = 9900; // $99.00
+      planName = isYearly ? "Agency Sales Plan (Yearly)" : "Agency Sales Plan (Monthly)";
+      planDescription = `Up to  Monitored domains with white-label PDF templates for ${url}`;
+      planAmount = isYearly ? 94800 : 9900; // $79/mo * 12 or $99/mo
       isSubscription = true;
     }
 
@@ -74,7 +76,7 @@ export async function POST(req) {
               description: planDescription,
             },
             unit_amount: planAmount, // in cents
-            recurring: isSubscription ? { interval: "month" } : undefined,
+            recurring: isSubscription ? { interval: isYearly ? "year" : "month" } : undefined,
           },
           quantity: 1,
         },

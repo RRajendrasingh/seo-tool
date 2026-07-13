@@ -281,37 +281,62 @@ export default async function LocationPage({ params }) {
         </div>
 
 
-        {/* Simple 3-Step Process */}
-        <div className="mx-auto max-w-5xl px-6 py-12 relative z-10 border-t border-zinc-900/60 [.light_&]:border-slate-200">
+        {/* Simple 4-Step Process & Pitch */}
+        <div className="mx-auto max-w-6xl px-6 py-12 relative isolate z-10 border-t border-zinc-900/60 [.light_&]:border-slate-200">
+          {/* Ambient Background Glow Blob */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[300px] bg-gradient-to-r from-violet-600/10 via-fuchsia-600/5 to-transparent blur-[120px] pointer-events-none rounded-full -z-10" />
+
           <div className="text-center space-y-4 mb-12">
             <span className="inline-block text-[10px] uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
               How It Works
             </span>
             <h2 className="text-2xl font-extrabold text-white sm:text-3xl [.light_&]:text-slate-900 leading-tight">
-              Get Local Customers in 3 Easy Steps
+              Grow Your Search Traffic in 4 Steps
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-6 space-y-3 hover:border-zinc-800 transition-all [.light_&]:bg-white [.light_&]:border-slate-200">
-              <span className="text-2xl font-black text-violet-500">01</span>
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Run a Free Audit</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed">
-                Enter your website URL at the top of the page. Our diagnostic tool scans your website's speed, mobile responsiveness, and ranking structures in 20 seconds.
-              </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 animate-fade-in-up">
+            {/* Step 1 */}
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col justify-between">
+              <div>
+                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">01</span>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Scan Your Website</h4>
+                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
+                  Enter your website link at the top of this page. Our free tool checks your site speed and code issues in just 20 seconds.
+                </p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-6 space-y-3 hover:border-zinc-800 transition-all [.light_&]:bg-white [.light_&]:border-slate-200 border-l-2 border-l-violet-600/40">
-              <span className="text-2xl font-black text-violet-500">02</span>
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Get Your AI Checklist</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed">
-                We generate a prioritized, easy-to-understand checklist showing you exactly what code to fix, which keywords to inject, and how to improve your scores.
-              </p>
+
+            {/* Step 2 */}
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col justify-between">
+              <div>
+                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">02</span>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Get a Clear Checklist</h4>
+                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
+                  We show you exactly what is wrong. You get a simple checklist to see what is slowing down your website and blocking your traffic.
+                </p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-6 space-y-3 hover:border-zinc-800 transition-all [.light_&]:bg-white [.light_&]:border-slate-200">
-              <span className="text-2xl font-black text-violet-500">03</span>
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Claim the Top Spots</h4>
-              <p className="text-xs text-zinc-500 leading-relaxed">
-                Apply the fixes to rank high in AI search engines and organic search, or choose one of our managed campaigns to let our team handle everything.
-              </p>
+
+            {/* Step 3 */}
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] border-l-2 border-l-violet-600/40 flex flex-col justify-between">
+              <div>
+                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">03</span>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Activate a Growth Plan</h4>
+                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
+                  Unlock premium daily tracking, automatic code fixes, and AI search schemas that get your site cited by ChatGPT and Gemini.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col justify-between">
+              <div>
+                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">04</span>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Let Our Team Handle It</h4>
+                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
+                  Don&apos;t have time? Choose a managed campaign. Our SEO experts will optimize your code, build links, and grow your traffic for you.
+                </p>
+              </div>
             </div>
           </div>
         </div>

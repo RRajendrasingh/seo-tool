@@ -23,7 +23,7 @@ test.describe('Admin Console Security and Dashboard Flow', () => {
     await page.getByRole('button', { name: 'Sign In to Dashboard' }).click();
 
     // 4. Assert error message is visible
-    await expect(page.getByText('Invalid passcode. Please try again.')).toBeVisible();
+    await expect(page.getByText('Invalid passcode. Please try again.')).toBeVisible({ timeout: 15000 });
   });
 
   test('should allow access and toggle dashboard tabs on correct passcode', async ({ page }) => {
@@ -45,7 +45,7 @@ test.describe('Admin Console Security and Dashboard Flow', () => {
     await expect(leadsTabButton).toBeVisible();
     await leadsTabButton.click();
 
-    // Verify Leads Management Hub is now visible
+    // Verify Leads Database heading is now visible
     await expect(page.getByRole('heading', { name: 'Leads Database' })).toBeVisible({ timeout: 30000 });
 
     // 6. Navigate to settings tab

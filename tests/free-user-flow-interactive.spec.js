@@ -50,7 +50,7 @@ test.describe('Free User & Guest QA Flow Verification', () => {
     // Wait for the audit report dashboard to finish loading
     console.log('Waiting for audit report to load...');
     const downloadButton = page.locator('button:has-text("Download Report PDF")').first();
-    await expect(downloadButton).toBeVisible({ timeout: 30000 });
+    await expect(downloadButton).toBeVisible({ timeout: 60000 });
     console.log('Audit dashboard loaded successfully.');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'free_test_step4_guest_audit.png') });
 

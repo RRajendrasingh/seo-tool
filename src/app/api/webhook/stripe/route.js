@@ -42,7 +42,7 @@ export async function POST(req) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     
-    const email = session.customer_details?.email || session.customer_email || session.metadata?.email;
+    const email = (session.customer_details?.email || session.customer_email || session.metadata?.email || "").trim().toLowerCase();
     const plan = session.metadata?.plan || "single";
     const customerId = session.customer;
     
@@ -50,24 +50,24 @@ export async function POST(req) {
       try {
         if (plan === "weekly") {
           await query(
-            "UPDATE users SET subscription_tier = 'weekly', allowed_quota = 3, stripe_customer_id = ? WHERE email = ?",
+            "UPDATE users SET subscription_tier = 'weekly', allowed_quota = 3, stripe_customer_id = ? WHERE LOWER(email) = LOWER(?)",
             [customerId, email]
           );
         } else if (plan === "agency") {
           await query(
-            "UPDATE users SET subscription_tier = 'agency', allowed_quota = 25, stripe_customer_id = ? WHERE email = ?",
+            "UPDATE users SET subscription_tier = 'agency', allowed_quota = 25, stripe_customer_id = ? WHERE LOWER(email) = LOWER(?)",
             [customerId, email]
           );
         } else if (plan === "multi") {
           await query(
-            "UPDATE users SET subscription_tier = 'multi', allowed_quota = 100, stripe_customer_id = ? WHERE email = ?",
+            "UPDATE users SET subscription_tier = 'multi', allowed_quota = 100, stripe_customer_id = ? WHERE LOWER(email) = LOWER(?)",
             [customerId, email]
           );
         } else {
           // single report — increment quota by 1
           await query(
-            "UPDATE users SET allowed_quota = allowed_quota + 1, stripe_customer_id = COALESCE(stripe_customer_id, ?) WHERE email = ?",
-            [customerId, email]
+            "UPDATE users SET allowed_quota = allowed_quota + 1, stripe_customer_id = COALESCE(stripe_customer_id, ?) WHERE LOWER(email) = LOWER(?)",
+            [customerId, email, email]
           );
         }
         

@@ -64,15 +64,16 @@ export async function GET(req) {
 
         // 2. Link to User Profile (Subscription & Monitors)
         if (email) {
-          const users = await query("SELECT id, subscription_tier FROM users WHERE email = ?", [email]);
+          const users = await query("SELECT id, subscription_tier FROM users WHERE LOWER(email) = LOWER(?)", [email.trim()]);
           if (users && users.length > 0) {
             const userId = users[0].id;
             const currentTier = users[0].subscription_tier || "free";
-            if (plan === "weekly" || plan === "agency") {
+            if (plan === "weekly" || plan === "agency" || plan === "multi") {
               const newTier = (currentTier === "agency" && plan === "weekly") ? "agency" : plan;
+              const quota = plan === "weekly" ? 3 : plan === "agency" ? 25 : plan === "multi" ? 100 : 0;
               await query(
-                "UPDATE users SET subscription_tier = ?, subscription_status = 'active' WHERE id = ?",
-                [newTier, userId]
+                "UPDATE users SET subscription_tier = ?, allowed_quota = ?, subscription_status = 'active' WHERE id = ?",
+                [newTier, quota, userId]
               );
               // BUG #13 FIX: Skip domain-pending — it's a placeholder, not a real domain
               // BUG #11 FIX: Check for existing monitored_domain before inserting (idempotency)
@@ -171,11 +172,12 @@ export async function POST(req) {
     }
 
     // Update user sub details or purchases in DB
-    if (plan === "weekly" || plan === "agency") {
+    if (plan === "weekly" || plan === "agency" || plan === "multi") {
       const newTier = (currentTier === "agency" && plan === "weekly") ? "agency" : plan;
+      const quota = plan === "weekly" ? 3 : plan === "agency" ? 25 : plan === "multi" ? 100 : 0;
       await query(
-        "UPDATE users SET subscription_tier = ?, subscription_status = 'active' WHERE id = ?",
-        [newTier, userId]
+        "UPDATE users SET subscription_tier = ?, allowed_quota = ?, subscription_status = 'active' WHERE id = ?",
+        [newTier, quota, userId]
       );
       
       // BUG #13 FIX: Skip domain-pending — BUG #11 FIX: Idempotency check

@@ -59,6 +59,7 @@ export default function Navbar({ initialSession = null }) {
   // Compile navigation links dynamically
   const navLinks = [
     { name: "Home", href: "/" },
+    { name: "Pricing", href: "/pricing/" },
     { name: "Services", href: "/services/" },
     { name: "Locations", href: "/seo-services/" },
     { name: "Blog & News", href: "/news/" },

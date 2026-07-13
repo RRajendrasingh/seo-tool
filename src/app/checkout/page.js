@@ -12,12 +12,14 @@ function CheckoutContent() {
   const name = searchParams.get("name") || "";
   const phone = searchParams.get("phone") || "";
   const planParam = searchParams.get("plan") || "pack";
+  const billingParam = searchParams.get("billing") || "monthly";
 
   // Initial plan matching parameters
   const initialPlan = planParam === "weekly" ? "weekly" : planParam === "agency" ? "agency" : planParam === "multi" ? "multi" : "single";
   
   // States
   const [selectedPlan, setSelectedPlan] = useState(initialPlan);
+  const [billingCycle, setBillingCycle] = useState(billingParam);
   const [cmsPlatform, setCmsPlatform] = useState("");
   const [businessNiche, setBusinessNiche] = useState("");
   const [targetAudience, setTargetAudience] = useState("");
@@ -39,18 +41,20 @@ function CheckoutContent() {
   // BUG #2 FIX: These values MUST match the unit_amount in /api/checkout/route.js exactly.
   // single=$9.99 (999 cents), multi=$199 (19900 cents), weekly=$29 (2900 cents), agency=$99 (9900 cents)
   const getPlanPrice = () => {
+    const isYearly = billingCycle === "yearly";
     if (selectedPlan === "single") return "9.99";
-    if (selectedPlan === "multi") return "199.00";
-    if (selectedPlan === "weekly") return "29.00";
-    if (selectedPlan === "agency") return "99.00";
+    if (selectedPlan === "multi") return isYearly ? "1,908.00" : "199.00";
+    if (selectedPlan === "weekly") return isYearly ? "276.00" : "29.00";
+    if (selectedPlan === "agency") return isYearly ? "948.00" : "99.00";
     return "9.99";
   };
 
   const getPlanName = () => {
+    const isYearly = billingCycle === "yearly";
     if (selectedPlan === "single") return "Starter Single Report";
-    if (selectedPlan === "multi") return "Enterprise Tracking";
-    if (selectedPlan === "weekly") return "Pro Monitor (Monthly)";
-    if (selectedPlan === "agency") return "Agency Sales Plan (Monthly)";
+    if (selectedPlan === "multi") return isYearly ? "Enterprise Tracking (Yearly)" : "Enterprise Tracking (Monthly)";
+    if (selectedPlan === "weekly") return isYearly ? "Pro Monitor (Yearly)" : "Pro Monitor (Monthly)";
+    if (selectedPlan === "agency") return isYearly ? "Agency Sales Plan (Yearly)" : "Agency Sales Plan (Monthly)";
     return "Starter Single Report";
   };
 
@@ -151,6 +155,7 @@ function CheckoutContent() {
           email: billingEmail, 
           phone,
           plan: selectedPlan,
+          billing: billingCycle,
           cmsPlatform: cmsPlatform || "Not Provided",
           businessNiche: businessNiche || "Not Provided",
           targetAudience: targetAudience || "Not Provided"
