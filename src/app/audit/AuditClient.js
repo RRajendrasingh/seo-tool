@@ -370,8 +370,14 @@ export default function AuditClient({ initialUser = null }) {
   // Sync cached reports to DB for users returning from checkout
   useEffect(() => {
     if (report && user) {
-      const avgScore = Math.round((report.audits?.["performance"]?.score * 100 + report.audits?.["seo"]?.score * 100) / 2) || 0;
-      const grade = avgScore >= 90 ? "A" : avgScore >= 80 ? "B" : avgScore >= 70 ? "C" : "D";
+      const avgScore = report.avgScore || (
+        report.audits 
+          ? Math.round(((report.audits?.["performance"]?.score || 0) * 100 + (report.audits?.["seo"]?.score || 0) * 100) / 2) 
+          : 0
+      ) || 0;
+      const grade = report.grade || (
+        avgScore >= 90 ? "A" : avgScore >= 80 ? "B" : avgScore >= 70 ? "C" : "D"
+      );
 
       // 1. Save to Monitors History table
       fetch("/api/monitors/history", {
@@ -2556,6 +2562,66 @@ export default function AuditClient({ initialUser = null }) {
                 </div>
               )}
             </div>
+
+            {/* Core Web Vitals Vitals Grid */}
+            {(() => {
+              const perfEngine = report.engines?.performance;
+              if (!perfEngine || !perfEngine.checks) return null;
+              const adjusted = getChecksForStrategy(perfEngine.checks, deviceStrategy);
+              const lcp = adjusted.find(c => c.name.includes("LCP") || c.name.includes("Largest Contentful Paint"));
+              const fcp = adjusted.find(c => c.name.includes("FCP") || c.name.includes("First Contentful Paint"));
+              const cls = adjusted.find(c => c.name.includes("CLS") || c.name.includes("Cumulative Layout Shift"));
+              const tbt = adjusted.find(c => c.name.includes("TBT") || c.name.includes("Total Blocking Time"));
+
+              const renderVitalCard = (label, check) => {
+                if (!check) return null;
+                const isPassed = check.passed;
+                const val = check.value || "N/A";
+                let colorClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                let dotClass = "bg-emerald-400";
+                if (!isPassed) {
+                  const numVal = parseFloat(val);
+                  if (label === "LCP" && numVal > 4.0) {
+                    colorClass = "text-rose-400 bg-rose-500/10 border-rose-500/20";
+                    dotClass = "bg-rose-500";
+                  } else if (label === "FCP" && numVal > 3.0) {
+                    colorClass = "text-rose-400 bg-rose-500/10 border-rose-500/20";
+                    dotClass = "bg-rose-500";
+                  } else if (label === "CLS" && numVal > 0.25) {
+                    colorClass = "text-rose-400 bg-rose-500/10 border-rose-500/20";
+                    dotClass = "bg-rose-500";
+                  } else if (label === "TBT" && numVal > 600) {
+                    colorClass = "text-rose-400 bg-rose-500/10 border-rose-500/20";
+                    dotClass = "bg-rose-500";
+                  } else {
+                    colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+                    dotClass = "bg-amber-500";
+                  }
+                }
+
+                return (
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-3 flex flex-col justify-between items-start text-left space-y-1">
+                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-zinc-500">{label}</span>
+                    <div className="flex items-baseline gap-2 w-full justify-between">
+                      <span className="text-sm font-extrabold text-white">{val}</span>
+                      <span className={`inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded border ${colorClass}`}>
+                        <span className={`w-1 h-1 rounded-full ${dotClass}`} />
+                        {isPassed ? "Pass" : "Fail"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              };
+
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                  {renderVitalCard("LCP", lcp)}
+                  {renderVitalCard("FCP", fcp)}
+                  {renderVitalCard("CLS", cls)}
+                  {renderVitalCard("TBT", tbt)}
+                </div>
+              );
+            })()}
 
             {/* Health Metrics Summary Bar */}
             {(() => {

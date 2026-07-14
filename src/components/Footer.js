@@ -1,7 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const serviceLinks = [
     { name: "SEO Optimization", href: "/services/#seo" },

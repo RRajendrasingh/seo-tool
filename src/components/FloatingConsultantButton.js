@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { openCalendly } from "@/utils/calendly";
+import { usePathname } from "next/navigation";
 
 export default function FloatingConsultantButton({ session }) {
   const [user, setUser] = useState(session);
@@ -39,7 +40,13 @@ export default function FloatingConsultantButton({ session }) {
     }
   }, [session]);
 
+  const pathname = usePathname();
+
   if (!mounted) return null;
+
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleOpenForm = (e) => {
     e.stopPropagation();

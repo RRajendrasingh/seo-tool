@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState("monthly"); // "monthly" or "yearly"
@@ -170,9 +168,7 @@ export default function PricingPage() {
   ];
 
   return (
-    <>
-      <Navbar />
-      <div className="bg-zinc-950 min-h-screen text-left relative overflow-x-hidden pb-20 [.light_&]:bg-slate-50 [.light_&]:text-slate-900">
+    <div className="bg-zinc-950 min-h-screen text-left relative overflow-x-hidden pb-20 [.light_&]:bg-slate-50 [.light_&]:text-slate-900">
         
         {/* Decorative Grid Mesh */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
@@ -375,7 +371,5 @@ export default function PricingPage() {
         </div>
 
       </div>
-      <Footer />
-    </>
   );
 }

@@ -224,6 +224,72 @@ export default function AuditV2Client({ initialUser = null }) {
           {/* Score Hero Bar */}
           <ScoreBar report={report} />
 
+          {/* Core Web Vitals Grid */}
+          {(() => {
+            const pageSpeedEngine = report.engines?.["page-speed"];
+            if (!pageSpeedEngine || !pageSpeedEngine.checks) return null;
+            const checks = pageSpeedEngine.checks;
+            const lcp = checks.find(c => c.name.includes("Largest Contentful Paint"));
+            const fcp = checks.find(c => c.name.includes("First Contentful Paint"));
+            const cls = checks.find(c => c.name.includes("Cumulative Layout Shift"));
+            const tbt = checks.find(c => c.name.includes("Total Blocking Time"));
+
+            const renderVitalCard = (label, check) => {
+              if (!check) return null;
+              const isPassed = check.passed;
+              const val = check.value || "N/A";
+              let color = "#22c55e"; // green
+              let bg = "rgba(34,197,94,0.06)";
+              let border = "rgba(34,197,94,0.15)";
+              if (!isPassed) {
+                const numVal = parseFloat(val);
+                if (label === "LCP" && numVal > 4.0) {
+                  color = "#ef4444"; // red
+                  bg = "rgba(239,68,68,0.06)";
+                  border = "rgba(239,68,68,0.15)";
+                } else if (label === "FCP" && numVal > 3.0) {
+                  color = "#ef4444";
+                  bg = "rgba(239,68,68,0.06)";
+                  border = "rgba(239,68,68,0.15)";
+                } else if (label === "CLS" && numVal > 0.25) {
+                  color = "#ef4444";
+                  bg = "rgba(239,68,68,0.06)";
+                  border = "rgba(239,68,68,0.15)";
+                } else if (label === "TBT" && numVal > 600) {
+                  color = "#ef4444";
+                  bg = "rgba(239,68,68,0.06)";
+                  border = "rgba(239,68,68,0.15)";
+                } else {
+                  color = "#f59e0b"; // amber
+                  bg = "rgba(245,158,11,0.06)";
+                  border = "rgba(245,158,11,0.15)";
+                }
+              }
+
+              return (
+                <div style={{ background:"#111113", border:"1px solid #1c1c1f", borderRadius:14, padding:"12px 16px", display:"flex", flexDirection:"column", justifyContent:"space-between", gap:4 }}>
+                  <span style={{ fontSize:9, fontWeight:800, color:"#52525b", textTransform:"uppercase", letterSpacing:".08em" }}>{label}</span>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%" }}>
+                    <span style={{ fontSize:15, fontWeight:800, color:"#fff", fontFamily:"monospace" }}>{val}</span>
+                    <span style={{ fontSize:9, fontWeight:700, color:color, background:bg, border:`1px solid ${border}`, borderRadius:4, padding:"1px 6px", display:"inline-flex", alignItems:"center", gap:3 }}>
+                      <span style={{ width:4, height:4, borderRadius:"50%", background:color }} />
+                      {isPassed ? "Pass" : "Fail"}
+                    </span>
+                  </div>
+                </div>
+              );
+            };
+
+            return (
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginTop:16 }}>
+                {renderVitalCard("LCP", lcp)}
+                {renderVitalCard("FCP", fcp)}
+                {renderVitalCard("CLS", cls)}
+                {renderVitalCard("TBT", tbt)}
+              </div>
+            );
+          })()}
+
           {/* Main layout */}
           <div style={{ display:"grid", gridTemplateColumns:"230px 1fr", gap:20, alignItems:"start", marginTop:24 }}>
 
