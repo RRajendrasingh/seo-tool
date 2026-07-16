@@ -283,7 +283,7 @@ export default function LoginClient() {
   );
 
   return (
-    <div className="bg-slate-950 min-h-screen text-slate-300 flex flex-col md:flex-row relative isolate transition-colors duration-300">
+    <div className="bg-slate-950 [.light_&]:bg-white min-h-screen text-slate-300 flex flex-col md:flex-row relative isolate transition-colors duration-300">
       
       {/* Left panel: Auth form container */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-8 md:p-12 relative">
@@ -522,31 +522,31 @@ export default function LoginClient() {
         </div>
       </div>
 
-      {/* Right panel: Visual dashboard mockup (always dark themed) */}
-      <div className="hidden md:flex flex-1 flex-col items-center justify-center bg-gradient-to-br from-indigo-950/20 via-[#0f172a] to-[#0f172a] border-l border-[#1e293b]/60 relative overflow-hidden p-12 select-none">
+      {/* Right panel: Visual dashboard mockup (responsive theme support) */}
+      <div className="hidden md:flex flex-1 flex-col items-center justify-center bg-gradient-to-br from-indigo-950/20 via-slate-950 to-slate-950 [.light_&]:bg-none [.light_&]:bg-[#e4e9f0] border-l border-slate-850/60 [.light_&]:border-slate-200 relative overflow-hidden p-12 select-none">
         {/* Glow Backgrounds */}
-        <div className="absolute top-[-10%] right-[-10%] w-[450px] h-[450px] bg-violet-600/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[450px] h-[450px] bg-cyan-600/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-10%] right-[-10%] w-[450px] h-[450px] bg-violet-600/5 [.light_&]:bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[450px] h-[450px] bg-cyan-600/5 [.light_&]:bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none" />
         
         <div className="w-full max-w-sm space-y-8 relative z-10 text-left">
           <div className="space-y-3">
-            <span className="inline-block text-[9px] uppercase tracking-widest text-[#a78bfa] font-extrabold bg-[#8b5cf6]/10 px-3 py-1 rounded-full border border-[#8b5cf6]/25">
+            <span className="inline-block text-[9px] uppercase tracking-widest text-violet-400 [.light_&]:text-violet-700 font-extrabold bg-violet-500/10 [.light_&]:bg-violet-50 px-3 py-1 rounded-full border border-violet-500/25 [.light_&]:border-violet-200">
               Enterprise Vitals Engine
             </span>
-            <h2 className="text-3xl font-black text-[#ffffff] tracking-tight leading-[1.15]">
+            <h2 className="text-3xl font-black text-white [.light_&]:text-slate-900 tracking-tight leading-[1.15]">
               Every millisecond counts.
             </h2>
-            <p className="text-xs text-[#94a3b8] leading-relaxed">
+            <p className="text-xs text-slate-400 [.light_&]:text-slate-600 leading-relaxed">
               Real-time PageSpeed scores, technical diagnostic checklists, and Core Web Vitals monitoring across all your domains.
             </p>
           </div>
 
           {/* Vitals Mock Card */}
-          <div className="rounded-3xl border border-[#334155] bg-[#1b2230] p-6 shadow-2xl space-y-6">
-            <div className="flex justify-between items-center pb-3 border-b border-[#2d3748]/55">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748b]">PageSpeed · Mobile</span>
-              <span className="inline-flex items-center gap-1 text-[8px] font-bold text-[#34d399] bg-[#10b981]/10 px-2 py-0.5 rounded border border-[#10b981]/20">
-                <span className="w-1 h-1 bg-[#34d399] rounded-full animate-pulse" />
+          <div className="rounded-3xl border border-slate-800 [.light_&]:border-slate-200 bg-slate-900/40 [.light_&]:bg-white p-6 shadow-2xl space-y-6">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-850/50 [.light_&]:border-slate-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 [.light_&]:text-slate-400">PageSpeed · Mobile</span>
+              <span className="inline-flex items-center gap-1 text-[8px] font-bold text-emerald-400 [.light_&]:text-emerald-700 bg-emerald-500/10 [.light_&]:bg-emerald-50 px-2 py-0.5 rounded border border-emerald-500/20 [.light_&]:border-emerald-200">
+                <span className="w-1 h-1 bg-emerald-400 [.light_&]:bg-emerald-600 rounded-full animate-pulse" />
                 Live
               </span>
             </div>
@@ -555,33 +555,33 @@ export default function LoginClient() {
             <div className="flex justify-center py-2">
               <div className="relative w-28 h-28 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" className="stroke-[#0c121e]" strokeWidth="6.5" fill="transparent" />
-                  <circle cx="50" cy="50" r="40" className="stroke-[#34d399]" strokeWidth="6.5" fill="transparent" strokeDasharray="251.2" strokeDashoffset="30.1" />
+                  <circle cx="50" cy="50" r="40" className="stroke-slate-950 [.light_&]:stroke-slate-100" strokeWidth="6.5" fill="transparent" />
+                  <circle cx="50" cy="50" r="40" className="stroke-emerald-400 [.light_&]:stroke-emerald-500" strokeWidth="6.5" fill="transparent" strokeDasharray="251.2" strokeDashoffset="30.1" />
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                  <span className="text-3xl font-black text-[#ffffff] leading-none">92</span>
-                  <span className="text-[8px] text-[#34d399] font-bold uppercase mt-1">Excellent</span>
+                  <span className="text-3xl font-black text-white [.light_&]:text-slate-900 leading-none">92</span>
+                  <span className="text-[8px] text-emerald-400 [.light_&]:text-emerald-600 font-bold uppercase mt-1">Excellent</span>
                 </div>
               </div>
             </div>
 
             {/* Metric pill cards */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-[#2d3748]/60 bg-[#0c121e] p-3 flex flex-col justify-between items-start text-left">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#64748b]">LCP</span>
-                <span className="text-sm font-extrabold text-[#34d399] mt-1">1.2 s</span>
+              <div className="rounded-xl border border-slate-850/60 [.light_&]:border-slate-200 bg-slate-950/40 [.light_&]:bg-slate-50/60 p-3 flex flex-col justify-between items-start text-left">
+                <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 [.light_&]:text-slate-400">LCP</span>
+                <span className="text-sm font-extrabold text-emerald-400 [.light_&]:text-emerald-700 mt-1">1.2 s</span>
               </div>
-              <div className="rounded-xl border border-[#2d3748]/60 bg-[#0c121e] p-3 flex flex-col justify-between items-start text-left">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#64748b]">FCP</span>
-                <span className="text-sm font-extrabold text-[#34d399] mt-1">0.8 s</span>
+              <div className="rounded-xl border border-slate-850/60 [.light_&]:border-slate-200 bg-slate-950/40 [.light_&]:bg-slate-50/60 p-3 flex flex-col justify-between items-start text-left">
+                <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 [.light_&]:text-slate-400">FCP</span>
+                <span className="text-sm font-extrabold text-emerald-400 [.light_&]:text-emerald-700 mt-1">0.8 s</span>
               </div>
-              <div className="rounded-xl border border-[#2d3748]/60 bg-[#0c121e] p-3 flex flex-col justify-between items-start text-left">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#64748b]">CLS</span>
-                <span className="text-sm font-extrabold text-[#34d399] mt-1">0.02</span>
+              <div className="rounded-xl border border-slate-850/60 [.light_&]:border-slate-200 bg-slate-950/40 [.light_&]:bg-slate-50/60 p-3 flex flex-col justify-between items-start text-left">
+                <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 [.light_&]:text-slate-400">CLS</span>
+                <span className="text-sm font-extrabold text-emerald-400 [.light_&]:text-emerald-700 mt-1">0.02</span>
               </div>
-              <div className="rounded-xl border border-[#2d3748]/60 bg-[#0c121e] p-3 flex flex-col justify-between items-start text-left">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#64748b]">TBT</span>
-                <span className="text-sm font-extrabold text-[#34d399] mt-1">35 ms</span>
+              <div className="rounded-xl border border-slate-850/60 [.light_&]:border-slate-200 bg-slate-950/40 [.light_&]:bg-slate-50/60 p-3 flex flex-col justify-between items-start text-left">
+                <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 [.light_&]:text-slate-400">TBT</span>
+                <span className="text-sm font-extrabold text-emerald-400 [.light_&]:text-emerald-700 mt-1">35 ms</span>
               </div>
             </div>
           </div>
