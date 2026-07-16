@@ -25,15 +25,12 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
   const [alertsEnabled, setAlertsEnabled] = useState(true);
   const [showPortalNotice, setShowPortalNotice] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => typeof window !== "undefined" ? !document.documentElement.classList.contains("light") : true
+  );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Sync theme state with current html class on mount
-  useEffect(() => {
-    setIsDarkMode(!document.documentElement.classList.contains("light"));
-  }, []);
 
   const toggleTheme = () => {
     const isNowLight = document.documentElement.classList.contains("light");
@@ -252,7 +249,8 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
             {[
               { id: "overview", label: "Overview", icon: "📊" },
               { id: "pages", label: "Page Reports", icon: "📰", badge: audits.length || null },
-              ...(user.subscription_tier === "agency" ? [{ id: "branding", label: "Agency Customizer", icon: "⚙️" }] : []),
+              { id: "settings", label: "Settings", icon: "⚙️" },
+              ...(user.subscription_tier === "agency" ? [{ id: "branding", label: "Agency Customizer", icon: "🎨" }] : []),
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -292,23 +290,6 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
               </button>
             ))}
 
-            <button
-              onClick={() => {
-                router.push("/dashboard/ai-chat/");
-                setMobileMenuOpen(false);
-              }}
-              title={(sidebarCollapsed && !mobileMenuOpen) ? "AI SEO Chat" : undefined}
-              className={`flex items-center rounded-xl border border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-900/40 whitespace-nowrap cursor-pointer [.light_&]:hover:bg-slate-100/60 [.light_&]:hover:text-slate-900 w-full h-11 px-2.5`}
-            >
-              <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-lg select-none">
-                💬
-              </span>
-              <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap text-xs font-semibold ${
-                (sidebarCollapsed && !mobileMenuOpen) ? "w-0 opacity-0 pointer-events-none" : "w-auto opacity-100 ml-2.5 text-left"
-              }`}>
-                AI SEO Chat
-              </span>
-            </button>
           </nav>
         </div>
 
@@ -403,7 +384,7 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                 </svg>
               </span>
               <span className="text-white [.light_&]:text-slate-900 capitalize font-bold">
-                {activeTab === "branding" ? "Agency Customizer" : activeTab === "pages" ? "Page Reports" : "Overview"}
+                {activeTab === "branding" ? "Agency Customizer" : activeTab === "pages" ? "Page Reports" : activeTab === "settings" ? "Settings" : "Overview"}
               </span>
             </div>
           </div>
@@ -602,11 +583,13 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
             <h1 className="text-xl font-bold text-white tracking-tight [.light_&]:text-slate-900">
               {activeTab === "overview" && "Dashboard Overview"}
               {activeTab === "pages" && "Page Reports"}
+              {activeTab === "settings" && "Settings"}
               {activeTab === "branding" && "Agency Customizer"}
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
               {activeTab === "overview" && `Welcome back, ${user.name}! Track performance metrics and ranking trends.`}
               {activeTab === "pages" && "Manage speed diagnostics and Lighthouse audits."}
+              {activeTab === "settings" && "Manage your alerts, account security, and billing preferences."}
               {activeTab === "branding" && "Configure white-label client PDF settings."}
             </p>
           </div>
@@ -650,12 +633,6 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                     </p>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <button
-                      onClick={() => router.push("/dashboard/ai-chat/")}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-4 py-2 text-xs font-bold text-slate-200 transition-all cursor-pointer [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-700 [.light_&]:hover:bg-slate-100"
-                    >
-                      💬 AI SEO Chat
-                    </button>
                   </div>
                 </div>
 
@@ -680,11 +657,26 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                       return (
                         <div key={audit.id} className="py-4 first:pt-0 last:pb-0 space-y-3 text-left">
                           <div className="flex flex-wrap justify-between items-center gap-2">
-                            <div className="space-y-0.5">
-                              <span className="font-mono text-xs font-bold text-slate-200 block truncate max-w-[280px] [.light_&]:text-slate-800">
-                                {audit.website}
-                              </span>
-                              <span className="text-[9px] text-slate-500">{audit.date}</span>
+                            <div className="space-y-1">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="font-mono text-xs font-bold text-slate-200 block truncate max-w-[280px] [.light_&]:text-slate-800">
+                                  {audit.website}
+                                </span>
+                                <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-extrabold uppercase tracking-wider border ${
+                                  audit.packageRequest && audit.packageRequest !== "Free Audit"
+                                    ? "bg-violet-500/10 text-violet-400 border-violet-500/25 [.light_&]:bg-violet-50 [.light_&]:text-violet-700 [.light_&]:border-violet-200"
+                                    : "bg-teal-500/10 text-teal-400 border-teal-500/25 [.light_&]:bg-teal-50 [.light_&]:text-teal-700 [.light_&]:border-teal-200"
+                                }`}>
+                                  {audit.packageRequest || "Free Audit"}
+                                </span>
+                                {audit.is_monitored === 1 && (
+                                  <span className="text-[8px] px-1.5 py-0.5 rounded-md font-extrabold uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/25 flex items-center gap-1 [.light_&]:bg-emerald-50 [.light_&]:text-emerald-700 [.light_&]:border-emerald-200">
+                                    <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse"></span>
+                                    Monitored
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[9px] text-slate-500 block">{audit.date}</span>
                             </div>
                             <div className="flex items-center gap-2.5">
                               <span className={`text-[10px] font-mono font-extrabold px-2.5 py-1 rounded-lg ${
@@ -698,11 +690,12 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                               </span>
                               
                               <button
-                                onClick={() => router.push(`/audit/?url=${encodeURIComponent(audit.website)}`)}
-                                className="inline-flex items-center gap-1 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950 px-3 py-1.5 text-xxs font-bold text-slate-400 hover:text-white transition-all cursor-pointer [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-violet-600 [.light_&]:hover:text-slate-900"
+                                onClick={() => router.push(`/audit/?id=${encodeURIComponent(audit.id)}`)}
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 active:scale-95 px-4 py-2 text-xxs font-extrabold text-white transition-all duration-200 cursor-pointer border-0 shadow-md shadow-violet-500/10 hover:shadow-violet-500/20 hover:-translate-y-0.5"
                               >
-                                <svg className="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 21h7a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v11m0 5l4.879-4.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242z" />
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                                 View Report
                               </button>
@@ -714,107 +707,160 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                   </div>
                 )}
               </div>
-            </section>
+              </section>
+            </div>
+        )}
 
-            {/* Right Column: Settings, Customizer, and Alerts */}
-            <aside aria-label="Settings and account limits" className="space-y-8">
-              
-              {/* Email Alerts Switches (Weekly & Agency Tiers Only) */}
-              {isPaid && (
-                <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left [.light_&]:bg-white [.light_&]:border-slate-200 shadow-sm">
-                  <h2 className="text-sm font-bold text-slate-200 [.light_&]:text-slate-800">Alert Configurations</h2>
+        {/* ⚙️ Settings Tab */}
+        {activeTab === "settings" && (
+          <div className="space-y-6">
+
+            {/* Section header highlight bar */}
+            <div className="rounded-2xl bg-gradient-to-r from-violet-600/10 via-fuchsia-600/5 to-transparent border border-violet-500/20 px-6 py-4 flex items-center gap-3 [.light_&]:from-violet-50 [.light_&]:border-violet-200">
+              <span className="text-2xl">⚙️</span>
+              <div>
+                <p className="text-sm font-bold text-white [.light_&]:text-slate-900">Account Settings</p>
+                <p className="text-[10px] text-slate-400 [.light_&]:text-slate-500">Manage your notifications, security, consultation booking, and billing all in one place.</p>
+              </div>
+            </div>
+
+            {/* 2-column grid for the cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* Alert Configurations */}
+              {isPaid ? (
+                <div className="bg-slate-900/40 backdrop-blur-md border border-violet-500/20 rounded-3xl p-6 space-y-4 text-left [.light_&]:bg-white [.light_&]:border-violet-200 shadow-sm ring-1 ring-violet-500/10 [.light_&]:ring-violet-100">
+                  <div className="flex items-center gap-2 pb-3 border-b border-slate-800 [.light_&]:border-slate-200">
+                    <span className="text-lg">🔔</span>
+                    <h2 className="text-sm font-bold text-white [.light_&]:text-slate-800">Alert Configurations</h2>
+                  </div>
                   <div className="flex justify-between items-center bg-slate-950/40 border border-slate-800/60 p-4 rounded-2xl [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
                     <div className="space-y-0.5 max-w-[70%]">
-                      <span className="text-[10px] font-bold text-white block [.light_&]:text-slate-850">Email Alerts</span>
+                      <span className="text-[10px] font-bold text-white block [.light_&]:text-slate-800">Email Alerts</span>
                       <span className="text-[9px] text-slate-500 block leading-normal">
                         Notify immediately if Lighthouse scores drop below 90.
                       </span>
                     </div>
-                    
                     <button
                       onClick={() => setAlertsEnabled(!alertsEnabled)}
-                      className={`relative w-10 h-6.5 rounded-full transition-all duration-300 shrink-0 ${
-                        alertsEnabled ? "bg-violet-600" : "bg-slate-800"
+                      aria-label="Toggle email alerts"
+                      className={`relative w-10 h-6 rounded-full transition-all duration-300 shrink-0 cursor-pointer border-0 ${
+                        alertsEnabled ? "bg-violet-600 shadow-[0_0_10px_rgba(139,92,246,0.4)]" : "bg-slate-700"
                       }`}
                     >
-                      <div className={`absolute top-1.5 w-3.5 h-3.5 rounded-full bg-white transition-all duration-300 ${
-                        alertsEnabled ? "right-1.5" : "left-1.5"
+                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow ${
+                        alertsEnabled ? "right-1" : "left-1"
                       }`} />
                     </button>
                   </div>
+                  <p className="text-[9px] text-slate-500 leading-relaxed">
+                    {alertsEnabled ? "✅ Alerts are active — you will receive email notifications for score drops." : "⚠️ Alerts are disabled — score drops will not trigger notifications."}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left [.light_&]:bg-white [.light_&]:border-slate-200 shadow-sm opacity-60">
+                  <div className="flex items-center gap-2 pb-3 border-b border-slate-800 [.light_&]:border-slate-200">
+                    <span className="text-lg">🔔</span>
+                    <h2 className="text-sm font-bold text-white [.light_&]:text-slate-800">Alert Configurations</h2>
+                    <span className="ml-auto text-[8px] bg-violet-600/20 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full font-bold uppercase">Paid Only</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500">Upgrade to a paid plan to enable email alert notifications for Lighthouse score drops.</p>
                 </div>
               )}
 
-              {/* Security Settings & Meta details */}
+              {/* Security Settings */}
               <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left [.light_&]:bg-white [.light_&]:border-slate-200 shadow-sm">
-                <h2 className="text-sm font-bold text-slate-200 [.light_&]:text-slate-800">Security Settings</h2>
-                
+                <div className="flex items-center gap-2 pb-3 border-b border-slate-800 [.light_&]:border-slate-200">
+                  <span className="text-lg">🔐</span>
+                  <h2 className="text-sm font-bold text-white [.light_&]:text-slate-800">Security Settings</h2>
+                </div>
                 <div className="space-y-3 font-mono text-[10px] text-slate-400">
-                  <div className="flex justify-between pb-2 border-b border-slate-800 [.light_&]:border-slate-200">
-                    <span className="text-slate-500 font-bold">Authentication:</span>
-                    <span className="text-violet-400 font-bold [.light_&]:text-violet-600">
+                  <div className="flex justify-between items-center py-2 border-b border-slate-800/60 [.light_&]:border-slate-200">
+                    <span className="text-slate-500 font-bold">Authentication</span>
+                    <span className="text-violet-400 font-bold bg-violet-500/10 px-2 py-0.5 rounded-lg [.light_&]:text-violet-600 [.light_&]:bg-violet-50">
                       {user.provider === "google" ? "Google SSO" : "Credentials"}
                     </span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-slate-800 [.light_&]:border-slate-200">
-                    <span className="text-slate-500 font-bold">Account ID:</span>
-                    <span className="text-slate-300 font-bold truncate max-w-[120px] [.light_&]:text-slate-700">{user.id}</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-800/60 [.light_&]:border-slate-200">
+                    <span className="text-slate-500 font-bold">Account ID</span>
+                    <span className="text-slate-300 font-bold truncate max-w-[140px] [.light_&]:text-slate-700">{user.id}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 font-bold">Billing Scope:</span>
-                    <span className="text-emerald-400 font-bold [.light_&]:text-emerald-650">United States</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-800/60 [.light_&]:border-slate-200">
+                    <span className="text-slate-500 font-bold">Email</span>
+                    <span className="text-slate-300 truncate max-w-[160px] [.light_&]:text-slate-700">{user.email}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-slate-500 font-bold">Billing Scope</span>
+                    <span className="text-emerald-400 font-bold [.light_&]:text-emerald-600">United States</span>
                   </div>
                 </div>
               </div>
 
-              {/* Free Consultant Meeting Card */}
+              {/* Free 1-on-1 Strategy Call */}
               <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-3xl p-6 space-y-4 text-left [.light_&]:bg-white [.light_&]:border-slate-200 shadow-sm">
-                <h3 className="text-xs font-bold text-slate-200 [.light_&]:text-slate-800">Free 1-on-1 Strategy Call</h3>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                <div className="flex items-center gap-2 pb-3 border-b border-slate-800 [.light_&]:border-slate-200">
+                  <span className="text-lg">📅</span>
+                  <h3 className="text-sm font-bold text-white [.light_&]:text-slate-800">Free 1-on-1 Strategy Call</h3>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
                   Book a complimentary session with an elite consultant to map out your SEO, page speed, and AEO optimization roadmap.
                 </p>
-                
+                <ul className="text-[10px] text-slate-500 space-y-1">
+                  <li>✅ 30-minute private consultation</li>
+                  <li>✅ Custom audit review walkthrough</li>
+                  <li>✅ Keyword &amp; competitor gap analysis</li>
+                </ul>
                 <button
                   onClick={() => openCalendly(user.email || "", user.name || "")}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 hover:border-violet-500/30 w-full py-2.5 text-xs font-bold text-violet-400 hover:text-violet-300 transition-all duration-200 cursor-pointer [.light_&]:bg-violet-50 [.light_&]:text-violet-600"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 w-full py-3 text-xs font-bold text-white transition-all duration-200 cursor-pointer border-0 shadow-lg shadow-violet-500/20"
                 >
-                  <span>📅 Schedule Meeting</span>
+                  📅 Schedule Free Meeting
                 </button>
               </div>
 
-              {/* Subscription Card details */}
-              <div className="bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 border border-slate-800 rounded-3xl p-6 space-y-3 text-left [.light_&]:from-violet-50 [.light_&]:to-fuchsia-50/40 [.light_&]:border-slate-200 shadow-sm">
-                <h3 className="text-xs font-bold text-slate-200 [.light_&]:text-slate-800">Billing & Subscriptions</h3>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+              {/* Billing & Subscriptions */}
+              <div className="bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 border border-violet-500/20 rounded-3xl p-6 space-y-4 text-left [.light_&]:from-violet-50 [.light_&]:to-fuchsia-50/40 [.light_&]:border-violet-200 shadow-sm ring-1 ring-violet-500/10 [.light_&]:ring-violet-100">
+                <div className="flex items-center gap-2 pb-3 border-b border-slate-800/40 [.light_&]:border-violet-200">
+                  <span className="text-lg">💳</span>
+                  <h3 className="text-sm font-bold text-white [.light_&]:text-slate-800">Billing &amp; Subscriptions</h3>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
                   Manage credit card details, check next invoice schedules, or adjust monitoring tier thresholds.
                 </p>
-                
-                <div className="rounded-xl bg-slate-950/40 border border-slate-800 p-3 space-y-2 font-mono text-[9px] [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
-                  <div className="flex justify-between">
-                    <span>Current Plan:</span>
-                    <span className="font-bold text-white capitalize [.light_&]:text-slate-900">{currentPlanName}</span>
+                <div className="rounded-xl bg-slate-950/50 border border-slate-800 p-4 space-y-3 font-mono text-[10px] [.light_&]:bg-white [.light_&]:border-slate-200">
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-800/60 [.light_&]:border-slate-200">
+                    <span className="text-slate-500">Current Plan</span>
+                    <span className="font-bold text-white capitalize bg-violet-500/10 text-violet-300 px-2 py-0.5 rounded-lg [.light_&]:text-violet-700 [.light_&]:bg-violet-50">{currentPlanName}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Rate:</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Monthly Rate</span>
                     <span className="font-bold text-white [.light_&]:text-slate-900">
-                      {user.subscription_tier === "free" ? "$0" : user.subscription_tier === "weekly" ? "$29/month" : user.subscription_tier === "agency" ? "$99/month" : "$199/month"}
+                      {user.subscription_tier === "free" ? "$0 / month" : user.subscription_tier === "weekly" ? "$29 / month" : user.subscription_tier === "agency" ? "$99 / month" : "$199 / month"}
                     </span>
                   </div>
                 </div>
-
-                {isPaid && (
+                {isPaid ? (
                   <button
                     onClick={handleStripePortal}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 w-full py-2.5 text-xs font-bold text-white transition-all duration-200 cursor-pointer border-0 shadow-md shadow-violet-500/10"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 w-full py-3 text-xs font-bold text-white transition-all duration-200 cursor-pointer border-0 shadow-md shadow-violet-500/20"
                   >
                     💳 Manage Billing Portal
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => router.push("/pricing/")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 w-full py-3 text-xs font-bold text-white transition-all duration-200 cursor-pointer border-0 shadow-lg shadow-violet-500/20"
+                  >
+                    ⚡ Upgrade Plan
                   </button>
                 )}
               </div>
 
-            </aside>
+            </div>
           </div>
         )}
+
+
 
         {/* Page Reports tab */}
         {activeTab === "pages" && (
