@@ -690,10 +690,34 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                               </span>
                               
                               <button
-                                onClick={() => router.push(`/audit/?id=${encodeURIComponent(audit.id)}`)}
-                                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 active:scale-95 px-4 py-2 text-xxs font-extrabold text-white transition-all duration-200 cursor-pointer border-0 shadow-md shadow-violet-500/10 hover:shadow-violet-500/20 hover:-translate-y-0.5"
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  const isMonitoringEligible = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi";
+                                  if (!isMonitoringEligible) {
+                                    if (confirm("Weekly monitoring requires a Pro Weekly, Agency, or Enterprise subscription. Would you like to upgrade now?")) {
+                                      router.push(`/checkout?plan=weekly&url=${encodeURIComponent(audit.website)}/`);
+                                    }
+                                  } else {
+                                    toggleMonitor(audit.id, audit.is_monitored === 1, audit.website); 
+                                  }
+                                }}
+                                className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-bold border transition-all duration-200 cursor-pointer shadow-sm ${
+                                  audit.is_monitored === 1 
+                                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 [.light_&]:bg-emerald-50 [.light_&]:text-emerald-700 [.light_&]:border-emerald-200"
+                                    : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900 [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-600 [.light_&]:hover:text-slate-900"
+                                }`}
                               >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                {audit.is_monitored === 1 ? "Monitored" : "Monitor"}
+                              </button>
+
+                              <button
+                                onClick={() => router.push(`/audit/?id=${encodeURIComponent(audit.id)}`)}
+                                className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 active:scale-95 px-3 py-1.5 text-[10px] font-bold text-white transition-all duration-200 cursor-pointer border-0 shadow-md shadow-violet-500/10 hover:shadow-violet-500/20"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
