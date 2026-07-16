@@ -695,7 +695,7 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
                                   const isMonitoringEligible = user.subscription_tier === "weekly" || user.subscription_tier === "agency" || user.subscription_tier === "multi";
                                   if (!isMonitoringEligible) {
                                     if (confirm("Weekly monitoring requires a Pro Weekly, Agency, or Enterprise subscription. Would you like to upgrade now?")) {
-                                      router.push(`/checkout?plan=weekly&url=${encodeURIComponent(audit.website)}/`);
+                                      router.push(`/checkout/?plan=weekly&url=${encodeURIComponent(audit.website)}`);
                                     }
                                   } else {
                                     toggleMonitor(audit.id, audit.is_monitored === 1, audit.website); 
