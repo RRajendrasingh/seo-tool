@@ -444,7 +444,7 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
           {/* Right side: Actions & User Initials */}
           <div className="flex items-center gap-4 text-slate-400 [.light_&]:text-slate-600">
             <button
-              onClick={() => openCalendly(user.email || "", user.name || "")}
+              onClick={() => router.push("/contact/")}
               className="hidden sm:flex items-center gap-1.5 text-xs font-semibold hover:text-white transition-colors cursor-pointer [.light_&]:hover:text-slate-900"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
