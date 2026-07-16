@@ -241,11 +241,7 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
 
           {/* Navigation Links */}
           <nav className={`flex flex-col overflow-y-auto gap-1 pb-2 md:pb-0 no-scrollbar ${(sidebarCollapsed && !mobileMenuOpen) ? "items-center" : "w-full"}`} aria-label="Sidebar Navigation">
-            {!(sidebarCollapsed && !mobileMenuOpen) && (
-              <div className="hidden md:block px-2 pb-1 text-[9px] font-extrabold uppercase tracking-widest text-slate-500">
-                Main Hub
-              </div>
-            )}
+
             {[
               { 
                 id: "overview", 
