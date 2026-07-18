@@ -3,6 +3,34 @@
 import { useState } from "react";
 import Link from "next/link";
 
+const USFlag = () => (
+  <svg viewBox="0 0 7410 3900" className="w-9 h-6 rounded shadow-sm border border-zinc-800/40 object-cover shrink-0 select-none">
+    <rect width="7410" height="3900" fill="#b22234"/>
+    <path d="M0,300h7410v300H0zm0,600h7410v300H0zm0,600h7410v300H0zm0,600h7410v300H0zm0,600h7410v300H0zm0,600h7410v300H0z" fill="#fff"/>
+    <rect width="2964" height="2100" fill="#3c3b6e"/>
+    <g fill="#fff">
+      {/* Row 1 */}
+      <circle cx="247" cy="175" r="40" /><circle cx="741" cy="175" r="40" /><circle cx="1235" cy="175" r="40" /><circle cx="1729" cy="175" r="40" /><circle cx="2223" cy="175" r="40" /><circle cx="2717" cy="175" r="40" />
+      {/* Row 2 */}
+      <circle cx="494" cy="350" r="40" /><circle cx="988" cy="350" r="40" /><circle cx="1482" cy="350" r="40" /><circle cx="1976" cy="350" r="40" /><circle cx="2470" cy="350" r="40" />
+      {/* Row 3 */}
+      <circle cx="247" cy="525" r="40" /><circle cx="741" cy="525" r="40" /><circle cx="1235" cy="525" r="40" /><circle cx="1729" cy="525" r="40" /><circle cx="2223" cy="525" r="40" /><circle cx="2717" cy="525" r="40" />
+      {/* Row 4 */}
+      <circle cx="494" cy="700" r="40" /><circle cx="988" cy="700" r="40" /><circle cx="1482" cy="700" r="40" /><circle cx="1976" cy="700" r="40" /><circle cx="2470" cy="700" r="40" />
+      {/* Row 5 */}
+      <circle cx="247" cy="875" r="40" /><circle cx="741" cy="875" r="40" /><circle cx="1235" cy="875" r="40" /><circle cx="1729" cy="875" r="40" /><circle cx="2223" cy="875" r="40" /><circle cx="2717" cy="875" r="40" />
+      {/* Row 6 */}
+      <circle cx="494" cy="1050" r="40" /><circle cx="988" cy="1050" r="40" /><circle cx="1482" cy="1050" r="40" /><circle cx="1976" cy="1050" r="40" /><circle cx="2470" cy="1050" r="40" />
+      {/* Row 7 */}
+      <circle cx="247" cy="1225" r="40" /><circle cx="741" cy="1225" r="40" /><circle cx="1235" cy="1225" r="40" /><circle cx="1729" cy="1225" r="40" /><circle cx="2223" cy="1225" r="40" /><circle cx="2717" cy="1225" r="40" />
+      {/* Row 8 */}
+      <circle cx="494" cy="1400" r="40" /><circle cx="988" cy="1400" r="40" /><circle cx="1482" cy="1400" r="40" /><circle cx="1976" cy="1400" r="40" /><circle cx="2470" cy="1400" r="40" />
+      {/* Row 9 */}
+      <circle cx="247" cy="1575" r="40" /><circle cx="741" cy="1575" r="40" /><circle cx="1235" cy="1575" r="40" /><circle cx="1729" cy="1575" r="40" /><circle cx="2223" cy="1575" r="40" /><circle cx="2717" cy="1575" r="40" />
+    </g>
+  </svg>
+);
+
 const countryFlags = {
   "United States": "us"
 };
@@ -120,10 +148,8 @@ export default function LocationsDirectory({ citiesDb }) {
               <div key={country} className="space-y-6">
                 {/* Section Title */}
                 <div className="flex items-center gap-4 border-b border-zinc-900 pb-4">
-                  {countryFlags[country] ? (
-                    <span className="text-4xl shadow-sm leading-none" role="img" aria-label={`${country} Flag`}>
-                      {country === "United States" ? "🇺🇸" : "🌐"}
-                    </span>
+                  {country === "United States" ? (
+                    <USFlag />
                   ) : (
                     <span className="text-4xl shadow-sm leading-none">🌐</span>
                   )}
