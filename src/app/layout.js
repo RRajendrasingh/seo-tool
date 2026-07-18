@@ -57,12 +57,12 @@ export default async function RootLayout({ children }) {
         <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
       </head>
       <body
-        className={`${geist.variable} ${geistMono.variable} min-h-full flex flex-col bg-background text-foreground transition-colors duration-300 selection:bg-violet-500/30 selection:text-violet-200 overflow-x-clip font-sans`}
+        className={`${geist.variable} ${geistMono.variable} min-h-full flex flex-col bg-background text-foreground transition-colors duration-300 selection:bg-violet-500/30 selection:text-violet-200 font-sans`}
         suppressHydrationWarning={true}
       >
         <TrackingScripts />
         <Navbar initialSession={session} />
-        <main className="flex-grow overflow-x-clip">
+        <main className="flex-grow">
           {children}
         </main>
         <Footer />

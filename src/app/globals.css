@@ -91,10 +91,13 @@ body {
   background-image: radial-gradient(circle at 50% -20%, #ffffff 0%, #f8fafc 100%) !important;
 }
 
-/* Allow sticky sidebar on admin page by overriding html, body, and main tag clip */
+/* Allow sticky sidebar/elements on admin and pricing pages by overriding html, body, and main tag clip */
 html:has(.admin-container),
 body:has(.admin-container),
-main:has(.admin-container) {
+main:has(.admin-container),
+html:has(.pricing-page),
+body:has(.pricing-page),
+main:has(.pricing-page) {
   overflow: visible !important;
   overflow-x: visible !important;
 }

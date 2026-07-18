@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 export default function PricingPage() {
@@ -8,10 +8,19 @@ export default function PricingPage() {
   const [activeFaq, setActiveFaq] = useState(null);
   const [isSticky, setIsSticky] = useState(false);
 
+  const tableRef = useRef(null);
+  const headerRef = useRef(null);
+
+  const handleScrollSync = (e) => {
+    if (headerRef.current) {
+      headerRef.current.scrollLeft = e.target.scrollLeft;
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      setIsSticky(offset > 320);
+      setIsSticky(offset > 120);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -167,26 +176,53 @@ export default function PricingPage() {
     },
   ];
 
+  const getShortPlanName = (name) => {
+    if (name.includes("Free")) return "Free";
+    if (name.includes("Starter")) return "Starter";
+    if (name.includes("Pro")) return "Pro";
+    if (name.includes("Agency")) return "Agency";
+    if (name.includes("Enterprise")) return "Ent.";
+    return name;
+  };
+
+  const getShortValue = (val) => {
+    if (typeof val === "boolean") return val;
+    if (val === "Continuous + API") return "Cont. + API";
+    if (val === "Continuous") return "Cont.";
+    if (val === "Full Analysis") return "Full";
+    if (val === "1 Domain") return "1 Dom.";
+    if (val === "3 Domains") return "3 Dom.";
+    if (val === "25 Domains") return "25 Dom.";
+    if (val === "100 Domains") return "100 Dom.";
+    return val;
+  };
+
+  const getShortCta = (key, cta) => {
+    if (key === "free") return "Free";
+    if (cta.includes("Contact")) return "Contact";
+    return "Buy";
+  };
+
   return (
-    <div className="bg-zinc-950 min-h-screen text-left relative overflow-x-hidden pb-20 [.light_&]:bg-slate-50 [.light_&]:text-slate-900">
+    <div className="bg-zinc-950 min-h-screen text-left relative pb-20 [.light_&]:bg-[#f8f6f0] [.light_&]:text-slate-900 pricing-page">
         
         {/* Decorative Grid Mesh */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
         {/* Hero Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 relative z-10 text-center">
-          <span className="text-xs font-semibold tracking-widest text-violet-400 uppercase bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-sm [.light_&]:bg-violet-50 [.light_&]:border-violet-200 [.light_&]:text-violet-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 sm:pt-16 sm:pb-12 relative z-10 text-center">
+          <span className="text-xs font-semibold tracking-widest text-violet-400 uppercase bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-sm [.light_&]:bg-violet-50 [.light_&]:border-violet-200 [.light_&]:text-violet-650">
             Plans & Pricing
           </span>
-          <h1 className="text-4xl sm:text-5xl font-black text-white mt-6 tracking-tight leading-tight [.light_&]:text-slate-900">
+          <h1 className="text-2xl sm:text-5xl font-black text-white mt-3 sm:mt-6 tracking-tight leading-tight [.light_&]:text-slate-900">
             Find the right plan for your search growth
           </h1>
-          <p className="text-sm text-zinc-400 mt-4 max-w-xl mx-auto leading-relaxed [.light_&]:text-slate-600">
+          <p className="text-xs sm:text-sm text-zinc-400 mt-2 sm:mt-4 max-w-xl mx-auto leading-relaxed [.light_&]:text-slate-600">
             Compare our subscription tiers to choose the optimal balance of technical speed audits, generative engine optimization simulations, and white-label agency tools.
           </p>
 
           {/* Billing Cycle Switch */}
-          <div className="flex items-center justify-center gap-4 mt-10">
+          <div className="flex items-center justify-center gap-4 mt-4 sm:mt-10">
             <span className={`text-xs font-medium ${billingCycle === "monthly" ? "text-white [.light_&]:text-slate-900" : "text-zinc-500"}`}>
               Monthly billing
             </span>
@@ -212,114 +248,158 @@ export default function PricingPage() {
 
         {/* Dynamic Comparison Matrix */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="border border-zinc-850 bg-zinc-900/10 rounded-3xl overflow-hidden backdrop-blur-md [.light_&]:border-slate-200 [.light_&]:bg-white shadow-xl">
-            
-            {/* Sticky/Fixed Plan Cards Header */}
-            <div className={`grid grid-cols-12 border-b border-zinc-850 p-6 sm:p-8 items-center transition-all duration-300 [.light_&]:border-slate-200 ${
-              isSticky 
-                ? "sticky top-16 bg-zinc-950/95 shadow-md z-40 backdrop-blur-lg border-t border-zinc-850 [.light_&]:bg-white/95 [.light_&]:border-slate-200" 
-                : "bg-transparent"
-            }`}>
-              <div className="col-span-12 lg:col-span-3 mb-4 lg:mb-0">
-                <span className="text-xs font-extrabold uppercase tracking-widest text-zinc-500 [.light_&]:text-slate-400">
-                  Feature Set
-                </span>
-              </div>
-              <div className="col-span-12 lg:col-span-9 grid grid-cols-5 gap-2 sm:gap-4 text-center">
-                {Object.entries(plans).map(([key, plan]) => (
-                  <div key={key} className="space-y-2">
-                    <span className="text-xs font-black text-white block truncate [.light_&]:text-slate-900">
-                      {plan.name}
+          
+          {/* Synced Sticky Header (pinned vertically at top-16) */}
+          <div 
+            ref={headerRef} 
+            className={`sticky top-16 z-40 overflow-hidden bg-[#09090b] [.light_&]:bg-[#efebe0] border-t border-x border-zinc-850 [.light_&]:border-[#e5e1d3] rounded-t-3xl transition-all duration-300 ${
+              isSticky ? "shadow-md border-b border-zinc-850/80 [.light_&]:border-b-[#e5e1d3]" : "shadow-sm"
+            }`}
+          >
+            <table className="w-full min-w-[740px] border-collapse text-left table-fixed">
+              <colgroup>
+                <col className="w-[140px] sm:w-[220px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+              </colgroup>
+              <thead>
+                <tr className="bg-transparent">
+                  {/* Top-Left: Feature Set (sticks left-0) */}
+                  <th className="p-4 bg-[#09090b] [.light_&]:bg-[#efebe0] border-r border-zinc-850/40 [.light_&]:border-[#e5e1d3] sticky left-0 z-50 rounded-tl-[22px]">
+                    <span className="text-xs font-extrabold uppercase tracking-widest text-zinc-500 [.light_&]:text-slate-400">
+                      Feature Set
                     </span>
-                    <div className="flex items-baseline justify-center gap-0.5">
-                      <span className="text-sm sm:text-base font-extrabold text-white [.light_&]:text-slate-900">
-                        {plan.price}
-                      </span>
-                      {key !== "free" && (
-                        <span className="text-[9px] sm:text-[10px] text-zinc-500 lowercase">
-                          /{plan.period}
-                        </span>
-                      )}
-                    </div>
-                    <Link
-                      href={plan.href}
-                      className={`inline-block w-full py-2 rounded-xl text-[9px] sm:text-[10px] font-bold text-center transition-all cursor-pointer ${
-                        key === "weekly"
-                          ? "bg-violet-600 text-white hover:bg-violet-500 shadow-md shadow-violet-600/10 hover:shadow-violet-600/20"
-                          : "border border-zinc-800 bg-zinc-950 text-zinc-300 hover:bg-zinc-900 [.light_&]:border-slate-200 [.light_&]:bg-slate-50 [.light_&]:text-slate-700 [.light_&]:hover:bg-slate-100"
+                  </th>
+                  {/* Plan Names and CTA buttons */}
+                  {Object.entries(plans).map(([key, plan], idx, arr) => (
+                    <th 
+                      key={key} 
+                      className={`p-4 text-center align-top bg-[#09090b] [.light_&]:bg-[#f9f6ee] ${
+                        idx === arr.length - 1 ? "rounded-tr-[22px]" : ""
                       }`}
                     >
-                      {plan.cta}
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
+                      <div className="space-y-2">
+                        <span className="text-[10px] sm:text-xs font-black text-white block truncate [.light_&]:text-slate-900">
+                          {getShortPlanName(plan.name)}
+                        </span>
+                        <div className="flex flex-col sm:flex-row items-center sm:items-baseline justify-center sm:gap-0.5">
+                          <span className="text-[9px] sm:text-base font-extrabold text-white [.light_&]:text-slate-900">
+                            {plan.price}
+                          </span>
+                          {key !== "free" && (
+                            <span className="text-[8px] sm:text-[10px] text-zinc-500 lowercase hidden sm:inline">
+                              /{plan.period}
+                            </span>
+                          )}
+                        </div>
+                        <Link
+                          href={plan.href}
+                          className={`inline-block w-full py-2 rounded-xl text-[9px] sm:text-[10px] font-bold text-center transition-all cursor-pointer ${
+                            key === "weekly"
+                              ? "bg-violet-600 text-white hover:bg-violet-500 shadow-md shadow-violet-600/10 hover:shadow-violet-600/20"
+                              : "border border-zinc-850 bg-[#09090b] text-zinc-300 hover:bg-[#18181b] [.light_&]:border-slate-200 [.light_&]:bg-[#efebe0] [.light_&]:text-slate-700 [.light_&]:hover:bg-slate-100"
+                          }`}
+                        >
+                          {plan.cta}
+                        </Link>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            </table>
+          </div>
 
-            {/* Matrix Comparison Table */}
-            <div className="divide-y divide-zinc-900 [.light_&]:divide-slate-100">
-              {featureGroups.map((group, groupIdx) => (
-                <div key={groupIdx} className="p-6 sm:p-8">
-                  <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 [.light_&]:text-slate-400">
-                    {group.category}
-                  </h3>
-                  <div className="space-y-6">
+          {/* Scrollable Table Body Container */}
+          <div 
+            ref={tableRef} 
+            onScroll={handleScrollSync} 
+            className="overflow-x-auto no-scrollbar bg-[#18181b]/10 [.light_&]:bg-[#f9f6ee] border-b border-x border-zinc-850 [.light_&]:border-[#e5e1d3] rounded-b-3xl shadow-xl"
+          >
+            <table className="w-full min-w-[740px] border-collapse text-left table-fixed">
+              <colgroup>
+                <col className="w-[140px] sm:w-[220px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+                <col className="w-[120px] sm:w-[150px]" />
+              </colgroup>
+              <tbody className="divide-y divide-zinc-900/50 [.light_&]:divide-[#e5e1d3]/50">
+                {featureGroups.map((group, groupIdx) => (
+                  <React.Fragment key={groupIdx}>
+                    {/* Category Header Row (Left-only alignment like Google One) */}
+                    <tr className="bg-[#18181b]/20 [.light_&]:bg-[#efebe0]/60">
+                      <td className="p-4 sticky left-0 z-20 bg-[#09090b] [.light_&]:bg-[#efebe0] font-bold text-xs text-white [.light_&]:text-slate-900 border-r border-zinc-850/40 [.light_&]:border-[#e5e1d3] w-[140px] sm:w-[220px] min-w-[140px] sm:min-w-[220px]">
+                        {group.category}
+                      </td>
+                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
+                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
+                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
+                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
+                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
+                    </tr>
+                    
+                    {/* Feature Rows */}
                     {group.features.map((feature, featureIdx) => (
-                      <div key={featureIdx} className="grid grid-cols-12 items-center gap-4 py-2 border-b border-zinc-900/50 pb-4 [.light_&]:border-slate-100/50 last:border-0 last:pb-0">
-                        
-                        {/* Feature Info */}
-                        <div className="col-span-12 lg:col-span-3 space-y-1">
-                          <h4 className="text-xs font-bold text-white [.light_&]:text-slate-900">
+                      <tr key={featureIdx} className="hover:bg-[#18181b]/5 [.light_&]:hover:bg-[#efebe0]/20 transition-colors">
+                        {/* Feature Info (sticky left-0) */}
+                        <td className="p-4 sticky left-0 z-20 bg-[#09090b] [.light_&]:bg-[#efebe0] border-r border-zinc-850/40 [.light_&]:border-[#e5e1d3] w-[140px] sm:w-[220px] min-w-[140px] sm:min-w-[220px] align-top">
+                          <h4 className="text-[10px] sm:text-xs font-bold text-white [.light_&]:text-slate-900">
                             {feature.name}
                           </h4>
-                          <p className="text-[10px] text-zinc-500 leading-normal max-w-xs [.light_&]:text-slate-500">
+                          <p className="text-[9px] sm:text-[10px] text-zinc-500 leading-normal mt-0.5 max-w-[200px] [.light_&]:text-slate-500 whitespace-normal">
                             {feature.desc}
                           </p>
-                        </div>
+                        </td>
 
                         {/* Feature Values across Tiers */}
-                        <div className="col-span-12 lg:col-span-9 grid grid-cols-5 gap-2 sm:gap-4 items-center text-center">
-                          {feature.values.map((val, idx) => (
-                            <div key={idx} className="flex justify-center text-xs">
+                        {feature.values.map((val, idx) => (
+                          <td key={idx} className="p-4 text-center align-middle w-[120px] sm:w-[150px] min-w-[120px] sm:min-w-[150px] bg-transparent [.light_&]:bg-[#f9f6ee]">
+                            <div className="flex justify-center text-xs">
                               {typeof val === "boolean" ? (
                                 val ? (
-                                  // Green Checkmark SVG (No Emoji)
-                                  <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 [.light_&]:bg-emerald-50 [.light_&]:text-emerald-600 [.light_&]:border-emerald-100">
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                  <span className={`w-4.5 h-4.5 rounded-full flex items-center justify-center border shadow-sm ${
+                                    idx >= 3
+                                      ? "bg-[#1a73e8] text-white border-[#1a73e8]"
+                                      : "bg-[#137333] text-white border-[#137333]"
+                                  }`}>
+                                    <svg className="w-2.5 h-2.5" fill="none" stroke="#ffffff" strokeWidth="3.5" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                     </svg>
                                   </span>
                                 ) : (
-                                  // Grey Cross SVG (No Emoji)
-                                  <span className="w-5 h-5 rounded-full bg-zinc-900 text-zinc-600 flex items-center justify-center border border-zinc-800/50 [.light_&]:bg-slate-100 [.light_&]:text-slate-400 [.light_&]:border-slate-200/50">
-                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                  <span className="text-[#bfae99] dark:text-[#5a5650] flex items-center justify-center">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                   </span>
                                 )
                               ) : (
-                                // Styled Text Pill
-                                <span className={`text-[9px] sm:text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                                <span className={`text-[7px] sm:text-[10px] font-bold px-0.5 sm:px-2.5 py-1 rounded-full border min-h-[20px] sm:min-h-[24px] flex items-center justify-center whitespace-normal break-words leading-none text-center ${
                                   val.includes("Full") || val.includes("Advanced") || val.includes("Continuous")
                                     ? "bg-violet-500/10 text-violet-400 border-violet-500/20 [.light_&]:bg-violet-50 [.light_&]:text-violet-700 [.light_&]:border-violet-200"
-                                    : "bg-zinc-900 text-zinc-400 border-zinc-800 [.light_&]:bg-slate-100 [.light_&]:text-slate-600 [.light_&]:border-slate-200"
+                                    : "bg-[#18181b] text-zinc-400 border-zinc-800 [.light_&]:bg-slate-100 [.light_&]:text-slate-600 [.light_&]:border-slate-200"
                                 }`}>
-                                  {val}
+                                  <span className="hidden sm:inline">{val}</span>
+                                  <span className="inline sm:hidden">{getShortValue(val)}</span>
                                 </span>
                               )}
                             </div>
-                          ))}
-                        </div>
-
-                      </div>
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
+
 
         {/* FAQ Accordion Section */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-24 relative z-10">

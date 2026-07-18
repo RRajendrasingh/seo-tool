@@ -800,15 +800,6 @@ function CheckoutContent() {
               <p className="truncate"><span className="text-zinc-650">Email:</span> {email || "N/A"}</p>
               <p><span className="text-zinc-650">Phone:</span> {phone || "N/A"}</p>
             </div>
-            
-            <button
-              onClick={() => {
-                router.push(`/audit/?url=${encodeURIComponent(url)}&canceled=true`);
-              }}
-              className="text-[10px] text-zinc-400 hover:text-white transition-all underline flex items-center gap-1 pt-2 cursor-pointer"
-            >
-              ← Cancel & return to audit dashboard
-            </button>
           </div>
         </div>
 
