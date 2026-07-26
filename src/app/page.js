@@ -281,7 +281,7 @@ export default function Home() {
         </section>
 
         {/* 3. VIDEO INTRO DEMO */}
-        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section className="relative z-10 max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-10 sm:py-16">
           <div className="text-center max-w-3xl mx-auto mb-10">
             <div className="mb-3">
               <span className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-mono tracking-widest uppercase rounded-md">
