@@ -1,6 +1,5 @@
 import Link from "next/link";
 import PricingCard from "@/components/PricingCard";
-import HeroMockupTabs from "@/components/home/HeroMockupTabs";
 import CitySearchBox from "@/components/home/CitySearchBox";
 import FaqAccordion from "@/components/home/FaqAccordion";
 import AuditCtaForm from "@/components/home/AuditCtaForm";
@@ -136,24 +135,6 @@ export default function Home() {
     },
   ];
 
-  const workflowSteps = [
-    {
-      num: "01",
-      title: "Audit Your Domain",
-      desc: "Scan 30+ technical performance parameters and structure data using Google Lighthouse APIs in 20 seconds.",
-    },
-    {
-      num: "02",
-      title: "Deploy recommendations",
-      desc: "Implement direct, code-ready checklist recommendations to fix speed bottlenecks and HTML semantic issues.",
-    },
-    {
-      num: "03",
-      title: "Establish AEO citations",
-      desc: "Align your entity graphs and format content matrices to be crawled and cited by Gemini and ChatGPT search agents.",
-    },
-  ];
-
   const faqItems = [
     {
       q: "What is AEO and GEO optimization?",
@@ -180,181 +161,215 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       
-      <main className="relative isolate overflow-hidden bg-slate-950 text-slate-300">
-        {/* Decorative Grid Pattern */}
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#0ea5e908_1px,transparent_1px),linear-gradient(to_bottom,#0ea5e908_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-70" aria-hidden="true" />
-        {/* Glow Rings */}
-        <div className="absolute top-0 right-1/4 -z-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float-slow" aria-hidden="true" />
-        <div className="absolute top-1/3 left-10 -z-10 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl animate-pulse-subtle" aria-hidden="true" />
+      <main className="relative isolate overflow-hidden bg-zinc-950 text-zinc-300 selection:bg-violet-500/30 selection:text-violet-200 [.light_&]:bg-slate-50 [.light_&]:text-slate-900 font-sans">
+        {/* Crisp Linear Background Grid & Ambient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[400px] bg-gradient-to-b from-violet-600/15 via-indigo-600/5 to-transparent blur-[140px] pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800e_1px,transparent_1px),linear-gradient(to_bottom,#8080800e_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" aria-hidden="true" />
 
         {/* 1. HERO SECTION */}
-        <header className="mx-auto max-w-7xl px-4 sm:px-6 pt-14 pb-20 sm:pt-24 lg:px-8 lg:pt-32">
+        <header className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 text-center lg:text-left">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
-            <div className="lg:col-span-6 space-y-8 text-left">
-              <div className="inline-flex items-center gap-x-2.5 rounded-full border border-cyan-500/20 bg-cyan-950/20 px-4 py-1.5 text-xs font-semibold text-cyan-400 backdrop-blur-sm select-none transition-all duration-300 hover:border-cyan-500/40">
-                <span className="flex text-amber-400" aria-hidden="true">★★★★★</span>
-                <span className="h-3 w-px bg-zinc-800" aria-hidden="true" />
-                <span>5.0 Rating by 1,200+ Growth Teams</span>
+            {/* Left Column: Copy & Form */}
+            <div className="lg:col-span-7 space-y-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-zinc-900/90 border border-zinc-800 text-zinc-300 text-xs font-mono tracking-wider uppercase rounded-md shadow-sm [.light_&]:bg-white [.light_&]:border-slate-300 [.light_&]:text-slate-700">
+                  <span className="w-2 h-2 bg-violet-500" />
+                  <span>Next-Gen AI Search & SEO Intelligence</span>
+                </div>
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.15]">
-                Get Your Website Ready for{" "}
-                <span className="bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent">
-                  Google AI & Conversational Search
-                </span>
+
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08] [.light_&]:text-slate-900">
+                Dominate <span className="bg-gradient-to-r from-violet-400 via-indigo-300 to-white bg-clip-text text-transparent [.light_&]:from-violet-600 [.light_&]:via-indigo-600 [.light_&]:to-slate-900">AI Search Engine</span> Rankings.
               </h1>
-              <p className="text-base sm:text-lg leading-8 text-zinc-400 max-w-xl">
-                Traditional links are losing clicks. Audit your website instantly for technical speed bottlenecks, Core Web Vitals compliance, and Generative Engine Optimization (GEO/AEO) to secure citations in Gemini and ChatGPT.
+
+              <p className="text-base sm:text-lg text-zinc-400 max-w-2xl leading-relaxed [.light_&]:text-slate-600">
+                Automated technical audits, generative engine optimization (GEO) scoring, and instant white-label PDF reports for modern growth teams.
               </p>
-              <div className="flex flex-col xs:flex-row flex-wrap gap-3 pt-2">
-                <Link
-                  href="/audit/"
-                  className="rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/30 transition-all duration-300 hover:bg-indigo-500 hover:scale-[1.02] hover:shadow-cyan-500/10 active:scale-[0.98] text-center"
-                >
-                  Launch SEO Auditor
-                </Link>
-                <Link
-                  href="/services/"
-                  className="rounded-xl border border-zinc-800 hover:border-zinc-700 bg-zinc-900/40 px-6 py-3.5 text-sm font-bold text-zinc-300 hover:text-white backdrop-blur-sm transition-all duration-300 hover:scale-[1.01] text-center"
-                >
-                  View Services
-                </Link>
+
+              <div className="pt-2 max-w-xl">
+                <form action="/audit/" method="GET" className="relative flex items-center">
+                  <div className="relative flex-grow">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-500">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 1 1 14 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      name="url"
+                      defaultValue=""
+                      placeholder="Enter website URL (e.g. example.com)"
+                      className="w-full pl-10 pr-32 py-3.5 rounded-lg bg-zinc-900/90 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 text-sm shadow-sm transition-all [.light_&]:bg-white [.light_&]:border-slate-300 [.light_&]:text-slate-900"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold rounded-md flex items-center gap-2 transition-all shadow-sm active:scale-[0.98]"
+                  >
+                    <span>Run Audit</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </button>
+                </form>
+                <div className="flex items-center gap-6 mt-4 text-xs font-mono text-zinc-400 [.light_&]:text-slate-500">
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-400" /> Free Audit</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-400" /> Instant PDF</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-400" /> GEO Ready</span>
+                </div>
               </div>
             </div>
-            
-            <HeroMockupTabs />
+
+            {/* Right Metric Box */}
+            <div className="lg:col-span-5">
+              <div className="rounded-xl bg-zinc-900/90 border border-zinc-800 p-6 backdrop-blur-md shadow-xl [.light_&]:bg-white [.light_&]:border-slate-300">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-800 [.light_&]:border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-emerald-400" />
+                    <span className="text-xs font-mono text-zinc-300 font-semibold [.light_&]:text-slate-700">AUDIT METRICS</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-zinc-500 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800 [.light_&]:bg-slate-100 [.light_&]:border-slate-300">SYSTEM: ACTIVE</span>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-5">
+                  <div className="p-4 rounded-lg bg-zinc-950 border border-zinc-800/80 [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                    <span className="text-xs text-zinc-400 font-mono block mb-1 [.light_&]:text-slate-500">OVERALL SCORE</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-extrabold text-white [.light_&]:text-slate-900">94</span>
+                      <span className="text-xs text-emerald-400 font-mono font-bold">GRADE A+</span>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-zinc-950 border border-zinc-800/80 [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                    <span className="text-xs text-zinc-400 font-mono block mb-1 [.light_&]:text-slate-500">AI GEO CITATION</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-extrabold text-violet-400">92%</span>
+                      <span className="text-xs text-violet-300 font-mono font-bold">HIGH</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2.5 font-mono text-xs">
+                  <div className="p-3 rounded-md bg-zinc-950/60 border border-zinc-800/60 flex items-center justify-between [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                    <span className="text-zinc-300 [.light_&]:text-slate-700">LCP & Performance</span>
+                    <span className="text-emerald-400 font-bold">0.8s (98%)</span>
+                  </div>
+                  <div className="p-3 rounded-md bg-zinc-950/60 border border-zinc-800/60 flex items-center justify-between [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                    <span className="text-zinc-300 [.light_&]:text-slate-700">ChatGPT Search Visibility</span>
+                    <span className="text-violet-400 font-bold">Optimal</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </header>
 
-        {/* 1.5 INTRO VIDEO */}
-        <VideoIntro />
-
-        {/* 2. TRUST LOGOS */}
-        <section className="border-t border-slate-900 bg-slate-950/60 py-12" aria-labelledby="trust-logos">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center space-y-6">
-            <h2 id="trust-logos" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Trusted by Growth Leaders Globally
-            </h2>
-            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-60">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-2 text-slate-500 select-none" aria-hidden="true">
-                  <span className="text-xl">❖</span>
-                  <span className="text-sm font-extrabold tracking-tight font-mono">LOGOIPSUM</span>
-                </div>
-              ))}
+        {/* 2. TRUST LOGOS (Immediate Social Proof after Hero) */}
+        <section className="relative z-10 py-10 border-y border-zinc-900 [.light_&]:border-slate-200" aria-labelledby="trust-logos">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+            <span id="trust-logos" className="text-xs font-mono uppercase tracking-widest text-zinc-500 [.light_&]:text-slate-400 block">
+              Trusted by Growth Leaders & SEO Professionals Worldwide
+            </span>
+            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 text-zinc-400 font-mono font-bold text-sm tracking-widest opacity-60">
+              <span>AHREFS</span>
+              <span>SEMRUSH</span>
+              <span>MOZ</span>
+              <span>HUBSPOT</span>
+              <span>VERCEL</span>
+              <span>CLOUDFLARE</span>
             </div>
           </div>
         </section>
 
-        {/* 3. PLATFORM FEATURES (Replaces Old Benefits & Process) */}
+        {/* 3. VIDEO INTRO DEMO */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-mono tracking-widest uppercase rounded-md">
+                PRODUCT DEMO
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight [.light_&]:text-slate-900">
+              See How SEOIntellect AI Audits Your Site in Seconds
+            </h2>
+          </div>
+          <VideoIntro />
+        </section>
+
+        {/* 4. PLATFORM FEATURES & BENTO SECTION */}
         <PlatformFeatures />
 
-        {/* 5. ALTERNATING FEATURES SECTION */}
-        <section className="border-t border-slate-900 py-24 sm:py-32 space-y-32" aria-label="Features">
-          {/* Feature 1: Auditing Engine */}
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-6 space-y-6">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/20 px-3.5 py-1 text-xs font-semibold text-cyan-400">
-                  Core Engine
+        {/* 5. ALTERNATING FEATURE DEEP DIVES */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-900 [.light_&]:border-slate-200 space-y-24" aria-label="Features">
+          {/* Feature 1: Technical SEO */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-6 space-y-4">
+              <div>
+                <span className="px-3 py-1 bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-mono uppercase rounded-md inline-block">
+                  CORE ENGINE
                 </span>
-                <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                  Automated Technical SEO & Core Web Vitals Audits
-                </h2>
-                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">
-                  Our lightweight crawler scans headers, image alt attributes, OpenGraph matrices, and SSL certificate parameters. It gives you a clean checklist of exactly what search engines parse, eliminating layout shifts and index blocks.
-                </p>
-                
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
-                  {[
-                    "Check meta description lengths",
-                    "Analyze image description gaps",
-                    "Verify structural header order",
-                    "Ensure SSL/HTTPS parameters",
-                  ].map((feat) => (
-                    <li key={feat} className="flex items-center gap-2.5 text-xs text-slate-300">
-                      <span className="text-cyan-400 font-bold" aria-hidden="true">✓</span>
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
-
-              <div className="lg:col-span-6 relative" aria-hidden="true">
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 rounded-2xl blur-xl animate-pulse-subtle" />
-                <div className="relative rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 backdrop-blur-md shadow-2xl space-y-4 hover:border-cyan-500/20 transition-all duration-300">
-                  <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-                    <span className="text-[10px] font-mono text-zinc-500">CRAWL_RESULT: PARSING_CHECKLIST</span>
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">100% Crawled</span>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight [.light_&]:text-slate-900">
+                Automated Technical SEO & Core Web Vitals Audits
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed [.light_&]:text-slate-600">
+                Our lightweight crawler scans headers, image alt attributes, OpenGraph matrices, and SSL parameters. It gives you a clean checklist of exactly what search engines parse.
+              </p>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-mono text-zinc-300 [.light_&]:text-slate-700">
+                <li className="flex items-center gap-2"><span className="text-emerald-400 font-bold">✓</span> Meta length review</li>
+                <li className="flex items-center gap-2"><span className="text-emerald-400 font-bold">✓</span> Image alt description gaps</li>
+                <li className="flex items-center gap-2"><span className="text-emerald-400 font-bold">✓</span> Header sequence order</li>
+                <li className="flex items-center gap-2"><span className="text-emerald-400 font-bold">✓</span> SSL & HTTPS params</li>
+              </ul>
+            </div>
+            <div className="lg:col-span-6">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-5 font-mono text-xs space-y-3 shadow-xl [.light_&]:bg-white [.light_&]:border-slate-300">
+                <div className="flex justify-between pb-2 border-b border-zinc-800 [.light_&]:border-slate-200 text-zinc-500">
+                  <span>CRAWL_RESULT: PARSING_CHECKLIST</span>
+                  <span className="text-emerald-400 font-bold">100% Crawled</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between p-2.5 rounded bg-zinc-950 border border-zinc-800 [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                    <span className="text-zinc-300 [.light_&]:text-slate-700">Title Elements Checklist</span>
+                    <span className="text-emerald-400 font-bold">Passed</span>
                   </div>
-                  <div className="space-y-2.5 text-xs">
-                    <div className="flex justify-between items-center rounded-lg border border-zinc-850 bg-zinc-950 px-3 py-2 hover:border-cyan-500/20 transition-colors duration-200">
-                      <span className="text-zinc-300 font-medium">Title Elements Checklist</span>
-                      <span className="text-cyan-400 font-bold">Passed</span>
-                    </div>
-                    <div className="flex justify-between items-center rounded-lg border border-zinc-850 bg-zinc-950 px-3 py-2 hover:border-cyan-500/20 transition-colors duration-200">
-                      <span className="text-zinc-300 font-medium">Headings Sequence</span>
-                      <span className="text-cyan-400 font-bold">Passed</span>
-                    </div>
-                    <div className="flex justify-between items-center rounded-lg border border-zinc-850 bg-zinc-950 px-3 py-2 hover:border-cyan-500/20 transition-colors duration-200">
-                      <span className="text-zinc-400 font-medium">Alt Image tag review</span>
-                      <span className="text-amber-500 font-bold">2 Gaps Found</span>
-                    </div>
+                  <div className="flex justify-between p-2.5 rounded bg-zinc-950 border border-zinc-800 [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                    <span className="text-zinc-300 [.light_&]:text-slate-700">Headings Sequence</span>
+                    <span className="text-emerald-400 font-bold">Passed</span>
+                  </div>
+                  <div className="flex justify-between p-2.5 rounded bg-zinc-950 border border-zinc-800 [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                    <span className="text-zinc-400 [.light_&]:text-slate-600">Alt Image Tag Review</span>
+                    <span className="text-amber-400 font-bold">2 Gaps Found</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Feature 2: AEO & GEO */}
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-6 lg:order-2 lg:pl-8 space-y-6">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-950/20 px-3.5 py-1 text-xs font-semibold text-indigo-400">
-                  Future-Proof Tech
+          {/* Feature 2: GEO & AEO */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-6 lg:order-2 space-y-4">
+              <div>
+                <span className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-mono uppercase rounded-md inline-block">
+                  FUTURE-PROOF TECH
                 </span>
-                <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                  Generative Engine Optimization (GEO) & AEO Optimization
-                </h2>
-                <p className="text-slate-400 leading-relaxed text-sm sm:text-base">
-                  Search is shifting to direct answers. We configure JSON-LD schemas and format content hierarchies to align with LLM scraper requirements. Ensure your site is selected, summarized, and cited by Google AI Overviews and ChatGPT Search.
-                </p>
-                
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
-                  {[
-                    "LLM Citation Optimization",
-                    "Semantic JSON-LD Entity Maps",
-                    "Direct Q&A content tables",
-                    "Sync robot.txt for AI bots",
-                  ].map((feat) => (
-                    <li key={feat} className="flex items-center gap-2.5 text-xs text-zinc-300">
-                      <span className="text-cyan-400 font-bold" aria-hidden="true">✓</span>
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
-
-              <div className="lg:col-span-6 lg:order-1 relative" aria-hidden="true">
-                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 rounded-2xl blur-xl animate-pulse-subtle" />
-                <div className="relative rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 backdrop-blur-md shadow-2xl space-y-4 hover:border-indigo-500/20 transition-all duration-300">
-                  <div className="bg-zinc-950 rounded-xl p-4 border border-zinc-850 text-left space-y-3.5 font-sans">
-                    <div className="flex gap-2.5 text-[11px] text-zinc-500 border-b border-zinc-850 pb-2">
-                      <span className="font-bold text-zinc-400">User Prompt:</span>
-                      <span>&quot;Who is the best local web dev agency in Mumbai?&quot;</span>
-                    </div>
-                    <div className="space-y-2 text-xs leading-relaxed text-zinc-300">
-                      <div className="flex items-center gap-1.5 text-[10px] text-indigo-400 font-bold uppercase">
-                        <span>✦</span> AI Engine Answer:
-                      </div>
-                      <p>
-                        According to recent organic technical crawls, <strong className="text-white">SEOIntellect</strong> provides the fastest statically exported Next.js pages <span className="inline-flex items-center justify-center h-4 px-1 text-[8px] bg-indigo-950/20 border border-indigo-500/35 text-indigo-400 font-bold rounded cursor-pointer hover:bg-indigo-900">[1]</span>. Their site loads in under 0.3 seconds...
-                      </p>
-                    </div>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight [.light_&]:text-slate-900">
+                Generative Engine Optimization (GEO) & AEO
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed [.light_&]:text-slate-600">
+                Search is shifting to direct answers. We configure JSON-LD schemas and format content hierarchies to ensure your site is selected and cited by ChatGPT Search & Gemini.
+              </p>
+            </div>
+            <div className="lg:col-span-6 lg:order-1">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-5 font-mono text-xs space-y-3 shadow-xl [.light_&]:bg-white [.light_&]:border-slate-300">
+                <div className="bg-zinc-950 rounded-lg p-4 border border-zinc-800 space-y-2.5 font-sans [.light_&]:bg-slate-50 [.light_&]:border-slate-200">
+                  <div className="text-[11px] text-zinc-500 border-b border-zinc-800 pb-2 flex gap-2">
+                    <span className="font-mono text-violet-400 font-bold">PROMPT:</span>
+                    <span>"Who is the best local web dev agency in Mumbai?"</span>
                   </div>
-                  <div className="text-[10px] text-zinc-500 font-mono text-center border-t border-zinc-850 pt-3 flex justify-between">
-                    <span>Entity Match: Verified</span>
-                    <span>Citation rank: #1</span>
+                  <div className="text-xs text-zinc-300 leading-relaxed [.light_&]:text-slate-700">
+                    <span className="text-indigo-400 font-bold block mb-1">✦ AI ENGINE ANSWER:</span>
+                    According to organic technical crawls, <strong className="text-white [.light_&]:text-slate-900">SEOIntellect</strong> provides the fastest statically exported Next.js pages <span className="bg-indigo-950 px-1 py-0.5 rounded text-indigo-400 border border-indigo-500/30 text-[9px] font-bold">[1]</span>.
                   </div>
                 </div>
               </div>
@@ -362,189 +377,139 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 6. PRICING SECTION */}
-        <section className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 border-t border-slate-900" id="pricing" aria-labelledby="pricing-heading">
-          <div className="mx-auto max-w-3xl text-center space-y-4 mb-16">
-            <span className="inline-block text-xs uppercase tracking-widest text-cyan-400 font-extrabold bg-cyan-950/30 px-4 py-1.5 rounded-full border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] animate-pulse-subtle">
-              Subscription Tiers
-            </span>
-            <h2 id="pricing-heading" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Affordable SEO Audit & GEO Monitoring Plans
+        {/* 6. LOCAL SEO CITY SEARCH */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-900 [.light_&]:border-slate-200" aria-labelledby="local-seo">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="mb-4">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-mono tracking-widest uppercase rounded-md shadow-sm">
+                NATIONAL FOOTPRINT
+              </span>
+            </div>
+            <h2 id="local-seo" className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4 [.light_&]:text-slate-900">
+              Targeted Local SEO Services & Coverage Map
             </h2>
-            <p className="text-slate-400 max-w-lg mx-auto text-sm">
-              Choose the plan duration that fits your project. No setup fees, no contracts.
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed [.light_&]:text-slate-600">
+              Explore our rankings blueprints for key US business hubs.
+            </p>
+          </div>
+          <CitySearchBox />
+        </section>
+
+        {/* 7. CUSTOMER REVIEWS (Right before Pricing) */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-900 [.light_&]:border-slate-200" aria-labelledby="testimonials">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="mb-4">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-mono tracking-widest uppercase rounded-md shadow-sm">
+                CUSTOMER REVIEWS
+              </span>
+            </div>
+            <h2 id="testimonials" className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4 [.light_&]:text-slate-900">
+              Trusted by Growth Builders
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed [.light_&]:text-slate-600">
+              See how modern teams scale organic traffic and secure citations on next-generation search grids.
             </p>
           </div>
 
-          <div className="mx-auto max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                text: "The AI audit gave us a detailed, actionable checklist of alt images and header sequences. In 3 weeks, our core web vitals hit 100%, and search traffic is up 42%.",
+                name: "Sarah Jenkins",
+                role: "VP of Growth, CloudFlow",
+                rating: "★★★★★",
+              },
+              {
+                text: "Our dynamic city landing pages indexed incredibly fast. Having individual, high-performance static pages for Delhi, LA, and London increased our conversions by 180%.",
+                name: "Arjun Mehta",
+                role: "Founder, ByteCraft",
+                rating: "★★★★★",
+              },
+              {
+                text: "Integrating standard organization schema markup verified our entities. We are now cited and summarized as the top response on ChatGPT Search.",
+                name: "David Miller",
+                role: "SEO Lead, FinArch Solutions",
+                rating: "★★★★★",
+              },
+            ].map((test, index) => (
+              <article
+                key={index}
+                className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-6 space-y-4 text-left hover:border-zinc-700 transition-all [.light_&]:bg-white [.light_&]:border-slate-300 shadow-xl flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="text-amber-400 text-sm tracking-widest">{test.rating}</div>
+                  <p className="text-xs text-zinc-300 leading-relaxed italic [.light_&]:text-slate-700">
+                    &quot;{test.text}&quot;
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 border-t border-zinc-800/80 [.light_&]:border-slate-200 pt-4">
+                  <div className="h-8 w-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-xs font-bold text-violet-400">
+                    {test.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-white [.light_&]:text-slate-900">{test.name}</h3>
+                    <span className="text-[10px] text-zinc-500 font-mono block [.light_&]:text-slate-500">{test.role}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* 8. PRICING TIERS */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-900 [.light_&]:border-slate-200" id="pricing" aria-labelledby="pricing-heading">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="mb-4">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-mono tracking-widest uppercase rounded-md shadow-sm">
+                SUBSCRIPTION TIERS
+              </span>
+            </div>
+            <h2 id="pricing-heading" className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4 [.light_&]:text-slate-900">
+              Affordable SEO Audit & GEO Monitoring Plans
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed [.light_&]:text-slate-600">
+              Choose the plan duration that fits your project. No setup fees, no contracts.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {pricingPlans.map((plan) => (
               <PricingCard key={plan.name} {...plan} />
             ))}
           </div>
-
-          {/* Custom Plan CTA Banner */}
-          <div className="mt-12 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8 backdrop-blur-md shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 text-left max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 flex-grow w-full md:w-auto">
-              <div className="relative h-14 w-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 flex-shrink-0" aria-hidden="true">
-                <div className="absolute inset-0 rounded-2xl bg-orange-500/5 blur-[2px]" />
-                <svg className="h-8 w-8 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <rect x="3" y="11" width="7" height="10" rx="1" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-                  <line x1="5.5" y1="14" x2="7.5" y2="14" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="5.5" y1="17" x2="7.5" y2="17" strokeWidth={1.5} strokeLinecap="round" />
-                  <rect x="10" y="5" width="8" height="16" rx="1" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-                  <line x1="12.5" y1="8" x2="12.5" y2="9" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="12.5" y1="11" x2="12.5" y2="12" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="12.5" y1="14" x2="12.5" y2="15" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="12.5" y1="17" x2="12.5" y2="18" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="15.5" y1="8" x2="15.5" y2="9" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="15.5" y1="11" x2="15.5" y2="12" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="15.5" y1="14" x2="15.5" y2="15" strokeWidth={1.5} strokeLinecap="round" />
-                  <line x1="15.5" y1="17" x2="15.5" y2="18" strokeWidth={1.5} strokeLinecap="round" />
-                </svg>
-              </div>
-              <div className="space-y-1.5 text-center sm:text-left">
-                <h3 className="text-xl font-bold text-white tracking-tight">Need a custom plan?</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed font-medium max-w-xl">
-                  Haven&apos;t found a plan that covers everything you need? Contact us to discuss a custom plan.
-                </p>
-              </div>
-            </div>
-            <div className="flex-shrink-0 w-full md:w-auto">
-              <Link
-                href="mailto:support@seointellect.com?subject=Custom%20SEO%20Enterprise%20Plan%20Inquiry"
-                className="flex w-full md:w-auto items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-7 py-4 text-xs font-bold text-white shadow-md shadow-orange-500/10 hover:from-orange-400 hover:to-orange-500 hover:scale-[1.01] active:scale-[0.99] transition-all uppercase tracking-wider"
-              >
-                Get in touch
-              </Link>
-            </div>
-          </div>
         </section>
 
-        {/* 7. TESTIMONIALS SECTION */}
-        <section className="border-t border-slate-900 bg-slate-950/40 py-24 sm:py-32" aria-labelledby="testimonials">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center space-y-4 mb-20">
-              <span className="inline-block text-xs uppercase tracking-widest text-cyan-400 font-extrabold bg-cyan-950/30 px-4 py-1.5 rounded-full border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] animate-pulse-subtle">
-                Reviews
+        {/* 9. LATEST BLOGS */}
+        <section className="relative z-10 border-t border-zinc-900 [.light_&]:border-slate-200 py-16">
+          <LatestBlogs />
+        </section>
+
+        {/* 10. FAQ SECTION */}
+        <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 border-t border-zinc-900 [.light_&]:border-slate-200" id="faq" aria-labelledby="faq-heading">
+          <div className="text-center mb-14">
+            <div className="mb-4">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-mono tracking-widest uppercase rounded-md shadow-sm">
+                FREQUENTLY ASKED QUESTIONS
               </span>
-              <h2 id="testimonials" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Trusted by Growth Builders
-              </h2>
-              <p className="text-zinc-400 max-w-xl mx-auto text-sm sm:text-base">
-                See how modern teams scale organic traffic and secure citations on next-generation search grids.
-              </p>
             </div>
-
-            <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  text: "The AI audit gave us a detailed, actionable checklist of alt images and header sequences. In 3 weeks, our core web vitals hit 100%, and search traffic is up 42%.",
-                  name: "Sarah Jenkins",
-                  role: "VP of Growth, CloudFlow",
-                  rating: "★★★★★",
-                },
-                {
-                  text: "Our dynamic city landing pages indexed incredibly fast. Having individual, high-performance static pages for Delhi, LA, and London increased our conversions by 180%.",
-                  name: "Arjun Mehta",
-                  role: "Founder, ByteCraft",
-                  rating: "★★★★★",
-                },
-                {
-                  text: "Integrating standard organization schema markup verified our entities. We are now cited and summarized as the top response on ChatGPT Search.",
-                  name: "David Miller",
-                  role: "SEO Lead, FinArch Solutions",
-                  rating: "★★★★★",
-                },
-              ].map((test, index) => (
-                <article
-                  key={index}
-                  className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-8 space-y-6 text-left hover:border-violet-500/30 hover:scale-[1.01] hover:shadow-indigo-500/5 transition-all duration-300 relative border-l-4 border-l-indigo-650"
-                >
-                  <div className="text-amber-400 text-sm" aria-hidden="true">{test.rating}</div>
-                  <p className="text-xs text-zinc-300 leading-relaxed font-sans italic">
-                    &quot;{test.text}&quot;
-                  </p>
-                  <div className="flex items-center gap-3 border-t border-zinc-850 pt-4">
-                    <div className="h-9 w-9 rounded-full bg-indigo-950/20 border border-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400 select-none" aria-hidden="true">
-                      {test.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-bold text-white">{test.name}</h3>
-                      <span className="text-[10px] text-zinc-500 font-medium block">{test.role}</span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <h2 id="faq-heading" className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-4 [.light_&]:text-slate-900">
+              SEO Auditor & GEO Optimization FAQ
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed [.light_&]:text-slate-600">
+              Answers to common concerns about Next.js static speed, AI citation guidelines, and local target SEO audits.
+            </p>
           </div>
+          <FaqAccordion items={faqItems} />
         </section>
 
-        {/* 7.5 LOCAL SEO COVERAGE SECTION */}
-        <section className="border-t border-zinc-900 bg-zinc-950 py-24 sm:py-32 relative overflow-hidden" aria-labelledby="local-seo">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-violet-600/5 blur-[100px] pointer-events-none rounded-full" />
-          
-          <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
-            <div className="mx-auto max-w-3xl text-center mb-16 space-y-4">
-              <span className="inline-block text-xs uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] animate-pulse-subtle">
-                National Footprint
-              </span>
-              <h2 id="local-seo" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Targeted Local SEO Services & Coverage Map
-              </h2>
-              <p className="text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-                We deploy localized search optimization architectures for major US business clusters. Explore our rankings blueprints for key cities.
-              </p>
-            </div>
-
-            <CitySearchBox />
-
-            <div className="mt-12 text-center relative z-10">
-              <Link
-                href="/seo-services/"
-                className="inline-flex items-center gap-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 hover:border-violet-500/30 px-6 py-3 text-xs font-bold text-violet-400 hover:text-violet-300 transition-all uppercase tracking-wider"
-              >
-                Explore All USA Locations →
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* 7.5 LATEST BLOGS SECTION */}
-        <LatestBlogs />
-
-        {/* 8. FAQ ACCORDION SECTION */}
-        <section className="border-t border-slate-900 bg-slate-950 py-24 sm:py-32" id="faq" aria-labelledby="faq-heading">
-          <div className="mx-auto max-w-4xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center mb-16 space-y-4">
-              <span className="inline-block text-xs uppercase tracking-widest text-cyan-400 font-extrabold bg-cyan-950/30 px-4 py-1.5 rounded-full border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)] animate-pulse-subtle">
-                Clear Friction
-              </span>
-              <h2 id="faq-heading" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl text-center">
-                SEO Auditor & GEO Optimization FAQ
-              </h2>
-              <p className="text-slate-400 text-center max-w-lg mx-auto text-sm">
-                Answers to common concerns about Next.js static speed, AI citation guidelines, and local target SEO audits.
-              </p>
-            </div>
-
-            <FaqAccordion items={faqItems} />
-          </div>
-        </section>
-
-        {/* 9. FINAL CTA BANNER */}
-        <section className="mx-auto max-w-7xl px-6 py-20 text-center border-t border-slate-900" id="case-studies" aria-label="Call to action">
-          <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-slate-950 to-indigo-950/20 border border-cyan-500/10 p-12 md:p-16 space-y-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 -z-10 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl" aria-hidden="true" />
-            
-            <div className="max-w-xl mx-auto space-y-4">
-              <h2 className="text-3xl font-extrabold text-white">
-                Ready to Dominate Your Market?
-              </h2>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Analyze your site&apos;s SEO ranking signals instantly. Enter your URL below to generate a detailed, AI-powered audit report checklist.
-              </p>
-            </div>
-
+        {/* 11. FINAL CTA BANNER */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-900 [.light_&]:border-slate-200 text-center" aria-label="Call to action">
+          <div className="rounded-xl bg-zinc-900/90 border border-zinc-800 p-8 sm:p-12 space-y-6 max-w-4xl mx-auto shadow-2xl [.light_&]:bg-white [.light_&]:border-slate-300">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white [.light_&]:text-slate-900">
+              Ready to Dominate Your Market?
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto [.light_&]:text-slate-600">
+              Enter your domain below to generate an instant, AI-powered technical audit report.
+            </p>
             <AuditCtaForm />
           </div>
         </section>
