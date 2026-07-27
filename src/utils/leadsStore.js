@@ -262,6 +262,8 @@ export const addLead = async (leadData) => {
     packageRequest: leadData.packageRequest || "Free Audit",
     amountPaid: leadData.amountPaid || 0,
     notes: leadData.notes || "",
+    source: leadData.source || "",
+    location: leadData.location || "",
   };
 
   try {

@@ -101,7 +101,13 @@ export async function POST(request) {
     // Mark the audit as Free or Paid to keep quotas separate
     const packageRequest = leadData.packageRequest || (isPaidTier ? "Paid Audit" : "Free Audit");
     const amountPaid = leadData.amountPaid || 0.00;
-    const notes = leadData.notes || "";
+    let notes = leadData.notes || "";
+
+    const rawLoc = leadData.location || leadData.source || leadData.ref || "";
+    if (rawLoc && !notes.includes("Ref Location:") && !notes.includes("Target Location:")) {
+      const formattedLoc = rawLoc.replace("location-ref-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      notes = `[Ref Location: ${formattedLoc}] ${notes}`;
+    }
 
     await query(
       "INSERT INTO leads (id, name, email, phone, website, date, seoScore, grade, status, packageRequest, amountPaid, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

@@ -63,6 +63,21 @@ export async function POST(req) {
             "UPDATE users SET subscription_tier = 'multi', allowed_quota = 100, stripe_customer_id = ? WHERE LOWER(email) = LOWER(?)",
             [customerId, email]
           );
+        } else if (plan === "foundation-seo") {
+          await query(
+            "UPDATE users SET subscription_tier = 'foundation-seo', allowed_quota = 50, stripe_customer_id = ? WHERE LOWER(email) = LOWER(?)",
+            [customerId, email]
+          );
+        } else if (plan === "growth-seo") {
+          await query(
+            "UPDATE users SET subscription_tier = 'growth-seo', allowed_quota = 100, stripe_customer_id = ? WHERE LOWER(email) = LOWER(?)",
+            [customerId, email]
+          );
+        } else if (plan === "market-dominance") {
+          await query(
+            "UPDATE users SET subscription_tier = 'market-dominance', allowed_quota = 500, stripe_customer_id = ? WHERE LOWER(email) = LOWER(?)",
+            [customerId, email]
+          );
         } else {
           // single report — increment quota by 1
           await query(
@@ -73,8 +88,12 @@ export async function POST(req) {
         
         // Securely update the specific lead's status to "Closed Won"
         let packageName = "Premium Report";
-        if (plan === "weekly") packageName = "Premium weekly";
-        if (plan === "agency") packageName = "Premium agency";
+        if (plan === "weekly") packageName = "Pro Monitor";
+        if (plan === "agency") packageName = "Agency Sales Plan";
+        if (plan === "multi") packageName = "Enterprise Plan";
+        if (plan === "foundation-seo") packageName = "Foundation SEO Retainer";
+        if (plan === "growth-seo") packageName = "Growth SEO Retainer";
+        if (plan === "market-dominance") packageName = "Market Dominance Retainer";
         
         const targetUrl = session.metadata?.url;
         if (targetUrl && targetUrl !== "domain-pending") {

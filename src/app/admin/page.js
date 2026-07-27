@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import ConsoleLayout from "@/components/ConsoleLayout";
 import {
   getAllLeads,
   updateLead,
@@ -105,6 +106,24 @@ export default function AdminDashboard() {
   const [scoreFilter, setScoreFilter] = useState("All"); // 'All' | 'Excellent' | 'Good' | 'Fair' | 'Critical'
   const [sortBy, setSortBy] = useState("date"); // 'date' | 'score' | 'name'
   const [sortOrder, setSortOrder] = useState("desc"); // 'asc' | 'desc'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => typeof window !== "undefined" ? !document.documentElement.classList.contains("light") : true
+  );
+
+  const toggleTheme = () => {
+    const isNowLight = document.documentElement.classList.contains("light");
+    if (isNowLight) {
+      document.documentElement.classList.remove("light");
+      localStorage.setItem("theme", "dark");
+      setIsDarkMode(true);
+    } else {
+      document.documentElement.classList.add("light");
+      localStorage.setItem("theme", "light");
+      setIsDarkMode(false);
+    }
+  };
 
   // Selected Lead Modal State
   const [selectedLead, setSelectedLead] = useState(null);
@@ -946,149 +965,109 @@ export default function AdminDashboard() {
     );
   }
 
+  const adminNavItems = [
+    { 
+      id: "analytics", 
+      label: "Visual Analytics", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      )
+    },
+    { 
+      id: "blog", 
+      label: "Write Article", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+      )
+    },
+    { 
+      id: "news-directory", 
+      label: "All News", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+      )
+    },
+    { 
+      id: "leads", 
+      label: "Leads Database", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      )
+    },
+    { 
+      id: "queries", 
+      label: "Queries Database", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      )
+    },
+    { 
+      id: "users", 
+      label: "Users Database", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      )
+    },
+    { 
+      id: "drafts", 
+      label: "Auto-Drafts", 
+      onClick: refreshDrafts,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20" />
+        </svg>
+      ), 
+      badge: drafts.length || null 
+    },
+    { 
+      id: "sources", 
+      label: "RSS Sources", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+        </svg>
+      )
+    },
+    { 
+      id: "settings", 
+      label: "Settings", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      )
+    },
+  ];
+
   return (
-    <div className="bg-zinc-950 min-h-screen relative isolate admin-container">
-      {/* Background ambient glow */}
-      <div className="absolute top-10 left-10 -z-10 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-10 right-10 -z-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl" />
-
-      <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row min-h-[calc(100vh-80px)] py-8 px-4 sm:px-6 lg:px-8 gap-8">
-        
-        {/* LEFT SIDEBAR (Sticky on desktop, horizontal scroll / top list on mobile) */}
-        <aside className="w-full md:w-64 shrink-0 flex flex-col justify-between border-b md:border-b-0 md:border-r border-zinc-850 pb-6 md:pb-0 md:pr-6 gap-6 self-start sticky top-24">
-          <div className="space-y-6">
-            {/* Header Console */}
-            <div className="space-y-1.5 text-left">
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold text-white">Leads Hub</h1>
-                <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
-                  Live Data
-                </span>
-              </div>
-              <p className="text-xxs text-zinc-400">
-                SEOIntellect AI Console
-              </p>
-            </div>
-
-            {/* Sidebar Navigation */}
-            <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 gap-1.5 md:gap-2 no-scrollbar" aria-label="Sidebar Navigation">
-              {[
-                { 
-                  id: "analytics", 
-                  label: "Visual Analytics", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                  )
-                },
-                { 
-                  id: "blog", 
-                  label: "Write Article", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  )
-                },
-                { 
-                  id: "news-directory", 
-                  label: "All News", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
-                  )
-                },
-                { 
-                  id: "leads", 
-                  label: "Leads Database", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  )
-                },
-                { 
-                  id: "queries", 
-                  label: "Queries Database", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  )
-                },
-                { 
-                  id: "users", 
-                  label: "Users Database", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                  )
-                },
-                { 
-                  id: "drafts", 
-                  label: "Auto-Drafts", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20" />
-                    </svg>
-                  ), 
-                  badge: drafts.length || null 
-                },
-                { 
-                  id: "sources", 
-                  label: "RSS Sources", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                  )
-                },
-                { 
-                  id: "settings", 
-                  label: "Dashboard Settings", 
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  )
-                },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => { setActiveTab(tab.id); if (tab.id === "drafts") refreshDrafts(); }}
-                  className={`flex items-center gap-2.5 px-4 py-3 text-xs font-semibold rounded-xl border transition-all whitespace-nowrap md:w-full text-left relative ${
-                    activeTab === tab.id
-                      ? "bg-violet-600/15 border-violet-500/30 text-violet-400 font-bold shadow-[0_0_15px_rgba(139,92,246,0.08)]"
-                      : "text-zinc-400 border-transparent hover:text-white hover:bg-zinc-900/30"
-                  }`}
-                >
-                  <span className="flex-shrink-0 flex items-center justify-center">{tab.icon}</span>
-                  <span>{tab.label}</span>
-                  {tab.badge ? (
-                    <span className="ml-auto inline-flex items-center justify-center w-4.5 h-4.5 text-[9px] font-bold bg-violet-600 text-white rounded-full">{tab.badge}</span>
-                  ) : null}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Sidebar Footer Actions */}
-          <div className="flex flex-row md:flex-col gap-3 pt-6 border-t border-zinc-850">
-            <button
-              onClick={handleLogout}
-              className="flex-1 md:w-full rounded-xl border border-rose-900/20 bg-rose-950/10 hover:bg-rose-900/20 px-4 py-2.5 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-all text-center cursor-pointer"
-            >
-              Log Out
-            </button>
-          </div>
-        </aside>
-
-        {/* RIGHT WORKSPACE */}
-        <div className="flex-grow w-full min-w-0 space-y-8">
+    <ConsoleLayout
+      brandTitle="SEOIntellect"
+      brandBadge="ADM"
+      breadcrumbCategory="Admin Console"
+      navItems={adminNavItems}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      userEmail="admin@seointellect.ai"
+      userName="Super Admin"
+      userPlan="System Admin"
+      showSidebarLogout={true}
+      sidebarLogoutLabel="Exit Admin Console"
+      isAdminConsole={true}
+      onLogout={handleLogout}
+    >
 
         {/* ==================== TAB 1: LEADS LIST DATABASE ==================== */}
         {activeTab === "leads" && (
@@ -1238,6 +1217,7 @@ export default function AdminDashboard() {
                   <thead className="bg-zinc-950 text-zinc-400 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="px-6 py-4">Client Detail</th>
+                      <th className="px-6 py-4">Target Location</th>
                       <th className="px-6 py-4">Audited Website</th>
                       <th className="px-6 py-4">SEO Grade</th>
                       <th className="px-6 py-4">Request Package</th>
@@ -1248,77 +1228,119 @@ export default function AdminDashboard() {
                   </thead>
                   <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
                     {filteredLeads.length > 0 ? (
-                      filteredLeads.map((lead) => (
-                        <tr key={lead.id} className="hover:bg-zinc-900/30 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="space-y-0.5">
-                              <span className="font-bold text-white block">{lead.name}</span>
-                              <span className="text-[10px] text-zinc-500 font-mono block">{lead.email}</span>
-                              {lead.phone && <span className="text-[10px] text-zinc-650 font-mono block">{lead.phone}</span>}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <a
-                              href={`https://${lead.website}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-violet-400 hover:text-violet-300 font-mono hover:underline inline-flex items-center gap-1"
-                            >
-                              {lead.website}
-                              <span className="text-[9px]">↗</span>
-                            </a>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <span className={`inline-flex items-center justify-center rounded-lg border text-xs font-extrabold h-8 w-8 ${getScoreBadgeClass(lead.seoScore)}`}>
-                                {lead.grade === "Pending" ? "-" : lead.grade}
+                      filteredLeads.map((lead) => {
+                        let locText = lead.location;
+                        if (!locText && lead.source && lead.source.includes("location-ref-")) {
+                          locText = lead.source.replace("location-ref-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+                        }
+                        if (!locText && lead.website && lead.website.includes("location-ref-")) {
+                          locText = lead.website.replace("location-ref-", "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+                        }
+                        if (!locText && lead.notes && lead.notes.includes("Ref Location:")) {
+                          const match = lead.notes.match(/Ref Location:\s*([^\]]+)/i);
+                          if (match) locText = match[1].trim();
+                        }
+                        if (!locText && lead.packageRequest && lead.packageRequest.includes("(")) {
+                          const match = lead.packageRequest.match(/\(([^)]+)\)/);
+                          if (match) locText = match[1].trim();
+                        }
+                        if (!locText && lead.notes && lead.notes.toLowerCase().includes("targeting ")) {
+                          const match = lead.notes.match(/targeting\s+([A-Za-z\s]+?)(?:\.|\s+Please|\s+$)/i);
+                          if (match) locText = match[1].trim();
+                        }
+                        if (!locText) locText = "Direct";
+                        const mailtoUrl = `mailto:${lead.email}?subject=${encodeURIComponent(`Technical SEO Audit & Local Growth Strategy for ${lead.website}`)}&body=${encodeURIComponent(
+                          `Hi ${lead.name || "there"},\n\nI noticed you recently ran a technical search audit for ${lead.website}.\n\nYour current site audit score is ${lead.seoScore || 45}/100. We identified several critical speed and schema bottlenecks that are currently holding back your organic rankings in local search.\n\nOur team specializes in full-service managed SEO campaigns (Google Business Profile rankings, 0.3s technical speed optimizations, and ChatGPT/Gemini AI search citations).\n\nWould you be open to a quick 15-minute video strategy call this week to review your complete audit report and action plan?\n\nBest regards,\nSEOIntellect AI Strategy Team`
+                        )}`;
+
+                        return (
+                          <tr key={lead.id} className="hover:bg-zinc-900/30 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-white block">{lead.name}</span>
+                                <span className="text-[10px] text-zinc-500 font-mono block">{lead.email}</span>
+                                {lead.phone && <span className="text-[10px] text-zinc-650 font-mono block">{lead.phone}</span>}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono font-bold uppercase bg-violet-500/10 text-violet-400 border border-violet-500/20 capitalize">
+                                <span>📍</span>
+                                <span>{locText}</span>
                               </span>
-                              {lead.seoScore > 0 && (
-                                <span className="text-[10px] text-zinc-400 font-mono">
-                                  {lead.seoScore}%
+                            </td>
+                            <td className="px-6 py-4">
+                              <a
+                                href={`https://${lead.website}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-violet-400 hover:text-violet-300 font-mono hover:underline inline-flex items-center gap-1"
+                              >
+                                {lead.website}
+                                <span className="text-[9px]">↗</span>
+                              </a>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <span className={`inline-flex items-center justify-center rounded-lg border text-xs font-extrabold h-8 w-8 ${getScoreBadgeClass(lead.seoScore)}`}>
+                                  {lead.grade === "Pending" ? "-" : lead.grade}
                                 </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="space-y-0.5">
-                              <span className="text-zinc-200 font-medium block">
-                                {lead.packageRequest}
+                                {lead.seoScore > 0 && (
+                                  <span className="text-[10px] text-zinc-400 font-mono">
+                                    {lead.seoScore}%
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="space-y-0.5">
+                                <span className="text-zinc-200 font-medium block">
+                                  {lead.packageRequest}
+                                </span>
+                                {lead.amountPaid > 0 && (
+                                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-md">
+                                    Paid ${lead.amountPaid}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${getStatusBadgeClass(lead.status)}`}>
+                                {lead.status}
                               </span>
-                              {lead.amountPaid > 0 && (
-                                <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-md">
-                                  Paid ${lead.amountPaid}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${getStatusBadgeClass(lead.status)}`}>
-                              {lead.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-zinc-450 font-mono text-[10px]">
-                            {new Date(lead.date).toLocaleDateString(undefined, {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => handleOpenLeadDetails(lead)}
-                              className="rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1.5 font-semibold text-[10px] tracking-wide uppercase transition-all"
-                            >
-                              Manage
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                            </td>
+                            <td className="px-6 py-4 text-zinc-450 font-mono text-[10px]">
+                              {new Date(lead.date).toLocaleDateString(undefined, {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <a
+                                  href={mailtoUrl}
+                                  className="rounded-lg bg-violet-600/20 hover:bg-violet-600 border border-violet-500/30 text-violet-300 hover:text-white px-2.5 py-1.5 font-semibold text-[10px] tracking-wide uppercase transition-all inline-flex items-center gap-1"
+                                  title="Send Pre-filled $1,000/mo Agency Retainer Proposal Email"
+                                >
+                                  <span>📧</span>
+                                  <span>Pitch Retainer</span>
+                                </a>
+                                <button
+                                  onClick={() => handleOpenLeadDetails(lead)}
+                                  className="rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-2.5 py-1.5 font-semibold text-[10px] tracking-wide uppercase transition-all"
+                                >
+                                  Manage
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     ) : (
                       <tr>
-                        <td colSpan="7" className="px-6 py-12 text-center text-zinc-500">
+                        <td colSpan="8" className="px-6 py-12 text-center text-zinc-500">
                           <span className="text-xl block mb-2">🔍</span>
                           No leads matched your search query or filter settings.
                         </td>
@@ -2766,20 +2788,20 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-zinc-850 text-left text-xs">
-                  <thead className="bg-zinc-950 text-zinc-400 font-bold uppercase tracking-wider text-[10px]">
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/30 shadow-xl overflow-hidden [.light_&]:bg-white [.light_&]:border-slate-300">
+              <div className="overflow-x-auto w-full pb-2">
+                <table className="w-full min-w-[750px] divide-y divide-zinc-850 text-left text-xs [.light_&]:divide-slate-200">
+                  <thead className="bg-zinc-950 text-zinc-400 font-bold uppercase tracking-wider text-[10px] [.light_&]:bg-slate-100 [.light_&]:text-slate-700">
                     <tr>
-                      <th className="px-6 py-4">Article Title</th>
-                      <th className="px-6 py-4">Category</th>
-                      <th className="px-6 py-4">Author</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Publish Date</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
+                      <th className="px-6 py-4 whitespace-nowrap">Article Title</th>
+                      <th className="px-4 py-4 whitespace-nowrap">Category</th>
+                      <th className="px-4 py-4 whitespace-nowrap">Author</th>
+                      <th className="px-4 py-4 whitespace-nowrap">Status</th>
+                      <th className="px-4 py-4 whitespace-nowrap">Publish Date</th>
+                      <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+                  <tbody className="divide-y divide-zinc-850/60 text-zinc-300 [.light_&]:divide-slate-200/80 [.light_&]:text-slate-800">
                     {(() => {
                       const filtered = posts.filter(
                         (p) =>
@@ -2789,62 +2811,62 @@ export default function AdminDashboard() {
                       );
                       if (filtered.length > 0) {
                         return filtered.map((post) => (
-                          <tr key={post.id} className="hover:bg-zinc-900/10 transition-colors">
+                          <tr key={post.id} className="hover:bg-zinc-900/20 [.light_&]:hover:bg-slate-100/50 transition-colors">
                             <td className="px-6 py-4 text-left">
                               <div className="flex items-center gap-3">
                                 {post.featuredImage ? (
                                   <img
                                     src={post.featuredImage}
                                     alt=""
-                                    className="w-12 h-8 object-cover rounded border border-zinc-800 flex-shrink-0"
+                                    className="w-12 h-8 object-cover rounded border border-zinc-800 flex-shrink-0 [.light_&]:border-slate-300"
                                   />
                                 ) : (
-                                  <div className="w-12 h-8 bg-zinc-950 rounded border border-zinc-800 flex-shrink-0 flex items-center justify-center text-xs">
+                                  <div className="w-12 h-8 bg-zinc-950 rounded border border-zinc-800 flex-shrink-0 flex items-center justify-center text-xs [.light_&]:bg-slate-100 [.light_&]:border-slate-300">
                                     🖼️
                                   </div>
                                 )}
                                 <div className="min-w-0 space-y-0.5">
-                                  <span className="font-bold text-white block truncate max-w-sm">{post.title}</span>
-                                  <span className="text-[10px] text-zinc-500 font-mono block truncate max-w-sm">/{post.slug}/</span>
+                                  <span className="font-bold text-white block truncate max-w-xs sm:max-w-md [.light_&]:text-slate-900">{post.title}</span>
+                                  <span className="text-[10px] text-zinc-500 font-mono block truncate max-w-xs sm:max-w-md [.light_&]:text-slate-500">/{post.slug}/</span>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4">
-                              <span className="inline-flex items-center rounded-md bg-zinc-950/80 px-2 py-0.5 text-[9px] font-bold text-zinc-450 ring-1 ring-inset ring-zinc-800">
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span className="inline-flex items-center rounded-md bg-zinc-950/80 px-2 py-0.5 text-[9px] font-bold text-zinc-400 ring-1 ring-inset ring-zinc-800 [.light_&]:bg-slate-100 [.light_&]:text-slate-700 [.light_&]:ring-slate-300">
                                 {post.category || "General"}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-zinc-300 font-semibold">
+                            <td className="px-4 py-4 text-zinc-300 font-semibold whitespace-nowrap [.light_&]:text-slate-800">
                               {post.author}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-4 whitespace-nowrap">
                               {post.featured ? (
-                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-violet-500/10 text-violet-400 border border-violet-500/20 [.light_&]:bg-violet-50 [.light_&]:text-violet-700 [.light_&]:border-violet-200">
                                   ★ Featured
                                 </span>
                               ) : (
-                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-zinc-800 text-zinc-400 border border-zinc-750">
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-zinc-800 text-zinc-400 border border-zinc-750 [.light_&]:bg-slate-100 [.light_&]:text-slate-600 [.light_&]:border-slate-300">
                                   Standard
                                 </span>
                               )}
                             </td>
-                            <td className="px-6 py-4 text-zinc-450 font-mono text-[10px]">
+                            <td className="px-4 py-4 text-zinc-400 font-mono text-[10px] whitespace-nowrap [.light_&]:text-slate-600">
                               {post.date}
                             </td>
-                            <td className="px-6 py-4 text-right">
+                            <td className="px-6 py-4 text-right whitespace-nowrap">
                               <div className="flex gap-2 justify-end">
                                 <button
                                   onClick={() => {
                                     handleEditPost(post);
                                     setActiveTab("blog");
                                   }}
-                                  className="text-[10px] text-violet-400 hover:text-violet-300 font-bold border border-violet-950/20 hover:border-violet-900/40 hover:bg-violet-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+                                  className="text-[10px] text-violet-400 hover:text-violet-300 font-bold border border-violet-950/20 hover:border-violet-900/40 hover:bg-violet-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer [.light_&]:text-violet-600 [.light_&]:hover:bg-violet-50"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeletePost(post.id)}
-                                  className="text-[10px] text-rose-500 hover:text-rose-400 font-bold border border-rose-950/20 hover:border-rose-900/40 hover:bg-rose-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+                                  className="text-[10px] text-rose-500 hover:text-rose-400 font-bold border border-rose-950/20 hover:border-rose-900/40 hover:bg-rose-950/10 px-2.5 py-1.5 rounded-md transition-all cursor-pointer [.light_&]:text-rose-600 [.light_&]:hover:bg-rose-50"
                                 >
                                   Delete
                                 </button>
@@ -3127,8 +3149,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        </div>
-      </div>
-    </div>
+    </ConsoleLayout>
   );
 }

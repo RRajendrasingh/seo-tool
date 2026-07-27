@@ -59,8 +59,23 @@ export async function POST(req) {
       isSubscription = true;
     } else if (plan === "agency") {
       planName = isYearly ? "Agency Sales Plan (Yearly)" : "Agency Sales Plan (Monthly)";
-      planDescription = `Up to  Monitored domains with white-label PDF templates for ${url}`;
+      planDescription = `Up to 25 Monitored domains with white-label PDF templates for ${url}`;
       planAmount = isYearly ? 94800 : 9900; // $79/mo * 12 or $99/mo
+      isSubscription = true;
+    } else if (plan === "foundation-seo") {
+      planName = isYearly ? "Foundation SEO Retainer (Yearly)" : "Foundation SEO Retainer (Monthly)";
+      planDescription = `Done-for-you technical setup, site speed, & 5 core pages on-page SEO for ${url}`;
+      planAmount = isYearly ? 478800 : 49900; // $399/mo * 12 or $499/mo
+      isSubscription = true;
+    } else if (plan === "growth-seo") {
+      planName = isYearly ? "Growth SEO Retainer (Yearly)" : "Growth SEO Retainer (Monthly)";
+      planDescription = `Done-for-you full-service SEO: 15 pages on-page, 4 articles/mo, schema, & 2 backlinks for ${url}`;
+      planAmount = isYearly ? 1198800 : 129900; // $999/mo * 12 or $1,299/mo
+      isSubscription = true;
+    } else if (plan === "market-dominance") {
+      planName = isYearly ? "Market Dominance Enterprise SEO (Yearly)" : "Market Dominance Enterprise SEO (Monthly)";
+      planDescription = `Enterprise multi-location SEO: unlimited pages, 8 articles/mo, 5 backlinks & digital PR for ${url}`;
+      planAmount = isYearly ? 2878800 : 299900; // $2,399/mo * 12 or $2,999/mo
       isSubscription = true;
     }
 

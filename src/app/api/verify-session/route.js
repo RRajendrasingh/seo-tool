@@ -48,17 +48,25 @@ export async function GET(req) {
 
         // 1. Update Leads Table (CRM integration)
         const leads = await query("SELECT id FROM leads WHERE website = ? AND email = ? ORDER BY date DESC", [cleanWebsite, email]);
-        const amountPaid = plan === "multi" ? 199.00 : plan === "weekly" ? 29.00 : plan === "agency" ? 99.00 : 9.00;
+        const amountPaid = session.amount_total ? (session.amount_total / 100).toFixed(2) : (plan === "multi" ? 199.00 : plan === "weekly" ? 29.00 : plan === "agency" ? 99.00 : plan === "foundation-seo" ? 499.00 : plan === "growth-seo" ? 1299.00 : plan === "market-dominance" ? 2999.00 : 9.99);
+        let packageName = "Premium Report";
+        if (plan === "weekly") packageName = "Pro Monitor";
+        if (plan === "agency") packageName = "Agency Sales Plan";
+        if (plan === "multi") packageName = "Enterprise Plan";
+        if (plan === "foundation-seo") packageName = "Foundation SEO Retainer";
+        if (plan === "growth-seo") packageName = "Growth SEO Retainer";
+        if (plan === "market-dominance") packageName = "Market Dominance Retainer";
+
         if (leads && leads.length > 0) {
           await query(
             "UPDATE leads SET status = 'Closed Won', packageRequest = ?, amountPaid = ?, notes = ? WHERE id = ?",
-            [`Premium Report`, amountPaid, `Paid via Stripe session ${sessionId}`, leads[0].id]
+            [packageName, amountPaid, `Paid via Stripe session ${sessionId}`, leads[0].id]
           );
         } else {
           const leadId = "lead_" + Date.now();
           await query(
             "INSERT INTO leads (id, name, email, phone, website, date, seoScore, grade, status, packageRequest, amountPaid, notes) VALUES (?, ?, ?, ?, ?, ?, 0, 'Pending', 'Closed Won', ?, ?, ?)",
-            [leadId, name, email || "stripe@unknown.com", phone, cleanWebsite, new Date().toISOString(), `Premium ${plan}`, amountPaid, `Stripe checkout session ${sessionId}`]
+            [leadId, name, email || "stripe@unknown.com", phone, cleanWebsite, new Date().toISOString(), packageName, amountPaid, `Stripe checkout session ${sessionId}`]
           );
         }
 
@@ -68,9 +76,9 @@ export async function GET(req) {
           if (users && users.length > 0) {
             const userId = users[0].id;
             const currentTier = users[0].subscription_tier || "free";
-            if (plan === "weekly" || plan === "agency" || plan === "multi") {
-              const newTier = (currentTier === "agency" && plan === "weekly") ? "agency" : plan;
-              const quota = plan === "weekly" ? 3 : plan === "agency" ? 25 : plan === "multi" ? 100 : 0;
+            if (["weekly", "agency", "multi", "foundation-seo", "growth-seo", "market-dominance"].includes(plan)) {
+              const newTier = plan;
+              const quota = plan === "weekly" ? 3 : plan === "agency" ? 25 : plan === "multi" ? 100 : plan === "foundation-seo" ? 50 : plan === "growth-seo" ? 100 : plan === "market-dominance" ? 500 : 1;
               await query(
                 "UPDATE users SET subscription_tier = ?, allowed_quota = ?, subscription_status = 'active' WHERE id = ?",
                 [newTier, quota, userId]

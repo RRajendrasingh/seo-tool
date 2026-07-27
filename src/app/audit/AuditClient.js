@@ -1264,7 +1264,9 @@ export default function AuditClient({ initialUser = null }) {
       
       if (!activeLeadId) {
          try {
-           const fullNotes = (isUserLoggedIn ? `CMS Platform: ${cmsPlatform}, Business Niche: ${businessNiche}, Target Location: ${targetAudience}. ` : "Guest user SEO audit. ") + leadNotes;
+           const locParam = searchParams?.get("location") || searchParams?.get("ref") || "";
+           const locPrefix = locParam ? `[Ref Location: ${locParam}] ` : "";
+           const fullNotes = locPrefix + (isUserLoggedIn ? `CMS Platform: ${cmsPlatform}, Business Niche: ${businessNiche}, Target Location: ${targetAudience}. ` : "Guest user SEO audit. ") + leadNotes;
            const newLead = await addLead({
              name: isUserLoggedIn ? (user.full_name || user.name || "Logged In User") : name,
              email: isUserLoggedIn ? user.email : email,
@@ -1274,7 +1276,9 @@ export default function AuditClient({ initialUser = null }) {
              packageRequest: initialPlan === "premium" ? "Premium Report" : "Free Audit",
              seoScore: avgScore,
              grade: grade,
-             notes: fullNotes
+             notes: fullNotes,
+             source: locParam ? `location-ref-${locParam}` : "audit-page",
+             location: locParam
            });
            activeLeadId = newLead.id;
            setCurrentLeadId(activeLeadId);

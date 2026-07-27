@@ -7,6 +7,7 @@ export default function Footer() {
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
+  // Hide footer completely on user dashboard and admin routes
   if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin")) {
     return null;
   }
@@ -38,22 +39,22 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="border-t border-slate-900 bg-slate-950 text-slate-400 print:hidden">
+    <footer className="border-t border-slate-900 bg-slate-950 text-slate-400 print:hidden [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:text-slate-600">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo & Pitch */}
           <div className="space-y-4">
-            <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+            <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-xl font-bold tracking-tight text-transparent [.light_&]:from-indigo-600 [.light_&]:to-cyan-600">
               SEOIntellect
             </span>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-400 [.light_&]:text-slate-600">
               Grow your organic traffic with AI-powered SEO audits, high-performance web development, and hyper-targeted local SEO strategies.
             </p>
           </div>
 
           {/* Services */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200 [.light_&]:text-slate-900">
               Services
             </h3>
             <ul className="mt-4 space-y-2 text-sm">
@@ -69,7 +70,7 @@ export default function Footer() {
 
           {/* Target Locations (Crucial for Local SEO) */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200 [.light_&]:text-slate-900">
               Target Locations
             </h3>
             <ul className="mt-4 grid grid-cols-2 gap-x-2 gap-y-2 text-sm">
@@ -85,7 +86,7 @@ export default function Footer() {
 
           {/* Resources & Support */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200 [.light_&]:text-slate-900">
               Resources
             </h3>
             <ul className="mt-4 space-y-2 text-sm">
@@ -100,13 +101,19 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-slate-900/60 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-400">
-            &copy; {currentYear} SEOIntellect AI. All rights reserved. Made for Global & Local SEO domination.
-          </p>
-          <div className="flex space-x-6 text-xs text-slate-400">
-            <Link href="/privacy/" className="hover:text-slate-300">Privacy Policy</Link>
-            <Link href="/terms/" className="hover:text-slate-300">Terms of Service</Link>
+        {/* Bottom Bar */}
+        <div className="mt-12 border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-400 [.light_&]:border-slate-200 [.light_&]:text-slate-600">
+          <p>© {currentYear} SEOIntellect AI. All rights reserved.</p>
+          <div className="flex space-x-6 mt-4 md:mt-0">
+            <Link href="/privacy/" className="hover:text-slate-300 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms/" className="hover:text-slate-300 transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/sitemap.xml" className="hover:text-slate-300 transition-colors">
+              Sitemap
+            </Link>
           </div>
         </div>
       </div>

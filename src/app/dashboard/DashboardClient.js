@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import ScoreChart from "@/components/ScoreChart";
 import { openCalendly } from "@/utils/calendly";
+import ConsoleLayout from "@/components/ConsoleLayout";
 
 export default function DashboardClient({ user: initialUser, initialAudits = [] }) {
   const router = useRouter();
@@ -194,387 +195,95 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
     ? 100
     : Math.min(100, (quotaUsed / quotaLimit) * 100);
 
-  return (
-    <div className="bg-slate-950 min-h-screen md:h-screen md:overflow-hidden text-slate-400 transition-colors duration-300 flex flex-col md:flex-row [.light_&]:bg-slate-50 [.light_&]:text-slate-700">
-      
-      {/* Mobile Drawer Backdrop Overlay */}
-      {mobileMenuOpen && (
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {
+      console.error("Logout error:", e);
+    }
+    document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    router.push("/login/");
+  };
+
+  const dashboardNavItems = [
+    { 
+      id: "overview", 
+      label: "Overview", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+      )
+    },
+    { 
+      id: "pages", 
+      label: "Page Reports", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ), 
+      badge: audits.length || null 
+    },
+    { 
+      id: "settings", 
+      label: "Settings", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      )
+    },
+    ...(user.subscription_tier === "agency" ? [{ 
+      id: "branding", 
+      label: "Agency Customizer", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+        </svg>
+      )
+    }] : []),
+  ];
+
+  const quotaWidget = (
+    <div className="space-y-2 px-3 py-3.5 bg-slate-950/40 border border-slate-800/80 rounded-2xl [.light_&]:bg-slate-50 [.light_&]:border-slate-200 w-full shadow-sm">
+      <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
+        <span>Quota Used</span>
+        <span>{quotaPercent}%</span>
+      </div>
+      <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-900 [.light_&]:bg-slate-200 [.light_&]:border-slate-300">
         <div 
-          className="fixed inset-0 bg-slate-950/60 z-45 backdrop-blur-sm md:hidden cursor-pointer"
-          onClick={() => setMobileMenuOpen(false)}
+          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all duration-500"
+          style={{ width: `${quotaPercent}%` }}
         />
-      )}
+      </div>
+      <p className="text-[9px] text-slate-500 leading-normal">
+        {isPaid ? (
+          (user.subscription_tier === 'agency' || user.subscription_tier === 'multi') 
+            ? "Unlimited PDF Reports" 
+            : `${quotaUsed} of ${quotaLimit} reports`
+        ) : (
+          `${quotaUsed} of ${quotaLimit} free scans`
+        )}
+      </p>
+    </div>
+  );
 
-      {/* Sidebar Navigation */}
-      <aside className={`
-        bg-slate-900/40 backdrop-blur-xl flex flex-col justify-between select-none [.light_&]:bg-[#f8f9fa]
-        fixed md:sticky top-0 left-0 h-screen z-50 md:z-30 border-r border-slate-800/80 [.light_&]:border-slate-200 shrink-0 transition-all duration-300
-        ${mobileMenuOpen ? "translate-x-0 w-72 p-5" : "-translate-x-full md:translate-x-0 w-0 md:w-16 overflow-hidden md:overflow-visible"}
-        ${sidebarCollapsed ? "md:w-16 md:p-3.5 md:items-center" : "md:w-64 md:p-3.5 md:items-stretch"}
-      `}>
-        <div className={`space-y-6 w-full ${sidebarCollapsed && !mobileMenuOpen ? "flex flex-col items-center" : "flex flex-col"}`}>
-          {/* Logo Brand Header */}
-          <div className="flex items-center justify-between px-1.5 h-8 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center text-xs font-bold text-white shadow-md shadow-violet-600/25 shrink-0 select-none">
-                AI
-              </div>
-              <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap text-sm font-black text-white uppercase tracking-wider bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent [.light_&]:text-slate-900 ${
-                (sidebarCollapsed && !mobileMenuOpen) ? "md:w-0 md:opacity-0 md:pointer-events-none" : "w-auto opacity-100 ml-1.5"
-              }`}>
-                SEOIntellect
-              </span>
-            </div>
-            {/* Close button on mobile menu */}
-            {mobileMenuOpen && (
-              <button 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors hover:bg-slate-900/40 [.light_&]:text-slate-500 [.light_&]:hover:text-slate-900 [.light_&]:hover:bg-slate-100 cursor-pointer block md:hidden"
-                aria-label="Close Mobile Menu"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </div>
-
-          {/* Navigation Links */}
-          <nav className={`flex flex-col overflow-y-auto gap-1 pb-2 md:pb-0 no-scrollbar ${(sidebarCollapsed && !mobileMenuOpen) ? "items-center" : "w-full"}`} aria-label="Sidebar Navigation">
-
-            {[
-              { 
-                id: "overview", 
-                label: "Overview", 
-                icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
-                )
-              },
-              { 
-                id: "pages", 
-                label: "Page Reports", 
-                icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                ), 
-                badge: audits.length || null 
-              },
-              { 
-                id: "settings", 
-                label: "Settings", 
-                icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                )
-              },
-              ...(user.subscription_tier === "agency" ? [{ 
-                id: "branding", 
-                label: "Agency Customizer", 
-                icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                  </svg>
-                )
-              }] : []),
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setMobileMenuOpen(false);
-                }}
-                title={(sidebarCollapsed && !mobileMenuOpen) ? tab.label : undefined}
-                className={`flex items-center rounded-xl border transition-all relative cursor-pointer w-full h-11 px-2.5 ${
-                  activeTab === tab.id
-                    ? "bg-violet-600/10 border-violet-500/30 text-white font-bold shadow-[0_0_15px_rgba(139,92,246,0.1)] [.light_&]:bg-violet-500/5 [.light_&]:border-violet-500/20 [.light_&]:text-violet-650"
-                    : "border-transparent text-slate-500 hover:text-slate-350 hover:bg-slate-900/40 [.light_&]:hover:bg-slate-100/60 [.light_&]:hover:text-slate-900"
-                }`}
-              >
-                <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center select-none">
-                  {tab.icon}
-                </span>
-                
-                <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap text-xs font-semibold ${
-                  (sidebarCollapsed && !mobileMenuOpen) ? "w-0 opacity-0 pointer-events-none" : "w-auto opacity-100 ml-2.5 flex-grow text-left"
-                }`}>
-                  {tab.label}
-                </span>
-
-                {/* Uncollapsed Badge */}
-                {!((sidebarCollapsed && !mobileMenuOpen)) && tab.badge && (
-                  <span className="bg-slate-950 text-slate-400 text-[8px] font-bold px-1.5 py-0.5 rounded-md border border-slate-800 shrink-0 [.light_&]:bg-slate-100 [.light_&]:border-slate-200 [.light_&]:text-slate-500 transition-opacity duration-350">
-                    {tab.badge}
-                  </span>
-                )}
-                {/* Collapsed Badge (Absolute positioned dot) */}
-                {(sidebarCollapsed && !mobileMenuOpen) && tab.badge && (
-                  <span className="absolute top-1.5 right-1.5 bg-violet-600 text-white text-[8px] font-bold h-4 w-4 flex items-center justify-center rounded-full border border-slate-950 [.light_&]:border-white animate-fade-in">
-                    {tab.badge}
-                  </span>
-                )}
-              </button>
-            ))}
-
-          </nav>
-        </div>
-
-        {/* Grow Spacer */}
-        <div className="flex-grow hidden md:block" />
-
-        {/* Sidebar Bottom: Quota Meter + Powered By (sticks to bottom, no gap) */}
-        <div className="w-full mt-auto px-1 flex flex-col gap-3">
-          {/* Collapsed ⚡ Badge (desktop only) */}
-          <div className={`transition-all duration-300 flex-shrink-0 ${
-            (sidebarCollapsed && !mobileMenuOpen) ? "opacity-100 scale-100 h-10 w-10" : "opacity-0 scale-75 pointer-events-none h-0 w-0 overflow-hidden"
-          }`}>
-            <div 
-              title={isPaid ? `${quotaUsed}/${quotaLimit} reports` : `${quotaUsed}/${quotaLimit} free scans`}
-              className="h-10 w-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 hover:text-amber-400 transition-colors cursor-pointer [.light_&]:bg-slate-100 [.light_&]:border-slate-200 mx-auto text-xs font-bold"
-            >
-              ⚡
-            </div>
-          </div>
-
-          {/* Uncollapsed Quota Meter */}
-          <div className={`transition-all duration-300 overflow-hidden ${
-            (sidebarCollapsed && !mobileMenuOpen) ? "max-h-0 opacity-0 pointer-events-none w-0" : "max-h-32 opacity-100 w-full"
-          }`}>
-            <div className="space-y-2 px-3 py-3.5 bg-slate-950/40 border border-slate-800/80 rounded-2xl [.light_&]:bg-slate-50 [.light_&]:border-slate-200 w-full shadow-sm">
-              <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                <span>Quota Used</span>
-                <span>{quotaPercent}%</span>
-              </div>
-              <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-900 [.light_&]:bg-slate-200 [.light_&]:border-slate-300">
-                <div 
-                  className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all duration-500"
-                  style={{ width: `${quotaPercent}%` }}
-                />
-              </div>
-              <p className="text-[9px] text-slate-500 leading-normal">
-                {isPaid ? (
-                  (user.subscription_tier === 'agency' || user.subscription_tier === 'multi') 
-                    ? "Unlimited PDF Reports" 
-                    : `${quotaUsed} of ${quotaLimit} reports`
-                ) : (
-                  `${quotaUsed} of ${quotaLimit} free scans`
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Powered By tagline (mobile drawer only) */}
-          {mobileMenuOpen && (
-            <div className="text-center pb-2 text-[8px] font-extrabold text-slate-600 uppercase tracking-widest select-none border-t border-slate-900 [.light_&]:border-slate-100 pt-3">
-              Powered by SEOIntellect
-            </div>
-          )}
-        </div>
-      </aside>
-
-      {/* Main Content Area Container */}
-      <div className="flex-grow flex flex-col min-w-0 h-full overflow-hidden [.light_&]:bg-[#f1f3f5]">
-        
-        {/* Top Horizontal Header Bar */}
-        <header className="h-16 border-b border-slate-800/80 bg-slate-950 px-4 md:px-6 flex items-center justify-between select-none [.light_&]:bg-[#f8f9fa] [.light_&]:border-slate-200 shrink-0">
-          {/* Left side: Sidebar Toggle & Breadcrumb path */}
-          <div className="flex items-center gap-3">
-            {/* Mobile Hamburger toggle (visible below md) */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors hover:bg-slate-900/40 [.light_&]:text-slate-500 [.light_&]:hover:text-slate-900 [.light_&]:hover:bg-slate-100 cursor-pointer block md:hidden" 
-              aria-label="Open Mobile Menu"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </button>
-
-            {/* Desktop Sidebar Toggle (hidden below md) */}
-            <button 
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors hover:bg-slate-900/40 [.light_&]:text-slate-500 [.light_&]:hover:text-slate-900 [.light_&]:hover:bg-slate-100 cursor-pointer hidden md:block" 
-              aria-label="Toggle Sidebar"
-            >
-              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M9 3v18" />
-              </svg>
-            </button>
-
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 [.light_&]:text-slate-500 select-none">
-              <span className="hidden sm:inline">Workspace</span>
-              <span className="hidden sm:inline">
-                <svg className="w-3 h-3 text-slate-500 [.light_&]:text-slate-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-              <span className="text-white [.light_&]:text-slate-900 capitalize font-bold">
-                {activeTab === "branding" ? "Agency Customizer" : activeTab === "pages" ? "Page Reports" : activeTab === "settings" ? "Settings" : "Overview"}
-              </span>
-            </div>
-          </div>
-
-          {/* Center: Search input */}
-          <div className="max-w-md w-full px-2 sm:px-4 flex-grow md:flex-grow-0">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search..."
-                readOnly
-                className="block w-full pl-9 pr-4 sm:pr-12 py-1.5 bg-slate-900/60 border border-slate-800/80 rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none [.light_&]:bg-slate-50 [.light_&]:border-slate-200 [.light_&]:text-slate-700 cursor-pointer"
-              />
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none hidden sm:flex">
-                <span className="px-1.5 py-0.5 border border-slate-800 text-[9px] font-bold text-slate-500 rounded bg-slate-950 [.light_&]:bg-white [.light_&]:border-slate-200">
-                  ⌘K
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right side: Actions & User Initials */}
-          <div className="flex items-center gap-4 text-slate-400 [.light_&]:text-slate-600">
-            <button
-              onClick={() => router.push("/contact/")}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold hover:text-white transition-colors cursor-pointer [.light_&]:hover:text-slate-900"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Help & Feedback</span>
-            </button>
-
-            {/* Notification Bell */}
-            <button className="relative p-1 rounded-lg hover:bg-slate-900/40 hover:text-white transition-all [.light_&]:hover:bg-slate-100 [.light_&]:hover:text-slate-900 cursor-pointer" aria-label="Notifications">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              {alertsEnabled && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-violet-500 rounded-full ring-2 ring-slate-950 [.light_&]:ring-white" />
-              )}
-            </button>
-
-            {/* Theme Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              className="relative p-1.5 rounded-lg hover:bg-slate-900/40 hover:text-white transition-all [.light_&]:hover:bg-slate-100 [.light_&]:hover:text-slate-900 cursor-pointer text-slate-400 [.light_&]:text-slate-500"
-            >
-              {isDarkMode ? (
-                // Sun icon — click to go Light
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="5" />
-                  <path strokeLinecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                </svg>
-              ) : (
-                // Moon icon — click to go Dark
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                </svg>
-              )}
-            </button>
-
-            {/* Initials Avatar Badge with Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="h-8 w-8 rounded-full bg-violet-600/10 border border-violet-500/20 text-violet-400 text-xs font-bold flex items-center justify-center select-none shrink-0 [.light_&]:bg-violet-50 [.light_&]:text-violet-600 hover:bg-violet-600/20 transition-all cursor-pointer"
-              >
-                {(() => {
-                  const parts = (user.name || "User").split(" ");
-                  return parts.map(p => p[0]).join("").toUpperCase().slice(0, 2);
-                })()}
-              </button>
-
-              {profileDropdownOpen && (
-                <>
-                  {/* Backdrop click overlay to close the dropdown */}
-                  <div 
-                    className="fixed inset-0 z-40 cursor-default" 
-                    onClick={() => setProfileDropdownOpen(false)}
-                  />
-                  
-                  {/* Floating User Dropdown Menu Card */}
-                  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-800 bg-slate-950 p-2 shadow-2xl z-50 animate-fade-in text-left [.light_&]:bg-white [.light_&]:border-slate-200">
-                    {/* User Header */}
-                    <div className="px-3 py-2 border-b border-slate-905/40 [.light_&]:border-slate-100 mb-1.5 select-none">
-                      <p className="text-xs font-bold text-white truncate [.light_&]:text-slate-900">
-                        {user.name || "User"}
-                      </p>
-                      <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                        {user.email}
-                      </p>
-                      <span className="inline-block text-[8px] font-bold text-violet-400 bg-violet-600/10 border border-violet-500/20 px-1.5 py-0.5 rounded-md mt-1 select-none">
-                        {currentPlanName}
-                      </span>
-                    </div>
-
-                    {/* Menu links */}
-                    <div className="space-y-0.5">
-                      {user.subscription_tier === "agency" && (
-                        <button
-                          onClick={() => {
-                            setActiveTab("branding");
-                            setProfileDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all text-left cursor-pointer [.light_&]:text-slate-650 [.light_&]:hover:bg-slate-50 [.light_&]:hover:text-slate-900"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>Settings</span>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-slate-900 [.light_&]:border-slate-100 my-1.5" />
-
-                    {/* Lower items */}
-                    <div className="space-y-0.5">
-                      <Link
-                        href="/"
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all text-left cursor-pointer [.light_&]:text-slate-650 [.light_&]:hover:bg-slate-50 [.light_&]:hover:text-slate-900 block"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9" />
-                        </svg>
-                        <span>Back to Website</span>
-                      </Link>
-
-                      <button
-                        onClick={() => {
-                          document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-                          router.push("/login/");
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-500 rounded-xl hover:bg-rose-500/5 hover:text-rose-600 transition-all text-left cursor-pointer"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        <span>Log out</span>
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Inner Content Main Container */}
-        <main className="flex-grow p-6 md:p-8 lg:p-10 space-y-8 max-w-7xl mx-auto w-full overflow-y-auto no-scrollbar [.light_&]:bg-[#f1f3f5]">
+  return (
+    <ConsoleLayout
+      brandTitle="SEOIntellect"
+      brandBadge="AI"
+      breadcrumbCategory="Workspace"
+      navItems={dashboardNavItems}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      userEmail={user.email}
+      userName={user.name}
+      userPlan={currentPlanName}
+      quotaWidget={quotaWidget}
+      onLogout={handleLogout}
+    >
         
         {/* Portal Notice Banner */}
         {showPortalNotice && (
@@ -1111,8 +820,6 @@ export default function DashboardClient({ user: initialUser, initialAudits = [] 
           </div>
         )}
 
-      </main>
-      </div>
-    </div>
+    </ConsoleLayout>
   );
 }

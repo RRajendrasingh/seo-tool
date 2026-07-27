@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function AuditCtaForm() {
+export default function AuditCtaForm({ location = "" }) {
   const [url, setUrl] = useState("");
   const router = useRouter();
 
@@ -15,7 +15,8 @@ export default function AuditCtaForm() {
     if (!/^https?:\/\//i.test(targetUrl)) {
       targetUrl = "https://" + targetUrl;
     }
-    router.push(`/audit/?url=${encodeURIComponent(targetUrl)}`);
+    const locQuery = location ? `&location=${encodeURIComponent(location)}` : "";
+    router.push(`/audit/?url=${encodeURIComponent(targetUrl)}${locQuery}`);
   };
 
   return (

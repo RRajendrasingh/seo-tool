@@ -1,15 +1,35 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-export default function PricingPage() {
+function PricingPageContent() {
+  const searchParams = useSearchParams();
+  const [pricingType, setPricingType] = useState("software"); // "software" or "managed_seo"
   const [billingCycle, setBillingCycle] = useState("monthly"); // "monthly" or "yearly"
   const [activeFaq, setActiveFaq] = useState(null);
   const [isSticky, setIsSticky] = useState(false);
 
   const tableRef = useRef(null);
   const headerRef = useRef(null);
+
+  useEffect(() => {
+    const tabParam = searchParams?.get("tab");
+    const planParam = searchParams?.get("plan");
+
+    if (
+      tabParam === "managed_seo" ||
+      ["foundation-seo", "growth-seo", "market-dominance", "managed", "seo"].includes(planParam)
+    ) {
+      setPricingType("managed_seo");
+    } else if (
+      tabParam === "software" ||
+      ["free", "single", "weekly", "agency", "multi", "audit"].includes(planParam)
+    ) {
+      setPricingType("software");
+    }
+  }, [searchParams]);
 
   const handleScrollSync = (e) => {
     if (headerRef.current) {
@@ -30,7 +50,7 @@ export default function PricingPage() {
     setActiveFaq(activeFaq === index ? null : index);
   };
 
-  // Pricing details aligned with actual database plans and stripe products
+  // Software Audit Tool Plans (Production version)
   const plans = {
     free: {
       name: "Free Audit",
@@ -69,6 +89,7 @@ export default function PricingPage() {
     },
   };
 
+  // Software Feature Groups (Production version)
   const featureGroups = [
     {
       category: "Performance & Technical Auditing",
@@ -157,6 +178,140 @@ export default function PricingPage() {
     },
   ];
 
+  // Full-Service Managed SEO Retainer Plans
+  const managedSeoPlans = {
+    foundation: {
+      name: "Foundation SEO",
+      price: billingCycle === "monthly" ? "$499" : "$399",
+      period: "month",
+      cta: "Get Foundation",
+      href: "/contact/?plan=foundation-seo",
+    },
+    growth: {
+      name: "Growth SEO",
+      price: billingCycle === "monthly" ? "$1,299" : "$999",
+      period: "month",
+      cta: "Start Growth Plan",
+      href: "/contact/?plan=growth-seo",
+    },
+    enterprise: {
+      name: "Market Dominance",
+      price: billingCycle === "monthly" ? "$2,999" : "$2,399",
+      period: "month",
+      cta: "Book Strategy Call",
+      href: "/contact/?plan=market-dominance",
+    },
+  };
+
+  // Managed SEO Feature Groups (Organized cleanly by 4 Pillars)
+  const managedSeoFeatureGroups = [
+    {
+      category: "1. Technical SEO & Site Speed",
+      features: [
+        {
+          name: "Site Speed & Core Web Vitals Optimization",
+          desc: "Minification, image compression, LCP/CLS optimization, and script tuning.",
+          values: ["Basic Audit", "Full Remediation", "Advanced 24/7 Speed Monitor"],
+        },
+        {
+          name: "Schema Markup & Structured Data",
+          desc: "Implementation of LocalBusiness, Organization, Article, & Product schema.",
+          values: ["Basic Schema", "Full Schema Setup", "Custom Schema Graph"],
+        },
+        {
+          name: "Crawl Error & Indexing Remediation",
+          desc: "Resolving 404s, canonical tags, sitemaps, robots.txt, and JS render issues.",
+          values: ["Monthly Audit", "Bi-Weekly Fixes", "Continuous Monitoring"],
+        },
+      ],
+    },
+    {
+      category: "2. On-Page SEO & Keywords",
+      features: [
+        {
+          name: "Target Keyword Research & Intent Mapping",
+          desc: "In-depth research targeting buyer intent keywords and high-volume queries.",
+          values: ["Up to 25 Keywords", "Up to 100 Keywords", "Unlimited Keywords"],
+        },
+        {
+          name: "On-Page Content & Meta Optimization",
+          desc: "Optimizing title tags, meta descriptions, H1-H3 headers, and image alt tags.",
+          values: ["5 Core Pages", "15 Core Pages", "Unlimited Pages"],
+        },
+        {
+          name: "Competitor Content Gap Analysis",
+          desc: "Identifying keywords and topics where competitors rank above you.",
+          values: [false, "Quarterly Audit", "Monthly Competitor Audit"],
+        },
+        {
+          name: "Multi-City Location SEO Expansion",
+          desc: "Building and optimizing high-converting location pages for targeted markets.",
+          values: [false, "Up to 5 Cities", "Multi-State / Nationwide"],
+        },
+      ],
+    },
+    {
+      category: "3. Content Creation & Writing",
+      features: [
+        {
+          name: "SEO-Optimized Blog Articles",
+          desc: "Expertly researched, long-form articles written by senior content writers.",
+          values: ["2 Articles / mo", "4 Articles / mo (1,500+ words)", "8 Articles / mo (2,000+ words)"],
+        },
+        {
+          name: "AI & Search Engine Optimization",
+          desc: "Optimizing content to get cited in modern AI search results and recommendation engines.",
+          values: [false, true, true],
+        },
+        {
+          name: "Lead Magnets & Content Guides",
+          desc: "Custom downloadable guides or whitepapers to capture organic leads.",
+          values: [false, false, "1 Asset / Quarter"],
+        },
+      ],
+    },
+    {
+      category: "4. Off-Page SEO & Backlinks",
+      features: [
+        {
+          name: "High-Authority Editorial Backlinks",
+          desc: "Manual outreach to acquire niche-relevant, real-traffic website links.",
+          values: [false, "2 High-DA Links / mo", "5 Premium High-DA Links / mo"],
+        },
+        {
+          name: "Local Citations & Directory Listings",
+          desc: "Distributing NAP info across top directories (Yelp, Bing, Apple Maps, YellowPages).",
+          values: ["10 Citations / mo", "25 Citations / mo", "Full Directory Domination"],
+        },
+        {
+          name: "Digital PR & Brand Mentions Outreach",
+          desc: "Securing press coverage and authoritative brand mentions.",
+          values: [false, false, true],
+        },
+      ],
+    },
+    {
+      category: "5. Reporting & Dedicated Strategy",
+      features: [
+        {
+          name: "Monthly Organic Growth & Rank Report",
+          desc: "Detailed performance dashboard tracking positions, traffic, and leads.",
+          values: [true, true, true],
+        },
+        {
+          name: "Dedicated Senior SEO Strategist",
+          desc: "Direct access to your assigned lead strategist.",
+          values: [false, true, true],
+        },
+        {
+          name: "Strategy Calls & Consultation",
+          desc: "Live 1-on-1 strategy reviews and roadmap planning.",
+          values: ["Email Only", "Monthly Call", "Bi-Weekly Calls"],
+        },
+      ],
+    },
+  ];
+
   const faqs = [
     {
       q: "Can I upgrade or downgrade my plan at any time?",
@@ -182,6 +337,9 @@ export default function PricingPage() {
     if (name.includes("Pro")) return "Pro";
     if (name.includes("Agency")) return "Agency";
     if (name.includes("Enterprise")) return "Ent.";
+    if (name.includes("Foundation")) return "Foundation";
+    if (name.includes("Growth")) return "Growth";
+    if (name.includes("Market")) return "Dominance";
     return name;
   };
 
@@ -197,11 +355,8 @@ export default function PricingPage() {
     return val;
   };
 
-  const getShortCta = (key, cta) => {
-    if (key === "free") return "Free";
-    if (cta.includes("Contact")) return "Contact";
-    return "Buy";
-  };
+  const activePlans = pricingType === "software" ? plans : managedSeoPlans;
+  const activeFeatureGroups = pricingType === "software" ? featureGroups : managedSeoFeatureGroups;
 
   return (
     <div className="bg-zinc-950 min-h-screen text-left relative pb-20 [.light_&]:bg-[#f8f6f0] [.light_&]:text-slate-900 pricing-page">
@@ -212,7 +367,7 @@ export default function PricingPage() {
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 sm:pt-16 sm:pb-12 relative z-10 text-center">
           <span className="text-xs font-semibold tracking-widest text-violet-400 uppercase bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-sm [.light_&]:bg-violet-50 [.light_&]:border-violet-200 [.light_&]:text-violet-650">
-            Plans & Pricing
+            Plans &amp; Pricing
           </span>
           <h1 className="text-2xl sm:text-5xl font-black text-white mt-3 sm:mt-6 tracking-tight leading-tight [.light_&]:text-slate-900">
             Find the right plan for your search growth
@@ -221,14 +376,44 @@ export default function PricingPage() {
             Compare our subscription tiers to choose the optimal balance of technical speed audits, generative engine optimization simulations, and white-label agency tools.
           </p>
 
+          {/* Dual Category Switcher (Software vs Managed SEO) */}
+          <div className="mt-6 flex justify-center">
+            <div className="inline-flex p-1.5 rounded-2xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-md shadow-xl [.light_&]:bg-slate-200 [.light_&]:border-slate-300">
+              <button
+                onClick={() => setPricingType("software")}
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  pricingType === "software"
+                    ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/25"
+                    : "text-zinc-400 hover:text-white [.light_&]:text-slate-600 [.light_&]:hover:text-slate-900"
+                }`}
+              >
+                Audit &amp; Software Tools
+              </button>
+
+              <button
+                onClick={() => setPricingType("managed_seo")}
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  pricingType === "managed_seo"
+                    ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/25"
+                    : "text-zinc-400 hover:text-white [.light_&]:text-slate-600 [.light_&]:hover:text-slate-900"
+                }`}
+              >
+                <span>Managed SEO Retainers</span>
+                <span className="bg-emerald-500 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded uppercase">
+                  Done-For-You
+                </span>
+              </button>
+            </div>
+          </div>
+
           {/* Billing Cycle Switch */}
-          <div className="flex items-center justify-center gap-4 mt-4 sm:mt-10">
+          <div className="flex items-center justify-center gap-4 mt-4 sm:mt-8">
             <span className={`text-xs font-medium ${billingCycle === "monthly" ? "text-white [.light_&]:text-slate-900" : "text-zinc-500"}`}>
               Monthly billing
             </span>
             <button
               onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-              className="relative w-11 h-6 bg-zinc-800 rounded-full transition-colors focus:outline-none border border-zinc-700/50 [.light_&]:bg-slate-200 [.light_&]:border-slate-300"
+              className="relative w-11 h-6 bg-zinc-800 rounded-full transition-colors focus:outline-none border border-zinc-700/50 [.light_&]:bg-slate-200 [.light_&]:border-slate-300 cursor-pointer"
               aria-label="Toggle billing cycle"
             >
               <span
@@ -246,7 +431,7 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Dynamic Comparison Matrix */}
+        {/* Dynamic Comparison Matrix with Synced Production Sticky Header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           {/* Synced Sticky Header (pinned vertically at top-16) */}
@@ -259,22 +444,20 @@ export default function PricingPage() {
             <table className="w-full min-w-[740px] border-collapse text-left table-fixed">
               <colgroup>
                 <col className="w-[140px] sm:w-[220px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
+                {Object.keys(activePlans).map((_, i) => (
+                  <col key={i} className={pricingType === "software" ? "w-[120px] sm:w-[150px]" : "w-[180px] sm:w-[250px]"} />
+                ))}
               </colgroup>
               <thead>
                 <tr className="bg-transparent">
                   {/* Top-Left: Feature Set (sticks left-0) */}
                   <th className="p-4 bg-[#09090b] [.light_&]:bg-[#efebe0] border-r border-zinc-850/40 [.light_&]:border-[#e5e1d3] sticky left-0 z-50 rounded-tl-[22px]">
                     <span className="text-xs font-extrabold uppercase tracking-widest text-zinc-500 [.light_&]:text-slate-400">
-                      Feature Set
+                      {pricingType === "software" ? "Feature Set" : "4 Pillars Scope"}
                     </span>
                   </th>
                   {/* Plan Names and CTA buttons */}
-                  {Object.entries(plans).map(([key, plan], idx, arr) => (
+                  {Object.entries(activePlans).map(([key, plan], idx, arr) => (
                     <th 
                       key={key} 
                       className={`p-4 text-center align-top bg-[#09090b] [.light_&]:bg-[#f9f6ee] ${
@@ -298,7 +481,7 @@ export default function PricingPage() {
                         <Link
                           href={plan.href}
                           className={`inline-block w-full py-2 rounded-xl text-[9px] sm:text-[10px] font-bold text-center transition-all cursor-pointer ${
-                            key === "weekly"
+                            key === "weekly" || key === "growth"
                               ? "bg-violet-600 text-white hover:bg-violet-500 shadow-md shadow-violet-600/10 hover:shadow-violet-600/20"
                               : "border border-zinc-850 bg-[#09090b] text-zinc-300 hover:bg-[#18181b] [.light_&]:border-slate-200 [.light_&]:bg-[#efebe0] [.light_&]:text-slate-700 [.light_&]:hover:bg-slate-100"
                           }`}
@@ -313,34 +496,30 @@ export default function PricingPage() {
             </table>
           </div>
 
-          {/* Scrollable Table Body Container */}
+          {/* Full Table Body (Scrolls horizontally, synced with header) */}
           <div 
             ref={tableRef} 
-            onScroll={handleScrollSync} 
-            className="overflow-x-auto no-scrollbar bg-[#18181b]/10 [.light_&]:bg-[#f9f6ee] border-b border-x border-zinc-850 [.light_&]:border-[#e5e1d3] rounded-b-3xl shadow-xl"
+            onScroll={handleScrollSync}
+            className="overflow-x-auto bg-[#09090b] [.light_&]:bg-[#f9f6ee] border-b border-x border-zinc-850 [.light_&]:border-[#e5e1d3] rounded-b-3xl shadow-xl"
           >
             <table className="w-full min-w-[740px] border-collapse text-left table-fixed">
               <colgroup>
                 <col className="w-[140px] sm:w-[220px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
-                <col className="w-[120px] sm:w-[150px]" />
+                {Object.keys(activePlans).map((_, i) => (
+                  <col key={i} className={pricingType === "software" ? "w-[120px] sm:w-[150px]" : "w-[180px] sm:w-[250px]"} />
+                ))}
               </colgroup>
               <tbody className="divide-y divide-zinc-900/50 [.light_&]:divide-[#e5e1d3]/50">
-                {featureGroups.map((group, groupIdx) => (
+                {activeFeatureGroups.map((group, groupIdx) => (
                   <React.Fragment key={groupIdx}>
-                    {/* Category Header Row (Left-only alignment like Google One) */}
+                    {/* Category Header Row */}
                     <tr className="bg-[#18181b]/20 [.light_&]:bg-[#efebe0]/60">
                       <td className="p-4 sticky left-0 z-20 bg-[#09090b] [.light_&]:bg-[#efebe0] font-bold text-xs text-white [.light_&]:text-slate-900 border-r border-zinc-850/40 [.light_&]:border-[#e5e1d3] w-[140px] sm:w-[220px] min-w-[140px] sm:min-w-[220px]">
                         {group.category}
                       </td>
-                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
-                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
-                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
-                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
-                      <td className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
+                      {Object.keys(activePlans).map((_, idx) => (
+                        <td key={idx} className="bg-[#18181b]/10 [.light_&]:bg-[#efebe0]/20"></td>
+                      ))}
                     </tr>
                     
                     {/* Feature Rows */}
@@ -358,12 +537,12 @@ export default function PricingPage() {
 
                         {/* Feature Values across Tiers */}
                         {feature.values.map((val, idx) => (
-                          <td key={idx} className="p-4 text-center align-middle w-[120px] sm:w-[150px] min-w-[120px] sm:min-w-[150px] bg-transparent [.light_&]:bg-[#f9f6ee]">
+                          <td key={idx} className="p-4 text-center align-middle bg-transparent [.light_&]:bg-[#f9f6ee]">
                             <div className="flex justify-center text-xs">
                               {typeof val === "boolean" ? (
                                 val ? (
                                   <span className={`w-4.5 h-4.5 rounded-full flex items-center justify-center border shadow-sm ${
-                                    idx >= 3
+                                    idx >= (pricingType === "software" ? 3 : 1)
                                       ? "bg-[#1a73e8] text-white border-[#1a73e8]"
                                       : "bg-[#137333] text-white border-[#137333]"
                                   }`}>
@@ -380,7 +559,7 @@ export default function PricingPage() {
                                 )
                               ) : (
                                 <span className={`text-[7px] sm:text-[10px] font-bold px-0.5 sm:px-2.5 py-1 rounded-full border min-h-[20px] sm:min-h-[24px] flex items-center justify-center whitespace-normal break-words leading-none text-center ${
-                                  val.includes("Full") || val.includes("Advanced") || val.includes("Continuous")
+                                  val.includes("Full") || val.includes("Advanced") || val.includes("Continuous") || val.includes("Nationwide")
                                     ? "bg-violet-500/10 text-violet-400 border-violet-500/20 [.light_&]:bg-violet-50 [.light_&]:text-violet-700 [.light_&]:border-violet-200"
                                     : "bg-[#18181b] text-zinc-400 border-zinc-800 [.light_&]:bg-slate-100 [.light_&]:text-slate-600 [.light_&]:border-slate-200"
                                 }`}>
@@ -399,7 +578,6 @@ export default function PricingPage() {
             </table>
           </div>
         </div>
-
 
         {/* FAQ Accordion Section */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-24 relative z-10">
@@ -451,5 +629,13 @@ export default function PricingPage() {
         </div>
 
       </div>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+      <PricingPageContent />
+    </Suspense>
   );
 }

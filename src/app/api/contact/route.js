@@ -18,11 +18,29 @@ export async function POST(req) {
     const dateStr = new Date().toISOString();
     const cleanEmail = email.trim().toLowerCase();
     
+    // Extract location ref if present (e.g. "location-ref-albany" -> "Albany")
+    let targetLocation = "";
+    if (source && source.startsWith("location-ref-")) {
+      const slug = source.replace("location-ref-", "");
+      targetLocation = slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    }
+
     // Map service options to packageRequest tags
     let packageRequest = service || "Contact: General Inquiry";
-    if (source === "widget") {
+    if (targetLocation && !packageRequest.includes(targetLocation)) {
+      packageRequest = `${packageRequest} (${targetLocation})`;
+    } else if (source === "widget") {
       packageRequest = `Widget: ${service || "Video Strategy Meet"}`;
     }
+
+    let notesText = message ? message.trim() : "No message text provided.";
+    if (targetLocation && !notesText.includes("Ref Location:")) {
+      notesText = `[Ref Location: ${targetLocation}] ${notesText}`;
+    }
+
+    const websiteCol = (source && source.startsWith("location-ref-"))
+      ? source
+      : (source === "widget" ? "consultancy-widget" : "contact-page");
 
     await query(
       "INSERT INTO leads (id, name, email, phone, website, date, seoScore, grade, status, packageRequest, amountPaid, notes) VALUES (?, ?, ?, ?, ?, ?, 0, 'N/A', 'New', ?, 0.00, ?)",
@@ -31,14 +49,14 @@ export async function POST(req) {
         name.trim(),
         cleanEmail,
         "Not Provided",
-        source === "widget" ? "consultancy-widget" : "contact-page",
+        websiteCol,
         dateStr,
         packageRequest,
-        message ? message.trim() : "No message text provided."
+        notesText
       ]
     );
 
-    console.log(`Contact API: Saved new lead inquiry from ${cleanEmail} under ${packageRequest}.`);
+    console.log(`Contact API: Saved new lead inquiry from ${cleanEmail} for location '${targetLocation || "Direct"}' under ${packageRequest}.`);
 
     return NextResponse.json({ success: true, leadId });
   } catch (error) {

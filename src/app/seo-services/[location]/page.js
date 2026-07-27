@@ -121,6 +121,13 @@ export default async function LocationPage({ params }) {
             "@type": "Service",
             "name": "Generative Search Engine Optimization (GEO)"
           }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Full-Service Managed SEO & Complete Project Handling"
+          }
         }
       ]
     }
@@ -132,22 +139,66 @@ export default async function LocationPage({ params }) {
     "mainEntity": [
       {
         "@type": "Question",
+        "name": `Can you handle our complete SEO project in ${city.name} end-to-end?`,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Yes! We provide full-service managed SEO campaigns for businesses in ${city.name}. Our specialists handle everything: technical speed optimization, schema code injections, Google Business Profile management, local link building, and monthly performance reports.`
+        }
+      },
+      {
+        "@type": "Question",
         "name": `How long does it take to rank locally in ${city.name}?`,
         "acceptedAnswer": {
           "@type": "Answer",
           "text": `Local SEO generally yields results faster than generic global SEO. For low to medium competition terms, you may see positive movements in 4-8 weeks. Highly competitive search terms in ${city.name} typically take 3-6 months of technical optimization and continuous local authority building.`
         }
-      },
-      {
-        "@type": "Question",
-        "name": `Do you optimize for AI engines and generative search in ${city.name}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": `Yes. We optimize your website structures and entity data to ensure your brand is cited and recommended in generative AI searches (like ChatGPT, Gemini, and Claude) alongside standard search engines.`
-        }
       }
     ]
   };
+
+  const localServices = [
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m3 0h1m-1-5a2 2 0 012-2h2a2 2 0 012 2v5m-4 0h4" />
+        </svg>
+      ),
+      title: "End-to-End Managed SEO & Complete Project Handling",
+      desc: `Don't have an in-house SEO team in ${city.name}? Our specialists handle your entire SEO project end-to-end: technical audits, on-page fixes, local link building, GBP management, and monthly ranking growth.`,
+      badge: "FULL-SERVICE MANAGED",
+    },
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+      title: "Google Map Pack & Local GBP Ranking",
+      desc: `Target high-intent local buyer keywords in ${city.name}. We optimize Google Business Profile signals, local citations, and geo-grid coordinates to secure top 3 map pack placements.`,
+      badge: "LOCAL PACK #1",
+    },
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      title: "Generative Engine Optimization (GEO/AEO)",
+      desc: `Ensure your brand is cited by ChatGPT Search, Perplexity, and Google AI Overviews. We inject structured JSON-LD entity markup tailored for ${city.name} business queries.`,
+      badge: "AI CITATION READY",
+    },
+    {
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      title: "Technical Speed & Core Web Vitals Audit",
+      desc: `Eliminate LCP and CLS bottlenecks. We compile Next.js static exports to guarantee 0.3s lightning load times on mobile devices across ${city.name}.`,
+      badge: "100/100 SPEED",
+    },
+  ];
 
   return (
     <>
@@ -159,64 +210,84 @@ export default async function LocationPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <div className="bg-zinc-950 min-h-screen relative isolate overflow-x-hidden text-left pb-12">
-        {/* Dynamic ambient background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[400px] bg-gradient-to-b from-violet-600/5 via-fuchsia-600/3 to-transparent blur-[120px] pointer-events-none rounded-full" />
+      <main className="bg-zinc-950 text-zinc-300 selection:bg-violet-500/30 selection:text-violet-200 [.light_&]:bg-slate-50 [.light_&]:text-slate-900 relative overflow-x-hidden text-left pb-16 font-sans">
         
+        {/* Crisp Linear Background Grid Mesh & Ambient Spotlight */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[400px] bg-gradient-to-b from-violet-600/15 via-indigo-600/5 to-transparent blur-[140px] pointer-events-none [.light_&]:from-violet-500/10" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800e_1px,transparent_1px),linear-gradient(to_bottom,#8080800e_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" aria-hidden="true" />
+
         {/* Hero Section */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-12 sm:pt-8 lg:pt-10 lg:pb-16 lg:px-8 relative z-10">
+        <header className="mx-auto max-w-7xl px-4 sm:px-6 pt-12 pb-16 lg:px-8 relative z-10">
+          
+          {/* Breadcrumb Navigation */}
+          <nav className="mb-6 flex items-center gap-2 text-xs font-mono text-zinc-400 [.light_&]:text-slate-600" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-white [.light_&]:hover:text-slate-900 transition-colors">Home</Link>
+            <span>/</span>
+            <Link href="/seo-services/" className="hover:text-white [.light_&]:hover:text-slate-900 transition-colors">SEO Services</Link>
+            <span>/</span>
+            <span className="text-violet-400 [.light_&]:text-violet-600 font-bold">{city.name}</span>
+          </nav>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
             {/* Left Panel: Dynamic Copy & Forms */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <span className="inline-block text-xs uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] animate-pulse-subtle">
-                Targeted Local SEO • {city.country}
-              </span>
+              <div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-zinc-900/90 border border-zinc-800 text-zinc-300 text-xs font-mono tracking-wider uppercase rounded-md shadow-sm [.light_&]:bg-white [.light_&]:border-slate-300 [.light_&]:text-slate-700">
+                  <span className="w-2 h-2 bg-violet-500" />
+                  <span>TARGETED LOCAL SEO & MANAGED CAMPAIGNS • {city.country}</span>
+                </div>
+              </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08] [.light_&]:text-slate-900">
                 SEO Services in{" "}
-                <span className="bg-gradient-to-r from-violet-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-violet-400 via-indigo-300 to-white bg-clip-text text-transparent [.light_&]:from-violet-600 [.light_&]:via-indigo-600 [.light_&]:to-slate-900">
                   {city.name}
                 </span>
               </h1>
 
-              <p className="text-sm sm:text-base leading-relaxed text-zinc-400 max-w-2xl mx-auto lg:mx-0">
-                {city.description} We fix technical speed bottlenecks, optimize your local keywords, and ensure your site is structured to rank high in {city.name} search results.
+              <p className="text-base sm:text-lg text-zinc-400 max-w-2xl leading-relaxed [.light_&]:text-slate-600">
+                {city.description} We handle your complete SEO project end-to-end — fixing technical speed bottlenecks, optimizing local search entities, and building high-authority local rankings in {city.name}.
               </p>
 
               {/* Lead Capture Form: Pre-filled Dynamic URL input */}
-              <div className="mx-auto lg:mx-0 max-w-lg p-1.5 rounded-3xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl transition-all duration-300 focus-within:border-violet-500/50 focus-within:shadow-[0_0_25px_rgba(139,92,246,0.12)]">
-                <form action="/audit/" method="GET" className="flex flex-col sm:flex-row gap-2">
-                  <div className="flex-grow flex items-center px-3 gap-2">
-                    <svg className="w-3.5 h-3.5 text-zinc-500 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
+              <div className="pt-2 max-w-xl mx-auto lg:mx-0">
+                <form action="/audit/" method="GET" className="relative flex items-center">
+                  <div className="relative flex-grow">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-500">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 1 1 14 0z" />
+                      </svg>
+                    </div>
                     <input
-                      type="url"
+                      type="text"
                       name="url"
-                      required
-                      placeholder="Enter website (e.g. yourbusiness.com)"
-                      style={{ backgroundColor: 'transparent' }}
-                      className="w-full bg-transparent py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none min-w-0 border-0 ring-0 focus:ring-0 focus:border-0"
+                      defaultValue=""
+                      placeholder={`Enter ${city.name} business URL (e.g. yourbusiness.com)`}
+                      className="w-full pl-10 pr-36 py-3.5 rounded-lg bg-zinc-900/90 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 text-sm shadow-sm transition-all [.light_&]:bg-white [.light_&]:border-slate-300 [.light_&]:text-slate-900"
                     />
                   </div>
                   <input type="hidden" name="ref" value={location} />
                   <button
                     type="submit"
-                    className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 px-6 py-3 text-xs font-bold text-white shadow-md shadow-violet-500/10 hover:shadow-violet-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex-shrink-0 cursor-pointer"
+                    className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold rounded-md flex items-center gap-2 transition-all shadow-sm active:scale-[0.98]"
                   >
-                    Analyze {city.name} Site
+                    <span>Analyze {city.name}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
                   </button>
                 </form>
+                <div className="flex items-center justify-center lg:justify-start gap-6 mt-4 text-xs font-mono text-zinc-400 [.light_&]:text-slate-600">
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-400" /> Free Audit</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-400" /> Complete SEO Handling</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-400" /> Local Map Pack</span>
+                </div>
               </div>
-              <p className="text-xs text-zinc-500">
-                Instantly run a speed and metadata audit for any company in {city.name}.
-              </p>
             </div>
 
             {/* Right Panel: Google SERP Preview simulator */}
             <div className="lg:col-span-5 relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-violet-600/10 to-fuchsia-600/10 rounded-3xl blur-2xl -z-10 pointer-events-none" />
               <GoogleSerpPreview
                 cityName={city.name}
                 mainKeyword={city.topKeywords[0] || `seo services in ${city.name}`}
@@ -224,273 +295,173 @@ export default async function LocationPage({ params }) {
             </div>
             
           </div>
-        </div>
+        </header>
 
-        {/* Local Insights Stats (Three Premium Cards) */}
-        <div className="mx-auto max-w-5xl px-6 py-6 relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {/* Local Insights Stats (Three Crisp SaaS Cards) */}
+        <section aria-label="Local Market Statistics" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            
             {/* Card 1 */}
-            <div className="group rounded-3xl border border-zinc-800/80 bg-zinc-900/10 hover:border-zinc-700/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500">Market Reach</span>
-                <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-6 flex flex-col justify-between shadow-xl [.light_&]:bg-white [.light_&]:border-slate-300">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800 [.light_&]:border-slate-200">
+                <span className="text-[11px] uppercase font-mono font-bold tracking-wider text-zinc-500 [.light_&]:text-slate-500">Market Reach</span>
+                <span className="text-xs font-mono text-emerald-400 [.light_&]:text-emerald-600 font-bold">HIGH DEMAND</span>
               </div>
               <div>
-                <span className="text-2xl font-black text-white block tracking-tight">{city.marketSize}</span>
-                <span className="text-xs text-zinc-500 leading-normal mt-1 block">Local audience search volume</span>
+                <span className="text-3xl font-extrabold text-white block tracking-tight [.light_&]:text-slate-900">{city.marketSize}</span>
+                <span className="text-xs font-mono text-zinc-400 mt-1 block [.light_&]:text-slate-600">Local audience search volume</span>
               </div>
             </div>
 
             {/* Card 2 */}
-            <div className="group rounded-3xl border border-zinc-800/80 bg-zinc-900/10 hover:border-zinc-700/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between border-l-2 border-l-violet-600/40">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500">Primary Focus</span>
-                <svg className="w-4 h-4 text-violet-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="6" />
-                  <circle cx="12" cy="12" r="2" fill="currentColor" />
-                </svg>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-6 flex flex-col justify-between shadow-xl [.light_&]:bg-white [.light_&]:border-slate-300">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800 [.light_&]:border-slate-200">
+                <span className="text-[11px] uppercase font-mono font-bold tracking-wider text-zinc-500 [.light_&]:text-slate-500">Primary Industry</span>
+                <span className="text-xs font-mono text-violet-400 [.light_&]:text-violet-600 font-bold">TARGET SECTOR</span>
               </div>
               <div>
-                <span className="text-sm font-extrabold text-violet-400 block truncate">{city.niche}</span>
-                <span className="text-xs text-zinc-500 leading-normal mt-1.5 block">High-growth target industry</span>
+                <span className="text-2xl font-extrabold text-white block tracking-tight [.light_&]:text-slate-900">{city.niche}</span>
+                <span className="text-xs font-mono text-zinc-400 mt-1 block [.light_&]:text-slate-600">Dominant buyer demographic</span>
               </div>
             </div>
 
             {/* Card 3 */}
-            <div className="group rounded-3xl border border-zinc-800/80 bg-zinc-900/10 hover:border-zinc-700/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] uppercase font-extrabold tracking-widest text-zinc-500">Competition</span>
-                <svg className="w-4 h-4 text-fuchsia-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-6 flex flex-col justify-between shadow-xl [.light_&]:bg-white [.light_&]:border-slate-300">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800 [.light_&]:border-slate-200">
+                <span className="text-[11px] uppercase font-mono font-bold tracking-wider text-zinc-500 [.light_&]:text-slate-500">Project Delivery</span>
+                <span className="text-xs font-mono text-emerald-400 [.light_&]:text-emerald-600 font-bold">100% MANAGED</span>
               </div>
               <div>
-                <span className="text-2xl font-black text-fuchsia-400 block tracking-tight">{city.competitiveness}</span>
-                <span className="text-xs text-zinc-500 leading-normal mt-1 block">Niche optimization difficulty</span>
+                <span className="text-2xl font-extrabold text-white block tracking-tight [.light_&]:text-slate-900">Complete SEO Handling</span>
+                <span className="text-xs font-mono text-zinc-400 mt-1 block [.light_&]:text-slate-600">End-to-end technical & link growth</span>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Local SEO Opportunity Calculator */}
-        <div className="mx-auto max-w-5xl px-6 py-6 relative z-10">
+          </div>
+        </section>
+
+        {/* SEO Services Delivered in City (4 Core Pillars) */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-900 [.light_&]:border-slate-200" aria-label="Services offered">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="mb-4">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 [.light_&]:text-violet-700 text-xs font-mono tracking-widest uppercase rounded-md shadow-sm">
+                FULL-SERVICE SEO & MANAGED CAPABILITIES
+              </span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4 [.light_&]:text-slate-900">
+              Complete SEO Services Delivered in {city.name}
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed [.light_&]:text-slate-600">
+              Whether you want automated software or complete managed SEO project handling — we deliver results in {city.name}.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {localServices.map((srv, idx) => (
+              <div
+                key={idx}
+                className="rounded-xl bg-zinc-900/90 border border-zinc-800 p-8 hover:border-zinc-700 transition-all shadow-xl flex flex-col justify-between [.light_&]:bg-white [.light_&]:border-slate-300"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-lg bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 [.light_&]:text-violet-600">
+                      {srv.icon}
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 [.light_&]:text-emerald-700 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">
+                      {srv.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white [.light_&]:text-slate-900">{srv.title}</h3>
+                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed [.light_&]:text-slate-600">
+                    {srv.desc}
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-zinc-800/80 [.light_&]:border-slate-200 flex items-center justify-between font-mono text-xs">
+                  <span className="text-zinc-500 [.light_&]:text-slate-500">Targeting {city.name}</span>
+                  <Link
+                    href={`/contact/?ref=${location}`}
+                    className="text-violet-400 hover:text-violet-300 [.light_&]:text-violet-600 [.light_&]:hover:text-violet-700 font-bold flex items-center gap-1 transition-colors"
+                  >
+                    <span>Request Managed SEO Proposal</span>
+                    <span>→</span>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Interactive Estimator Component */}
+        <section aria-label="ROI Estimator" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 relative z-10">
           <InteractiveEstimator cityName={city.name} />
-        </div>
+        </section>
 
+        {/* Dual Conversion Funnel Banner: Self-Serve SaaS & High-Ticket Agency Consultancy */}
+        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-zinc-900 [.light_&]:border-slate-200" id="pricing">
+          <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-8 sm:p-12 text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden [.light_&]:bg-white [.light_&]:border-slate-300">
+            <div className="absolute top-0 right-0 -z-10 w-64 h-64 bg-violet-600/10 rounded-full blur-3xl pointer-events-none [.light_&]:bg-violet-500/5" />
+            
+            <div className="mb-4">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-violet-500/10 border border-violet-500/25 text-violet-400 [.light_&]:text-violet-700 text-xs font-mono tracking-widest uppercase rounded-md shadow-sm">
+                COMPLETE SEO PROJECT HANDLING & SAAS PLANS
+              </span>
+            </div>
 
-        {/* Simple 4-Step Process & Pitch */}
-        <div className="mx-auto max-w-6xl px-6 py-12 relative isolate z-10 border-t border-zinc-900/60 [.light_&]:border-slate-200">
-          {/* Ambient Background Glow Blob */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[300px] bg-gradient-to-r from-violet-600/10 via-fuchsia-600/5 to-transparent blur-[120px] pointer-events-none rounded-full -z-10" />
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-4 [.light_&]:text-slate-900">
+              Want Our Team to Handle Your Complete SEO Project in {city.name}?
+            </h2>
 
-          <div className="text-center space-y-4 mb-12">
-            <span className="inline-block text-[10px] uppercase tracking-widest text-violet-400 font-extrabold bg-violet-500/10 px-4 py-1.5 rounded-full border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
-              How It Works
-            </span>
-            <h2 className="text-2xl font-extrabold text-white sm:text-3xl [.light_&]:text-slate-900 leading-tight">
-              Grow Your Search Traffic in 4 Steps
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto mb-8 leading-relaxed [.light_&]:text-slate-600">
+              From automated audit tools to full-service managed SEO campaigns — choose self-serve software or book a 15-minute strategy call to let our team handle your entire project.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href={`/contact/?plan=growth-seo&ref=${location}`}
+                className="w-full sm:w-auto px-8 py-4 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold font-mono uppercase tracking-wider rounded-lg transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                <span>Book 15-Min Strategy Call</span>
+              </Link>
+
+              <Link
+                href="/pricing/?tab=managed_seo"
+                className="w-full sm:w-auto px-8 py-4 bg-zinc-950 hover:bg-zinc-900 border border-zinc-700/80 text-white text-xs font-bold font-mono uppercase tracking-wider rounded-lg transition-all shadow-md hover:border-violet-500/40 active:scale-[0.98] [.light_&]:bg-slate-100 [.light_&]:border-slate-300 [.light_&]:text-slate-900 [.light_&]:hover:bg-slate-200 flex items-center justify-center gap-2"
+              >
+                <span>View Managed &amp; SaaS Plans</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Interlinking Footer Matrix for Sequential Location Equity */}
+        <footer className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 border-t border-zinc-900 [.light_&]:border-slate-200 relative z-10">
+          <div className="mb-6">
+            <h2 className="text-xs font-mono uppercase tracking-widest text-zinc-500 [.light_&]:text-slate-400">
+              Explore Neighboring US Local SEO Networks
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 animate-fade-in-up">
-            {/* Step 1 */}
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col justify-between">
-              <div>
-                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">01</span>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Scan Your Website</h4>
-                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
-                  Enter your website link at the top of this page. Our free tool checks your site speed and code issues in just 20 seconds.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col justify-between">
-              <div>
-                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">02</span>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Get a Clear Checklist</h4>
-                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
-                  We show you exactly what is wrong. You get a simple checklist to see what is slowing down your website and blocking your traffic.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] border-l-2 border-l-violet-600/40 flex flex-col justify-between">
-              <div>
-                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">03</span>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Activate a Growth Plan</h4>
-                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
-                  Unlock premium daily tracking, automatic code fixes, and AI search schemas that get your site cited by ChatGPT and Gemini.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/10 p-5 space-y-3 hover:border-violet-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] transition-all duration-300 [.light_&]:bg-white [.light_&]:border-slate-200 [.light_&]:hover:border-violet-500/20 [.light_&]:hover:shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col justify-between">
-              <div>
-                <span className="text-2xl font-black bg-gradient-to-r from-violet-400 to-fuchsia-500 bg-clip-text text-transparent block mb-1.5">04</span>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider [.light_&]:text-slate-900">Let Our Team Handle It</h4>
-                <p className="text-[11px] text-zinc-500 leading-relaxed mt-2">
-                  Don&apos;t have time? Choose a managed campaign. Our SEO experts will optimize your code, build links, and grow your traffic for you.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Core Local Strategy Details */}
-        <div className="mx-auto max-w-5xl px-6 py-12 space-y-16 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-7 space-y-6 text-left">
-              <h2 className="text-2xl font-extrabold text-white sm:text-3xl [.light_&]:text-slate-900 leading-tight">
-                Why General SEO Fails in {city.name} <span className="text-zinc-500 font-medium">(And What Works)</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                Our agency focuses on modern, high-performance search strategy. We optimize your website not just for standard search engines, but for conversational and AI search environments to position your brand where clients in {city.name} look for answers:
-              </p>
-              <div className="space-y-4 pt-2">
-                <div className="flex gap-3.5">
-                  <div className="mt-1 flex-shrink-0 p-1.5 bg-zinc-900/80 border border-zinc-850 rounded-xl text-violet-400 h-9 w-9 flex items-center justify-center text-sm shadow-md">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 21l8.904-4.43M19 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">AEO & GEO Optimization</h4>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
-                      We optimize your website content so AI search systems (such as ChatGPT, Gemini, and Google AI Overviews) quote and cite your brand as the top recommendation in {city.name}.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3.5">
-                  <div className="mt-1 flex-shrink-0 p-1.5 bg-zinc-900/80 border border-zinc-850 rounded-xl text-fuchsia-400 h-9 w-9 flex items-center justify-center text-sm shadow-md">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Complete SEO & Automated Audits</h4>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
-                      We pair technical, high-performance SEO strategy with our proprietary audit tools, allowing you to instantly analyze page speed, crawlability, and indexing factors.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Localized Keywords Checklist */}
-            <div className="lg:col-span-5 bg-zinc-900/20 border border-zinc-800/80 rounded-3xl p-6 sm:p-8 space-y-4 backdrop-blur-md relative overflow-hidden text-left">
-              <div className="absolute top-0 right-0 -z-10 w-32 h-32 bg-violet-600/5 rounded-full blur-2xl" />
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                Target Keywords in {city.name}
-              </h3>
-              <p className="text-xs text-zinc-400 leading-normal">
-                We target high-intent keyword variations that your prospects in {city.name} are searching right now:
-              </p>
-              <ul className="space-y-3 pt-2">
-                {city.topKeywords.map((kw) => (
-                  <li key={kw} className="flex items-center gap-2.5 font-mono text-xs text-zinc-300 bg-zinc-900/20 px-3.5 py-2.5 border border-zinc-850 rounded-xl">
-                    <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{kw}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Local SEO FAQs Section */}
-        <div className="border-t border-zinc-900 bg-zinc-950/20 py-20 relative z-10">
-          <div className="mx-auto max-w-4xl px-6 lg:px-8 text-left">
-            <h2 className="text-2xl font-extrabold text-white sm:text-3xl text-center mb-12 leading-tight">
-              Local SEO FAQs for {city.name}
-            </h2>
-            <div className="space-y-4 max-w-3xl mx-auto">
-              <div className="p-6 rounded-2xl border border-zinc-850 bg-zinc-900/10 hover:border-zinc-800 transition-colors">
-                <h4 className="text-sm font-extrabold text-white uppercase tracking-wider">
-                  How long does it take to rank locally in {city.name}?
-                </h4>
-                <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
-                  Local SEO generally yields results faster than generic global SEO. For low to medium competition terms, you may see positive movements in 4-8 weeks. Highly competitive search terms in {city.name} typically take 3-6 months of technical optimization and continuous local authority building.
-                </p>
-              </div>
-              <div className="p-6 rounded-2xl border border-zinc-850 bg-zinc-900/10 hover:border-zinc-800 transition-colors">
-                <h4 className="text-sm font-extrabold text-white uppercase tracking-wider">
-                  Do you optimize for AI engines and generative search in {city.name}?
-                </h4>
-                <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
-                  Yes. We optimize your website structures and entity data to ensure your brand is cited and recommended in generative AI searches (like ChatGPT, Gemini, and Claude) alongside standard search engines.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Internal Interlinking Grid */}
-        <div className="border-t border-zinc-900 bg-zinc-950/40 py-16 relative z-10">
-          <div className="mx-auto max-w-4xl px-6 text-left">
-            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6 text-center sm:text-left">
-              Other Local Markets We Serve
-            </h3>
-            <div className="flex flex-wrap gap-2.5 justify-center sm:justify-start">
-              {otherLocations.map((slug) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 font-mono text-xs">
+            {otherLocations.map((slug) => {
+              const otherCity = citiesDb[slug];
+              return (
                 <Link
                   key={slug}
                   href={`/seo-services/${slug}/`}
-                  className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white bg-zinc-900/20 hover:bg-zinc-900/50 border border-zinc-850 px-4 py-2 rounded-full transition-all duration-300 hover:border-violet-500/30"
+                  className="rounded-lg bg-zinc-900/80 border border-zinc-800 p-3 hover:border-violet-500/40 transition-all text-zinc-300 hover:text-white flex flex-col gap-1 shadow-sm [.light_&]:bg-white [.light_&]:border-slate-300 [.light_&]:text-slate-700"
                 >
-                  <svg className="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>SEO in {citiesDb[slug].name}</span>
+                  <span className="font-bold text-white text-sm [.light_&]:text-slate-900">{otherCity.name}</span>
+                  <span className="text-[10px] text-zinc-500 uppercase">{otherCity.state} • SEO Blueprint →</span>
                 </Link>
-              ))}
-              <Link
-                href="/seo-services/"
-                className="inline-flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 bg-violet-950/10 hover:bg-violet-950/20 border border-violet-850/30 px-4 py-2 rounded-full transition-all duration-300 font-bold"
-              >
-                <svg className="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L16 4m0 13V4m0 0L9 7" />
-                </svg>
-                <span>Explore All USA Locations →</span>
-              </Link>
-            </div>
+              );
+            })}
           </div>
-        </div>
+        </footer>
 
-        {/* Call to Action Card */}
-        <div className="mx-auto max-w-7xl px-6 py-12 text-center relative z-10">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-950 to-indigo-950/20 border border-violet-500/10 p-12 space-y-6 max-w-4xl mx-auto shadow-xl">
-            <div className="absolute top-0 right-0 -z-10 w-64 h-64 bg-violet-600/5 rounded-full blur-[100px]" />
-            <h2 className="text-2xl font-extrabold text-white sm:text-3xl leading-tight">
-              Dominate {city.name} Google Rankings
-            </h2>
-            <p className="text-zinc-400 max-w-md mx-auto text-xs leading-relaxed">
-              Do not let competitors capture customers in your area. Run a free audit of your current digital setup now or purchase our Premium AI report for a complete breakdown.
-            </p>
-            <div className="flex justify-center gap-3.5 pt-2">
-              <Link
-                href="/audit/"
-                className="rounded-xl bg-white px-5 py-2.5 text-xs font-bold text-zinc-950 hover:bg-zinc-200 transition-all shadow-md shadow-white/5 hover:scale-[1.01] active:scale-[0.99]"
-              >
-                Start Free Audit
-              </Link>
-              <Link
-                href="/services/#plans"
-                className="rounded-xl border border-zinc-800 bg-transparent px-5 py-2.5 text-xs font-bold text-zinc-400 hover:bg-zinc-800 transition-all hover:scale-[1.01] active:scale-[0.99]"
-              >
-                View Pricing & Plans
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      </main>
     </>
   );
 }
