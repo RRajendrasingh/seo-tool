@@ -115,7 +115,14 @@ export async function GET(request) {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
-    // 3. Create uploads table
+    // 4. Create site_settings table
+    await query(`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        setting_key VARCHAR(100) PRIMARY KEY,
+        setting_value LONGTEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
     await query(`
       CREATE TABLE IF NOT EXISTS uploads (
         id VARCHAR(50) PRIMARY KEY,

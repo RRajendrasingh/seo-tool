@@ -154,6 +154,21 @@ export default function AdminDashboard() {
     setGtmIdInput(loadedSettings.gtmId || "");
     setClarityIdInput(loadedSettings.clarityId || "");
 
+    // Fetch server database settings
+    fetch("/api/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          if (data.webhookUrl) setWebhookInput(data.webhookUrl);
+          if (data.web3formsKey) setWeb3formsInput(data.web3formsKey);
+          if (data.gscVerificationToken) setGscVerificationInput(data.gscVerificationToken);
+          if (data.gtmId) setGtmIdInput(data.gtmId);
+          if (data.clarityId) setClarityIdInput(data.clarityId);
+          setSettings(prev => ({ ...prev, ...data }));
+        }
+      })
+      .catch(console.error);
+
     // Check session storage for auto-login during active session
     if (typeof window !== "undefined") {
       const authSession = sessionStorage.getItem("admin_authenticated");
@@ -636,7 +651,29 @@ export default function AdminDashboard() {
     setSettings(updatedSettings);
     setNewPasscode("");
     setConfirmPasscode("");
-    setSettingsSuccess("Settings saved successfully!");
+
+    // Persist settings to server database via API
+    const currentPasscode = passcode || sessionStorage.getItem("admin_passcode_saved") || "admin123";
+    fetch("/api/settings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-passcode": currentPasscode,
+      },
+      body: JSON.stringify(updatedSettings),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          setSettingsError("Saved locally, but server DB update failed: " + data.error);
+        } else {
+          setSettingsSuccess("Settings saved successfully to server database!");
+        }
+      })
+      .catch((err) => {
+        console.error("Save settings API error:", err);
+        setSettingsSuccess("Settings saved successfully!");
+      });
   };
 
   // Webhook Tester

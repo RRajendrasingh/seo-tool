@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import Script from "next/script";
 import { getSettings } from "@/utils/leadsStore";
 
+const cleanGtmId = (raw) => {
+  if (!raw) return "";
+  const str = String(raw).trim();
+  const match = str.match(/GTM-[A-Z0-9]+/i);
+  return match ? match[0].toUpperCase() : str;
+};
+
 export default function TrackingScripts() {
   const [mounted, setMounted] = useState(false);
   const [settings, setSettings] = useState({
@@ -13,15 +20,32 @@ export default function TrackingScripts() {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line
     setMounted(true);
-    const loaded = getSettings();
-    // eslint-disable-next-line
+    // 1. Initial load from local settings fallback
+    const local = getSettings();
+    const envGtm = process.env.NEXT_PUBLIC_GTM_ID || process.env.GTM_ID || "";
+    
     setSettings({
-      gscVerificationToken: loaded.gscVerificationToken || "",
-      gtmId: loaded.gtmId || "",
-      clarityId: loaded.clarityId || "",
+      gscVerificationToken: local.gscVerificationToken || "",
+      gtmId: cleanGtmId(local.gtmId || envGtm),
+      clarityId: local.clarityId || "",
     });
+
+    // 2. Fetch server database settings via API
+    fetch("/api/settings")
+      ? fetch("/api/settings")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && !data.error) {
+              setSettings((prev) => ({
+                gscVerificationToken: data.gscVerificationToken || prev.gscVerificationToken,
+                gtmId: cleanGtmId(data.gtmId || prev.gtmId),
+                clarityId: data.clarityId || prev.clarityId,
+              }));
+            }
+          })
+          .catch((err) => console.error("TrackingScripts fetch /api/settings error:", err))
+      : null;
   }, []);
 
   // Dynamically inject Google Search Console verification meta tag in head
